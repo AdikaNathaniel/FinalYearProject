@@ -1,0 +1,68 @@
+(1)
+Title: A Comprehensive Framework for Wearable Module for Prenatal Health Monitoring and Risk Detection
+Problem Attempted To Be Solved:Lack of a prenatal health monitoring system which has led to high maternal mortality ratio in Bangladesh.
+Method Used:The problem is tackled by  designing a costeffective, non-invasive device that connects with smartphones for consistent monitoring.
+- The wearable device is placed in a pouch around the user’s waist, and the sensors that 
+need to be placed on the fingers or underarms are connected to the main processing unit using wires.
+- The wearable device monitors temperature, oxygen saturation, heart rate, blood 
+pressure, and blood glucose.
+- Fetal movement and detect unwanted falls is also monitored in this project.
+- The designed user interface of the mobile application for maternal health 
+monitoring. The system can also store the data in the database, and if the doctor wants to analyze the 
+historical data, he/she can do it using the designated portal designed for the doctors.
+-The system has a feature that sends SMS when it detects 
+any anomaly
+- A central processing unit OF  the ESP-32s microcontroller is chosen for it's ability to collect and send data over the cloud through Wi-Fi.
+                  TECHNICALITIES
+-An NIR 940mm led and a photodetector were used to detect the blood glucose level.
+Light absorbed by the high level of glucose in blood is different from light absorbed by the low level of glucose in blood.
+Some of the light is absorbed by components like glucose whereas some of the light is scattered due to interactions with cells and tissue structures.
+The remaining light either passes through the tissue or is reflected back toward the photodetector.
+-Photodetector measures the intensity of light by converting the incoming light into an electrical signal.
+However, in order to mitigate the noises, we have enclosed the 
+glucose measurement system in a black box so that it cannot 
+be affected by the external lights. This method allows 
+continuous monitoring without the pain associated with 
+traditional techniques which involves poking a needle every 
+time we want to measure.
+-To measure blood pressure,
+We have used an off the shelf blood pressure monitoring device equipped with an EEPROM which stores the reading of the 
+measurements. The way the Blood pressure machine and the EEPROM chip communicates is by utilizing the I2C(Inter-Integrated Circuit) protocol. 
+When the blood pressure machine and the EEPROM chip communicate via I²C, it means they use a shared two-wire bus to transmit data.
+*Blood Pressure Machine as Master: It sends commands to or requests data from the EEPROM.
+*EEPROM as Slave: It stores from the master.
+-For temperature readings,DS18b20 sensor is used. For monitoring oxygen saturation and heart 
+rate,the MAX30100 sensor is used. 
+-In order to get the fetal movement, we have used another IMU(Inertial Measurement Unit) named ADXL335 which is an acceleration sensor.
+ IMUs are widely used in motion tracking.
+- The fall detection algorithm works with the use of acceleration parameters of MPU6050(acceleration sensor). If a sudden change is 
+seen in the acceleration, then it is considered as the person has fallen.
+- If it is seen that after subtracting the MPU6050’s acceleration value from the ADXL335’s there is still a 
+noticeable increase in the acceleration value, then the system flags it as a fetal movement.
+                             Results
+MSE measures the average squared difference between predicted (or measured) values and actual (true) values. A smaller MSE indicates better accuracy of the system.
+1.Temperature measurement system has a Mean Squared Error of only 0.0035.
+The reference device that has been used is a commercially available thermometer.
+2.The implemented oxygen saturation and heart rate measurement system has a 
+Mean Squared Error of only 1.1 and 2.45 respectively.
+NB: Normal Blood oxygen level is 95% to 100%.
+Normal Heart rate level is 60 and 100 bpm.
+The reference device used is a commercially available pulse oximeter. 
+3.
+The Mean Absolute Percentage Error (MAPE) measures the accuracy of a system's predictions compared to actual values, expressed as a percentage.
+-The MAPE for systolic blood pressure is 4.54%.
+This means that, on average, the measured systolic blood pressure values differ from the actual values by 4.54%. For example, if the actual systolic blood pressure is 120 mmHg, the error would typically be around 
+-The MAPE for diastolic blood pressure is 5.43%.
+Similarly, the diastolic readings differ from the actual values by about 5.43% on average. If the actual diastolic blood pressure is 80 mmHg, the error would be 
+The data taken is already from a commercially available blood pressure machine.
+4. MAPE of only 4.77%, and it can be utilized as an early indicator of any anomaly in the blood glucose trend. 
+A commercial blood glucose monitoring device is used.
+5.For the fall detection, we have used the MPU6050. When a fall occurs, abrupt change happens in the values of the 
+accelerometer in a very short time.
+6.To detect the fetal kick, we have used the ADXL335 as the sensor responsible for detection, and it is placed on the 
+abdomen of a pregnant woman based on the fetal orientation.
+Conclusion:
+A vitals sign monitoring with  innovative features like fall detection and fetal movement tracking is designed.
+
+
+
