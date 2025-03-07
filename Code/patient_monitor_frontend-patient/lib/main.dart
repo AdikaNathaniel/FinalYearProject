@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'otp_page.dart';
+import 'health_metrics.dart';
 
 
 void main() {
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+       home: const LoginPage(),
+     
       // home: const OTPVerificationPage(email: 'example@example.com'),
     );
   }

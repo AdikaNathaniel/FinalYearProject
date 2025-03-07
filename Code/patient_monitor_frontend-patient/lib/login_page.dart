@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'register.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'health_metrics.dart';
 
 // Main App Widget remains the same
 void main() {
@@ -18,6 +19,10 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Login Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        // Add this for better floating label appearance
+        inputDecorationTheme: InputDecorationTheme(
+          floatingLabelStyle: TextStyle(color: Colors.white),
+        ),
       ),
       home: const LoginPage(),
     );
@@ -32,9 +37,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController emailController = TextEditingController(); // Changed to email
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String selectedUserType = 'Doctor'; // Default value
+  bool _obscurePassword = true; // Track password visibility state
 
   final List<String> userTypes = ['Doctor', 'Pregnant Woman', 'Family Relative', 'Admin'];
   bool _isLoading = false; // Loading state
@@ -69,9 +75,13 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               _icon(),
               const SizedBox(height: 50),
-              _inputField("Email", emailController), // Changed to Email
+              _inputField(
+                "Email", 
+                emailController,
+                icon: Icons.email_outlined,
+              ),
               const SizedBox(height: 20),
-              _inputField("Password", passwordController, isPassword: true),
+              _passwordField(), // Special password field with visibility toggle
               const SizedBox(height: 20),
               _userTypeDropdown(),
               const SizedBox(height: 50),
@@ -102,21 +112,71 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _inputField(String hintText, TextEditingController controller, {bool isPassword = false}) {
-    var border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(color: Colors.white),
-    );
+  Widget _inputField(
+    String labelText, 
+    TextEditingController controller, 
+    {bool isPassword = false, IconData? icon}
+  ) {
     return TextField(
       style: const TextStyle(color: Colors.white),
       controller: controller,
       decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.white),
-        enabledBorder: border,
-        focusedBorder: border,
+        labelText: labelText,
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: icon != null 
+            ? Icon(icon, color: Colors.white70) 
+            : null,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Colors.white),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Colors.white, width: 2),
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
       ),
       obscureText: isPassword,
+    );
+  }
+
+  // Special password field with visibility toggle
+  Widget _passwordField() {
+    return TextField(
+      style: const TextStyle(color: Colors.white),
+      controller: passwordController,
+      obscureText: _obscurePassword, // Use the state variable to control visibility
+      decoration: InputDecoration(
+        labelText: "Password",
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
+        suffixIcon: IconButton(
+          icon: Icon(
+            // Change the icon based on the password visibility state
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            color: Colors.white70,
+          ),
+          onPressed: () {
+            setState(() {
+              // Toggle password visibility when the button is pressed
+              _obscurePassword = !_obscurePassword;
+            });
+          },
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Colors.white),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Colors.white, width: 2),
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+      ),
     );
   }
 
@@ -125,40 +185,47 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _userTypeDropdown() {
-    return SizedBox(
+    return Container(
       height: 60, // Match TextField default height
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: selectedUserType,
-            isExpanded: true,
-            dropdownColor: _mixColors(Colors.blue, Colors.red, 0.5),
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-            hint: const Text(
-              'Login As',
-              style: TextStyle(color: Colors.white),
-            ),
-            items: userTypes.map((String userType) {
-              return DropdownMenuItem<String>(
-                value: userType,
-                child: Text(
-                  userType,
-                  style: const TextStyle(color: Colors.white),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white),
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(0.1),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.person_outline, color: Colors.white70),
+          const SizedBox(width: 10),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: selectedUserType,
+                isExpanded: true,
+                dropdownColor: _mixColors(Colors.blue, Colors.red, 0.5),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                hint: const Text(
+                  'Login As',
+                  style: TextStyle(color: Colors.white),
                 ),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedUserType = newValue!;
-              });
-            },
+                items: userTypes.map((String userType) {
+                  return DropdownMenuItem<String>(
+                    value: userType,
+                    child: Text(
+                      userType,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedUserType = newValue!;
+                  });
+                },
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -210,20 +277,23 @@ class _LoginPageState extends State<LoginPage> {
 
         if (selectedUserType.toLowerCase() == 'doctor') {
           // Navigate to the appropriate page for Doctor
-          // Navigator.pushReplacement(
-          //   // context
-          //   // MaterialPageRoute(
-              
-          //   // ),
-          // );
+          // if (mounted) {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => DoctorPage(),
+          //     ),
+          //   );
+          // }
         } else if (selectedUserType.toLowerCase() == 'pregnant woman' || selectedUserType.toLowerCase() == 'family relative') {
-          // Navigate to the Products Page for customers
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => ProductsPage(userEmail: email),
-          //   ),
-          // );
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HealthDashboard(),
+              ),
+            );
+          }
         } else if (selectedUserType.toLowerCase() == 'admin') {
           // Fetch totals and navigate to SummaryPage
           // int totalProducts = await _fetchTotalProducts();
@@ -231,18 +301,20 @@ class _LoginPageState extends State<LoginPage> {
           // int totalOrders = await _fetchTotalOrders();
           // int totalUsers = await _fetchTotalUsers();
 
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => SummaryPage(
-          //       totalProducts: totalProducts,
-          //       totalItemsInCart: totalItemsInCart,
-          //       totalOrders: totalOrders,
-          //       totalUsers: totalUsers,
-          //       userEmail: email,
+          // if (mounted) {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => SummaryPage(
+          //         totalProducts: totalProducts,
+          //         totalItemsInCart: totalItemsInCart,
+          //         totalOrders: totalOrders,
+          //         totalUsers: totalUsers,
+          //         userEmail: email,
+          //       ),
           //     ),
-          //   ),
-          // );
+          //   );
+          // }
         } else {
           _showSnackbar("Invalid user type.", Colors.red);
         }
