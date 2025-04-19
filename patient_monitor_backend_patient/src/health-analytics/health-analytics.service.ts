@@ -15,7 +15,7 @@ export class HealthAnalyticsService {
   private diagnosticChain: LLMChain;
   private alertChain: LLMChain;
   private chartingChain: LLMChain;
- 
+
 
 
   constructor() {
