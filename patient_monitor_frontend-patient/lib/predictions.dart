@@ -13,6 +13,7 @@ import 'Doctor/PatientViewWithLiveData.dart';
 import 'Doctor/AbnormalVitalsPage.dart';
 import 'Doctor/DoctorInputPage.dart';
 import 'Doctor/ReportDiagnosticPage.dart';
+import 'Doctor/PatientQueryPage.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -250,6 +251,19 @@ class _PregnancyComplicationsPageState
                   context,
                   MaterialPageRoute(
                     builder: (context) => DiagnosticToolPage(), // Use widget.themeNotifier
+                  ),
+                );
+              },
+            ),
+
+               ListTile(
+              leading: Icon(Icons.monitor_heart),
+              title: Text('Patient Data Query'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PatientQueryPage(), // Use widget.themeNotifier
                   ),
                 );
               },
