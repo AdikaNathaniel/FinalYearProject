@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:html' as html;
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   runApp(const DiagnosticApp());
@@ -109,63 +110,190 @@ class _DiagnosticToolPageState extends State<DiagnosticToolPage> {
         ? dateFormat.format(DateTime.parse(_timestamp))
         : dateFormat.format(DateTime.now());
 
+    // Load the image from assets
+    final image = pw.MemoryImage(
+      (await rootBundle.load('assets/pregnant.png')).buffer.asUint8List(),
+    );
+
+    // Define consistent theme styles
+    final themeColor = PdfColors.indigo700;
+    final accentColor = PdfColors.blue800;
+    final subtleColor = PdfColors.grey600;
+    
+    // Define text styles for consistency
+    final headerStyle = pw.TextStyle(
+      fontSize: 22,
+      fontWeight: pw.FontWeight.bold,
+      color: themeColor,
+    );
+    
+    final subheaderStyle = pw.TextStyle(
+      fontSize: 18,
+      fontWeight: pw.FontWeight.bold,
+      color: accentColor,
+    );
+    
+    final sectionTitleStyle = pw.TextStyle(
+      fontSize: 16,
+      fontWeight: pw.FontWeight.bold,
+      color: themeColor,
+    );
+    
+    final normalTextStyle = pw.TextStyle(
+      fontSize: 12,
+      color: PdfColors.black,
+    );
+    
+    final emphasisTextStyle = pw.TextStyle(
+      fontSize: 12,
+      fontWeight: pw.FontWeight.bold,
+      color: PdfColors.black,
+    );
+    
+    final subtleTextStyle = pw.TextStyle(
+      fontSize: 10,
+      color: subtleColor,
+    );
+
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(
-                child: pw.Text(
-                  _predictionController.text,
-                  style: pw.TextStyle(
-                    fontSize: 22,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.indigo700,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 16),
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  color: PdfColors.blue50,
-                  border: pw.Border.all(color: PdfColors.blue200),
-                  borderRadius: pw.BorderRadius.circular(8),
-                ),
-                child: pw.Column(
+        header: (pw.Context context) {
+          return pw.Container(
+            padding: const pw.EdgeInsets.only(bottom: 16),
+            decoration: pw.BoxDecoration(
+              border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 1))
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      'Patient Information',
+                      'DIAGNOSTIC REPORT',
                       style: pw.TextStyle(
-                        fontSize: 16,
+                        fontSize: 12,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.blue800,
+                        color: subtleColor,
                       ),
                     ),
-                    pw.SizedBox(height: 8),
-                    pw.Row(
-                      children: [
-                        pw.Text('Name: ', style: const pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        pw.Text(_patientNameController.text),
-                      ],
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      _predictionController.text,
+                      style: headerStyle,
                     ),
                   ],
                 ),
-              ),
-              pw.SizedBox(height: 24),
-              ..._buildFormattedPdfContent(),
-              pw.Spacer(),
-              pw.Divider(),
-              pw.Text(
-                'Generated on $formattedDate',
-                style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
-              ),
-            ],
+                pw.Container(
+                  width: 60,
+                  height: 60,
+                  child: pw.Image(image),
+                ),
+              ],
+            ),
           );
+        },
+        footer: (pw.Context context) {
+          return pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 16),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Divider(color: PdfColors.grey300),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  'Generated on $formattedDate | Page ${context.pageNumber} of ${context.pagesCount}',
+                  style: subtleTextStyle,
+                ),
+              ],
+            ),
+          );
+        },
+        build: (pw.Context context) {
+          return [
+            pw.Container(
+              padding: const pw.EdgeInsets.all(16),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.blue50,
+                borderRadius: pw.BorderRadius.circular(8),
+                boxShadow: [
+                  pw.BoxShadow(
+                    color: PdfColors.grey300,
+                    offset: const PdfPoint(0, 2),
+                    blurRadius: 2,
+                  ),
+                ],
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Patient Information',
+                    style: sectionTitleStyle,
+                  ),
+                  pw.SizedBox(height: 12),
+                  _buildInfoRow('Name:', _patientNameController.text, normalTextStyle, emphasisTextStyle),
+                  pw.SizedBox(height: 8),
+                  _buildInfoRow('Report Date:', formattedDate, normalTextStyle, emphasisTextStyle),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 24),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(16),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey300),
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Diagnostic Summary',
+                    style: subheaderStyle,
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Container(
+                    width: double.infinity,
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: pw.BorderRadius.circular(4),
+                    ),
+                    child: pw.Text(
+                      _predictionController.text,
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 24),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(16),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey300),
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Detailed Analysis',
+                    style: subheaderStyle,
+                  ),
+                  pw.SizedBox(height: 16),
+                  ..._buildFormattedPdfContent(normalTextStyle, sectionTitleStyle, emphasisTextStyle),
+                ],
+              ),
+            ),
+          ];
         },
       ),
     );
@@ -173,64 +301,218 @@ class _DiagnosticToolPageState extends State<DiagnosticToolPage> {
     return await pdf.save();
   }
 
-  List<pw.Widget> _buildFormattedPdfContent() {
+  pw.Widget _buildInfoRow(String label, String value, pw.TextStyle normalStyle, pw.TextStyle emphasisStyle) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Container(
+          width: 100,
+          child: pw.Text(label, style: emphasisStyle),
+        ),
+        pw.Expanded(
+          child: pw.Text(value, style: normalStyle),
+        ),
+      ],
+    );
+  }
+
+  List<pw.Widget> _buildFormattedPdfContent(
+    pw.TextStyle normalTextStyle,
+    pw.TextStyle sectionTitleStyle,
+    pw.TextStyle emphasisTextStyle,
+  ) {
     final List<pw.Widget> widgets = [];
-    final paragraphs = _explanationText.split('\n\n');
-
-    for (var paragraph in paragraphs) {
-      if (paragraph.trim().isEmpty) continue;
-
-      paragraph = paragraph
-          .replaceAll('**', '')
-          .replaceAll('#', '')
-          .trim();
-
-      if (paragraph.startsWith('-') || paragraph.startsWith('•') || paragraph.startsWith('*')) {
-        final points = paragraph.split('\n');
-        for (var point in points) {
-          point = point.replaceAll(RegExp(r'^[-•*]\s*'), '').trim();
+    final lines = _explanationText.split('\n');
+    bool inBulletList = false;
+    bool inNumberedList = false;
+    int listIndex = 1;
+    
+    // Group content by sections
+    Map<String, List<String>> sections = {};
+    String currentSection = 'General';
+    
+    for (var line in lines) {
+      line = line.trim();
+      if (line.isEmpty) continue;
+      
+      if (line.startsWith('###')) {
+        currentSection = line.replaceAll('###', '').trim();
+        if (!sections.containsKey(currentSection)) {
+          sections[currentSection] = [];
+        }
+      } else {
+        if (!sections.containsKey(currentSection)) {
+          sections[currentSection] = [];
+        }
+        sections[currentSection]!.add(line);
+      }
+    }
+    
+    // Process each section
+    sections.forEach((sectionTitle, sectionLines) {
+      if (sectionTitle != 'General') {
+        widgets.add(
+          pw.Container(
+            padding: const pw.EdgeInsets.only(top: 16, bottom: 8),
+            child: pw.Text(
+              sectionTitle,
+              style: sectionTitleStyle,
+            ),
+          ),
+        );
+      }
+      
+      inBulletList = false;
+      inNumberedList = false;
+      listIndex = 1;
+      
+      for (var line in sectionLines) {
+        // Handle numbered lists
+        if (RegExp(r'^\d+\.').hasMatch(line)) {
+          if (!inNumberedList) {
+            inNumberedList = true;
+            listIndex = 1;
+            widgets.add(pw.SizedBox(height: 8));
+          }
+          
+          final parts = line.split(RegExp(r'^\d+\.'));
+          final content = parts[1].trim();
+          
           widgets.add(
             pw.Padding(
-              padding: const pw.EdgeInsets.only(left: 20, bottom: 4),
+              padding: const pw.EdgeInsets.only(left: 16, bottom: 6),
               child: pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('• ', style: const pw.TextStyle(fontSize: 12)),
+                  pw.Container(
+                    width: 20,
+                    alignment: pw.Alignment.centerRight,
+                    padding: const pw.EdgeInsets.only(right: 8),
+                    child: pw.Text(
+                      '$listIndex.',
+                      style: emphasisTextStyle,
+                    ),
+                  ),
                   pw.Expanded(
                     child: pw.Text(
-                      point,
-                      style: const pw.TextStyle(fontSize: 12),
+                      content,
+                      style: normalTextStyle,
                     ),
                   ),
                 ],
               ),
             ),
           );
+          listIndex++;
+          inBulletList = false;
         }
-      } 
-      else if (paragraph.contains(':') && !paragraph.contains('\n')) {
-        widgets.add(
-          pw.Text(
-            paragraph,
-            style: pw.TextStyle(
-              fontSize: 14,
-              fontWeight: pw.FontWeight.bold,
+        // Handle bullet points
+        else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+          if (!inBulletList) {
+            inBulletList = true;
+            widgets.add(pw.SizedBox(height: 8));
+          }
+          
+          final content = line.substring(1).trim();
+          
+          widgets.add(
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(left: 16, bottom: 6),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Container(
+                    width: 20,
+                    alignment: pw.Alignment.centerRight,
+                    padding: const pw.EdgeInsets.only(right: 8),
+                    child: pw.Text(
+                      '•',
+                      style: emphasisTextStyle,
+                    ),
+                  ),
+                  pw.Expanded(
+                    child: pw.Text(
+                      content,
+                      style: normalTextStyle,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-        widgets.add(pw.SizedBox(height: 8));
+          );
+          inNumberedList = false;
+        }
+        // Handle bold text
+        else if (line.contains('**')) {
+          final segments = <pw.TextSpan>[];
+          bool isBold = false;
+          String currentText = '';
+          
+          for (int i = 0; i < line.length; i++) {
+            if (i < line.length - 1 && line[i] == '*' && line[i + 1] == '*') {
+              if (currentText.isNotEmpty) {
+                segments.add(
+                  pw.TextSpan(
+                    text: currentText,
+                    style: isBold ? emphasisTextStyle : normalTextStyle,
+                  ),
+                );
+                currentText = '';
+              }
+              isBold = !isBold;
+              i++; // Skip the next asterisk
+            } else {
+              currentText += line[i];
+            }
+          }
+          
+          if (currentText.isNotEmpty) {
+            segments.add(
+              pw.TextSpan(
+                text: currentText,
+                style: isBold ? emphasisTextStyle : normalTextStyle,
+              ),
+            );
+          }
+          
+          widgets.add(
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 8),
+              child: pw.RichText(
+                text: pw.TextSpan(
+                  children: segments,
+                ),
+              ),
+            ),
+          );
+          
+          inBulletList = false;
+          inNumberedList = false;
+        }
+        // Regular paragraph
+        else {
+          if (inBulletList || inNumberedList) {
+            widgets.add(pw.SizedBox(height: 8));
+            inBulletList = false;
+            inNumberedList = false;
+          }
+          
+          widgets.add(
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 12),
+              child: pw.Text(
+                line,
+                style: normalTextStyle,
+                textAlign: pw.TextAlign.justify,
+              ),
+            ),
+          );
+        }
       }
-      else {
-        widgets.add(
-          pw.Text(
-            paragraph,
-            style: const pw.TextStyle(fontSize: 12),
-          ),
-        );
-        widgets.add(pw.SizedBox(height: 12));
-      }
-    }
-
+      
+      widgets.add(pw.SizedBox(height: 8));
+    });
+    
     return widgets;
   }
 
