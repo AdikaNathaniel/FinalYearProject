@@ -443,13 +443,14 @@ class _DiagnosticToolPageState extends State<DiagnosticToolPage> {
           listIndex = number + 1;
           inBulletList = false;
         }
-        // Handle bullet points
-        else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+        // Handle bullet points - FIXED THIS PART TO PROPERLY DETECT BULLET CHARACTERS
+        else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.startsWith('❑') || line.startsWith('□')) {
           if (!inBulletList) {
             inBulletList = true;
             widgets.add(pw.SizedBox(height: 8));
           }
           
+          // Remove any bullet character at the start of the line
           final content = line.substring(1).trim();
           
           // Process the content to handle bold text
@@ -466,7 +467,7 @@ class _DiagnosticToolPageState extends State<DiagnosticToolPage> {
                     alignment: pw.Alignment.centerRight,
                     padding: const pw.EdgeInsets.only(right: 8),
                     child: pw.Text(
-                      '•',
+                      '•', // Always use a standard bullet point
                       style: emphasisTextStyle,
                     ),
                   ),
