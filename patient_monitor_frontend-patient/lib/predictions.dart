@@ -14,14 +14,13 @@ import 'Doctor/AbnormalVitalsPage.dart';
 import 'Doctor/DoctorInputPage.dart';
 import 'Doctor/ReportDiagnosticPage.dart';
 import 'Doctor/PatientQueryPage.dart';
+import 'Doctor/PatientSummaryPage.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
 
-
   PregnancyComplicationsPage({
     required this.userEmail,
- 
   });
 
   @override
@@ -167,7 +166,7 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-             ListTile(
+            ListTile(
               leading: Icon(Icons.calendar_today),
               title: Text('Create Prescription'),
               onTap: () {
@@ -190,8 +189,7 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-
-             ListTile(
+            ListTile(
               leading: Icon(Icons.medication),
               title: Text('Pregnant Woman Chat'),
               onTap: () {
@@ -203,8 +201,7 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-
-             ListTile(
+            ListTile(
               leading: Icon(Icons.medication),
               title: Text('Anomalies Page'),
               onTap: () {
@@ -216,8 +213,7 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-                     
-             ListTile(
+            ListTile(
               leading: Icon(Icons.monitor_heart),
               title: Text('View Live Vitals Data'),
               onTap: () {
@@ -229,7 +225,6 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-
             ListTile(
               leading: Icon(Icons.monitor_heart),
               title: Text('Comments Page'),
@@ -242,8 +237,7 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-
-             ListTile(
+            ListTile(
               leading: Icon(Icons.monitor_heart),
               title: Text('Diagnostic Report'),
               onTap: () {
@@ -255,8 +249,7 @@ class _PregnancyComplicationsPageState
                 );
               },
             ),
-
-               ListTile(
+            ListTile(
               leading: Icon(Icons.monitor_heart),
               title: Text('Patient Data Query'),
               onTap: () {
@@ -264,6 +257,18 @@ class _PregnancyComplicationsPageState
                   context,
                   MaterialPageRoute(
                     builder: (context) => PatientQueryPage(), // Use widget.themeNotifier
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.monitor_heart),
+              title: Text('Patient Summary Report'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PatientSummaryPage(), // Use widget.themeNotifier
                   ),
                 );
               },
@@ -381,7 +386,6 @@ class _PregnancyComplicationsPageState
 
   void _showUserInfoDialog() {
     String email = widget.userEmail;
-    // String role = 'Doctor'; 
 
     showDialog(
       context: context,
@@ -396,14 +400,6 @@ class _PregnancyComplicationsPageState
                 Icon(Icons.email),
                 SizedBox(width: 10),
                 Text(email),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                // Icon(Icons.person),
-                SizedBox(width: 10),
-                // Text(role),
               ],
             ),
             SizedBox(height: 10),
