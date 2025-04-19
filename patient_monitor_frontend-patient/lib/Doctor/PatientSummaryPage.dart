@@ -105,21 +105,24 @@ class _PatientSummaryPageState extends State<PatientSummaryPage> {
 
     // Create the circular grey person icon
     final image = pw.MemoryImage(
-  (await rootBundle.load('person.png')).buffer.asUint8List(),
-);
+      (await rootBundle.load('person.png')).buffer.asUint8List(),
+    );
 
-final personIcon = pw.Container(
-  width: 60,
-  height: 60,
-  decoration: pw.BoxDecoration(
-    color: PdfColors.grey300,
-    shape: pw.BoxShape.circle,
-  ),
-  child: pw.Center(
-    child: pw.Image(image, width: 30, height: 30),
-  ),
-);
+    final personIcon = pw.Container(
+      width: 60,
+      height: 60,
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey300,
+        shape: pw.BoxShape.circle,
+      ),
+      child: pw.Center(
+        child: pw.Image(image, width: 30, height: 30),
+      ),
+    );
 
+    // Define text styles
+    final normalTextStyle = const pw.TextStyle(fontSize: 12);
+    final boldTextStyle = const pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold);
 
     pdf.addPage(
       pw.MultiPage(
@@ -212,7 +215,7 @@ final personIcon = pw.Container(
                   pw.Row(
                     children: [
                       pw.Text('Name: ', 
-                        style: const pw.TextStyle(
+                        style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 12,
                         )),
@@ -224,7 +227,7 @@ final personIcon = pw.Container(
                   pw.Row(
                     children: [
                       pw.Text('Report Date: ', 
-                        style: const pw.TextStyle(
+                        style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 12,
                         )),
@@ -261,14 +264,12 @@ final personIcon = pw.Container(
                       color: PdfColors.white,
                       borderRadius: pw.BorderRadius.circular(8),
                     ),
-                    child: pw.Text(
+                    child: _processBoldText(
                       _summaryText.isNotEmpty 
                           ? _summaryText.split('\n')[0]
                           : 'No summary available',
-                      style: const pw.TextStyle(
-                        fontSize: 14,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
+                      normalTextStyle,
+                      boldTextStyle,
                     ),
                   ),
                 ],
@@ -293,7 +294,7 @@ final personIcon = pw.Container(
                     ),
                   ),
                   pw.SizedBox(height: 12),
-                  ..._buildFormattedPdfContent(),
+                  ..._buildFormattedPdfContent(normalTextStyle, boldTextStyle),
                 ],
               ),
             ),
@@ -305,47 +306,99 @@ final personIcon = pw.Container(
     return await pdf.save();
   }
 
-  List<pw.Widget> _buildFormattedPdfContent() {
+  List<pw.Widget> _buildFormattedPdfContent(
+    pw.TextStyle normalTextStyle,
+    pw.TextStyle boldTextStyle,
+  ) {
     final List<pw.Widget> widgets = [];
     final lines = _summaryText.split('\n');
+    bool inBulletList = false;
 
     for (var line in lines) {
       line = line.trim();
       if (line.isEmpty) continue;
 
-      if (line.startsWith('-')) {
+      // Handle bullet points
+      if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+        if (!inBulletList) {
+          inBulletList = true;
+          widgets.add(pw.SizedBox(height: 8));
+        }
+
+        // Remove any bullet character at the start of the line
         final content = line.substring(1).trim();
+        
         widgets.add(
           pw.Padding(
             padding: const pw.EdgeInsets.only(left: 16, bottom: 8),
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('• ', style: const pw.TextStyle(fontSize: 12)),
+                pw.Text('• ', style: boldTextStyle),
                 pw.Expanded(
-                  child: pw.Text(
-                    content,
-                    style: const pw.TextStyle(fontSize: 12),
-                  ),
+                  child: _processBoldText(content, normalTextStyle, boldTextStyle),
                 ),
               ],
             ),
           ),
         );
       } else {
+        if (inBulletList) {
+          widgets.add(pw.SizedBox(height: 8));
+          inBulletList = false;
+        }
+        
         widgets.add(
           pw.Padding(
             padding: const pw.EdgeInsets.only(bottom: 8),
-            child: pw.Text(
-              line,
-              style: const pw.TextStyle(fontSize: 12),
-            ),
+            child: _processBoldText(line, normalTextStyle, boldTextStyle),
           ),
         );
       }
     }
 
     return widgets;
+  }
+
+  pw.Widget _processBoldText(
+    String text, 
+    pw.TextStyle normalTextStyle, 
+    pw.TextStyle boldTextStyle,
+  ) {
+    // Check if text contains any bold markers
+    if (text.contains('**')) {
+      final textSpans = <pw.TextSpan>[];
+      final regex = RegExp(r'\*\*(.*?)\*\*|([^*]+)');
+      final matches = regex.allMatches(text);
+      
+      for (var match in matches) {
+        // Bold text
+        if (match.group(1) != null) {
+          textSpans.add(
+            pw.TextSpan(
+              text: match.group(1),
+              style: boldTextStyle,
+            ),
+          );
+        } 
+        // Regular text
+        else if (match.group(2) != null) {
+          textSpans.add(
+            pw.TextSpan(
+              text: match.group(2),
+              style: normalTextStyle,
+            ),
+          );
+        }
+      }
+      
+      return pw.RichText(
+        text: pw.TextSpan(children: textSpans),
+      );
+    } else {
+      // If no bold markers, return the whole text as regular
+      return pw.Text(text, style: normalTextStyle);
+    }
   }
 
   Future<void> _downloadPdf() async {
