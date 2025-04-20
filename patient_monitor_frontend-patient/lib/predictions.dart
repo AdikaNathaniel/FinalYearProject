@@ -15,6 +15,7 @@ import 'Doctor/DoctorInputPage.dart';
 import 'Doctor/ReportDiagnosticPage.dart';
 import 'Doctor/PatientQueryPage.dart';
 import 'Doctor/PatientSummaryPage.dart';
+import 'Doctor/PatientAnalyticsPage.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -269,6 +270,19 @@ class _PregnancyComplicationsPageState
                   context,
                   MaterialPageRoute(
                     builder: (context) => PatientSummaryPage(), // Use widget.themeNotifier
+                  ),
+                );
+              },
+            ),
+
+             ListTile(
+              leading: Icon(Icons.monitor_heart),
+              title: Text('Patient Analysis'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PatientAnalyticsPage(), // Use widget.themeNotifier
                   ),
                 );
               },

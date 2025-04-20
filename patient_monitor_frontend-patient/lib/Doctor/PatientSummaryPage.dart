@@ -306,6 +306,7 @@ class _PatientSummaryPageState extends State<PatientSummaryPage> {
     return await pdf.save();
   }
 
+  // Moved the method directly inside the PatientSummaryPage class
   List<pw.Widget> _buildFormattedPdfContent(
     pw.TextStyle normalTextStyle,
     pw.TextStyle boldTextStyle,
@@ -319,7 +320,7 @@ class _PatientSummaryPageState extends State<PatientSummaryPage> {
       if (line.isEmpty) continue;
 
       // Handle bullet points
-      if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+      if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.startsWith('❑') || line.startsWith('□')) {
         if (!inBulletList) {
           inBulletList = true;
           widgets.add(pw.SizedBox(height: 8));
@@ -370,7 +371,7 @@ class _PatientSummaryPageState extends State<PatientSummaryPage> {
       final textSpans = <pw.TextSpan>[];
       final regex = RegExp(r'\*\*(.*?)\*\*|([^*]+)');
       final matches = regex.allMatches(text);
-      
+
       for (var match in matches) {
         // Bold text
         if (match.group(1) != null) {

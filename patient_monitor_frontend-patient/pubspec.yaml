@@ -47,6 +47,9 @@ dependencies:
   printing: ^5.14.2
   path_provider: ^2.1.5
   open_file: ^3.5.10
+  fl_chart: ^0.71.0
+  flutter_radar_chart: ^0.2.1
+  pie_chart: ^5.4.0
  
 
 
@@ -80,7 +83,7 @@ flutter:
   assets:
     - assets/pregnant.png
     - assets/pregnancy.png
-    - assets/person.jpg
+    - assets/person.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
