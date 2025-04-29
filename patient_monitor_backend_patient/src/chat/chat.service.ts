@@ -8,7 +8,7 @@ import axios from 'axios';
 @Injectable()
 export class ChatbotService {
   private readonly apiUrl = 'https://models.inference.ai.azure.com/chat/completions';
-  private readonly apiKey = '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';
+  // private readonly apiKey = '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';
 
   constructor(@InjectModel(Chat.name) private chatModel: Model<Chat>) {}
 

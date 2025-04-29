@@ -15,9 +15,9 @@ export class HealthAnalyticsService {
   private diagnosticChain: LLMChain;
   private alertChain: LLMChain;
   private chartingChain: LLMChain;
- 
+  // public OPENAI_API_KEY='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';
 
-
+  
   constructor() {
     this.loadData();
     this.initializeLangChain();
@@ -747,6 +747,3 @@ async getPatientVitals(patientName: string) {
 }
 
 }
-
-
-
