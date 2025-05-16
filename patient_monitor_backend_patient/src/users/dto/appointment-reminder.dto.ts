@@ -1,6 +1,17 @@
 import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+
 
 export class AppointmentReminderDto {
+
+  @IsNotEmpty()
+  @IsString()
+  patientName: string;
+
+   @IsNotEmpty()
+  @IsString()
+  purpose: string;
+
   @IsNotEmpty()
   @IsString()
   patientId: string;
@@ -10,6 +21,7 @@ export class AppointmentReminderDto {
   phone: string;
 
   @IsNotEmpty()
+  @Type(() => Date) 
   @IsDate()
   date: Date;
 

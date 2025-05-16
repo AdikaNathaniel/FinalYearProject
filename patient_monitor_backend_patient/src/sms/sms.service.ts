@@ -119,7 +119,8 @@ export class SmsService {
     const appointment = new this.appointmentModel(dto);
     await appointment.save();
     
-    const confirmationMessage = `Your appointment with ${dto.doctor} on ${new Date(dto.date).toLocaleDateString()} at ${dto.location} has been scheduled. Reply Y to confirm or N to cancel.`;
+   const confirmationMessage = `Dear ${dto.patientName}, your appointment for ${dto.purpose} with Dr. ${dto.doctor} has been scheduled on ${new Date(dto.date).toLocaleDateString()} at ${dto.location}. Reply Y to confirm or N to cancel.`.trim();
+
     await this.ensureSmsSent(
       dto.phone, 
       confirmationMessage, 

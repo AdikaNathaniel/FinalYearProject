@@ -3,12 +3,14 @@ export const APPOINTMENT_REMINDER_MESSAGES = {
     date: Date;
     doctor: string;
     location: string;
+    patientName: string;
+    purpose: string;
     specialInstructions?: string;
   }) => {
     const dateStr = appointment.date.toLocaleDateString();
-    return `Reminder: Your appointment with Dr. ${appointment.doctor} is in one week (${dateStr}) at ${appointment.location}. ${
-      appointment.specialInstructions || ''
-    }`.trim();
+  return `Dear ${appointment.patientName}, your appointment for ${appointment.purpose} with Dr. ${appointment.doctor} is in one week (${dateStr}) at ${appointment.location}. ${
+    appointment.specialInstructions || ''
+  }`.trim();
   },
   TWO_DAYS_BEFORE: (appointment: { date: Date; doctor: string; location: string }) => {
     const dateStr = appointment.date.toLocaleDateString();
