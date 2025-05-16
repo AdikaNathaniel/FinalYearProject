@@ -183,7 +183,7 @@ export class SmsService {
     });
     await profile.save();
     
-    const welcomeMessage = `Your nutrition profile has been created. You will receive daily water intake reminders and nutrition tips for your ${dto.trimester} trimester.`;
+    const welcomeMessage = `Dear ${dto.patientName}, your nutrition profile has been created. You will receive daily water intake reminders and nutrition tips for your ${dto.trimester} trimester.`;
     await this.ensureSmsSent(
       dto.phone, 
       welcomeMessage, 
@@ -205,19 +205,21 @@ export class SmsService {
       ],
     });
 
-    for (const profile of profiles) {
-      const message = NUTRITION_MESSAGES.WATER_INTAKE(profile.waterIntakeGoal);
-      const sent = await this.ensureSmsSent(
-        profile.phone, 
-        message, 
-        'nutrition', 
-        new Types.ObjectId(profile._id.toString())
-      );
-      if (sent) {
-        profile.lastWaterReminderSent = now;
-        await profile.save();
-      }
-    }
+   for (const profile of profiles) {
+  const message = NUTRITION_MESSAGES.WATER_INTAKE(profile.patientName, profile.waterIntakeGoal); // Pass patientName here
+  const sent = await this.ensureSmsSent(
+    profile.phone, 
+    message, 
+    'nutrition', 
+    new Types.ObjectId(profile._id.toString())
+  );
+  
+  if (sent) {
+    profile.lastWaterReminderSent = now;
+    await profile.save();
+  }
+}
+
   }
 
   async sendNutritionTips(): Promise<void> {
@@ -234,7 +236,7 @@ export class SmsService {
     for (const profile of profiles) {
       const tips = NUTRITION_TIPS[profile.trimester];
       const randomTip = tips[Math.floor(Math.random() * tips.length)];
-      const message = NUTRITION_MESSAGES.SNACK_TIP(profile.trimester, randomTip);
+      const message = NUTRITION_MESSAGES.SNACK_TIP(profile.patientName,profile.trimester, randomTip);
       
       const sent = await this.ensureSmsSent(
         profile.phone, 
@@ -253,19 +255,24 @@ export class SmsService {
     }
   }
 
+
+
   private async sendDeficiencyReminders(profile: NutritionProfileDocument): Promise<void> {
-    for (const deficiency of profile.deficiencies) {
-      const deficiencyMessage = NUTRITION_MESSAGES.DEFICIENCY_REMINDER(
-        DEFICIENCY_TIPS[deficiency] || deficiency
-      );
-      await this.ensureSmsSent(
-        profile.phone, 
-        deficiencyMessage, 
-        'nutrition', 
-        new Types.ObjectId(profile._id.toString())
-      );
-    }
+  for (const deficiency of profile.deficiencies) {
+    const tip = DEFICIENCY_TIPS[deficiency] || deficiency;
+    const deficiencyMessage = NUTRITION_MESSAGES.DEFICIENCY_REMINDER(
+      profile.patientName,
+      tip
+    );
+    await this.ensureSmsSent(
+      profile.phone,
+      deficiencyMessage,
+      'nutrition',
+      new Types.ObjectId(profile._id.toString())
+    );
   }
+}
+
 
   /**
    * Medication Reminder Functions

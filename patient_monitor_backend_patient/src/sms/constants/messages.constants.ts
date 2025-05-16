@@ -23,10 +23,16 @@ export const APPOINTMENT_REMINDER_MESSAGES = {
 };
 
 export const NUTRITION_MESSAGES = {
-  WATER_INTAKE: (glasses: number) => `Remember to drink ${glasses} glasses of water today for optimal hydration.`,
-  SNACK_TIP: (trimester: number, tip: string) => `Nutrition tip for trimester ${trimester}: ${tip}`,
-  DEFICIENCY_REMINDER: (tip: string) => `Important: ${tip}`,
+  WATER_INTAKE: (patientName: string, glasses: number) =>
+    `Dear ${patientName}, remember to drink ${glasses} glasses of water today for optimal hydration.`,
+
+  SNACK_TIP: (patientName: string, trimester: number, tip: string) =>
+    `Dear ${patientName}, nutrition tip for trimester ${trimester}: ${tip}`,
+
+  DEFICIENCY_REMINDER: (patientName: string, tip: string) =>
+    `Dear ${patientName}, important: ${tip}`,
 };
+
 
 export const MEDICATION_MESSAGES = {
   DAILY_REMINDER: (medication: { medicationName: string; dosage: string }) =>
