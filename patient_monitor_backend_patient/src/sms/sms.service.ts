@@ -58,68 +58,7 @@ export class SmsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async sendSms(phone: string, message: string): Promise<boolean> {
-    const smsRecord = new this.smsModel({
-      phone,
-      message,
-      type: 'appointment',
-      status: 'pending',
-    });
-
-    try {
-      // Get API key from config service instead of hardcoding
-      const apiKey = 'cWZPeGl3anVMTXFheHRTb3F5QkE';
-      if (!apiKey) {
-        this.logger.error('SMS_API_KEY environment variable is not set');
-        smsRecord.status = 'failed';
-        smsRecord.failureReason = 'Missing API key';
-        await smsRecord.save();
-        return false;
-      }
-
-      const senderId = this.configService.get<string>('SMS_SENDER_ID') || 'ArkeselTest';
-      const baseUrl = 'https://sms.arkesel.com/api/v2/sms/send';
-
-      this.logger.log(`Sending SMS to ${phone} with message: ${message}`);
-
-      const response = await firstValueFrom(
-        this.httpService.post(
-          baseUrl,
-          {
-            sender: senderId,
-            message,
-            recipients: [phone],
-          },
-          {
-            headers: {
-              'api-key': apiKey,
-              'Content-Type': 'application/json',
-            },
-          },
-        ),
-      );
-
-      this.logger.log(`SMS API response: ${JSON.stringify(response.data)}`);
-
-      if (response.data.status === 'success') {
-        smsRecord.status = 'sent';
-        smsRecord.sentAt = new Date();
-        await smsRecord.save();
-        return true;
-      } else {
-        smsRecord.status = 'failed';
-        smsRecord.failureReason = JSON.stringify(response.data);
-        await smsRecord.save();
-        return false;
-      }
-    } catch (error) {
-      this.logger.error(`Failed to send SMS: ${error.message}`, error.stack);
-      smsRecord.status = 'failed';
-      smsRecord.failureReason = error.message;
-      await smsRecord.save();
-      return false;
-    }
-  }
+ 
 
   async scheduleAppointmentReminder(dto: AppointmentReminderDto): Promise<Appointment> {
     const appointment = new this.appointmentModel(dto);
@@ -131,6 +70,104 @@ export class SmsService {
     
     return appointment;
   }
+
+
+
+
+
+  async sendSms(phone: string, message: string): Promise<boolean> {
+  // Format the phone number: remove + if present and ensure it has country code
+  let formattedPhone = phone.trim();
+  
+  // Remove the plus sign if it exists
+  if (formattedPhone.startsWith('+')) {
+    formattedPhone = formattedPhone.substring(1);
+  }
+  
+  // If it starts with 0, replace with Ghana country code (233)
+  if (formattedPhone.startsWith('0')) {
+    formattedPhone = '233' + formattedPhone.substring(1);
+  }
+
+  // Create a record of this SMS attempt
+  const smsRecord = new this.smsModel({
+    phone: formattedPhone,
+    message,
+    type: 'appointment',
+    status: 'pending',
+  });
+
+  try {
+    // Get API key from config service instead of hardcoding
+    const apiKey = 'cWZPeGl3anVMTXFheHRTb3F5QkE';
+    if (!apiKey) {
+      this.logger.error('SMS_API_KEY environment variable is not set');
+      smsRecord.status = 'failed';
+      smsRecord.failureReason = 'Missing API key';
+      await smsRecord.save();
+      return false;
+    }
+
+    const senderId = 'Awo)Pa';
+    const baseUrl = 'https://sms.arkesel.com/api/v2/sms/send';
+
+    this.logger.log(`Sending SMS to ${formattedPhone} with message: ${message}`);
+
+    // Check Arkesel documentation for the exact payload structure
+    const response = await firstValueFrom(
+      this.httpService.post(
+        baseUrl,
+        {
+          sender: senderId,
+          message,
+          recipients: [formattedPhone],
+        },
+        {
+          headers: {
+            'api-key': apiKey,
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    this.logger.log(`SMS API response: ${JSON.stringify(response.data)}`);
+
+    if (response.data.status === 'success') {
+      smsRecord.status = 'sent';
+      smsRecord.sentAt = new Date();
+      await smsRecord.save();
+      return true;
+    } else {
+      smsRecord.status = 'failed';
+      smsRecord.failureReason = JSON.stringify(response.data);
+      await smsRecord.save();
+      return false;
+    }
+  } catch (error) {
+    this.logger.error(`Failed to send SMS: ${error.message}`, error.stack);
+    
+    // Add extra debugging for specific error details
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      this.logger.error(`Error response data: ${JSON.stringify(error.response.data)}`);
+      this.logger.error(`Error response status: ${error.response.status}`);
+      this.logger.error(`Error response headers: ${JSON.stringify(error.response.headers)}`);
+      smsRecord.failureReason = `Status ${error.response.status}: ${JSON.stringify(error.response.data)}`;
+    } else if (error.request) {
+      // The request was made but no response was received
+      this.logger.error('No response received from SMS API');
+      smsRecord.failureReason = 'No response from API';
+    } else {
+      // Something happened in setting up the request
+      smsRecord.failureReason = error.message;
+    }
+    
+    smsRecord.status = 'failed';
+    await smsRecord.save();
+    return false;
+  }
+}
 
   async createMedicationReminder(dto: MedicationReminderDto): Promise<Medication> {
     const medication = new this.medicationModel(dto);
