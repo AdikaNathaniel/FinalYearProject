@@ -12,7 +12,11 @@ export class SmsRecord {
   @Prop()
   failureReason?: string;
 
-  @Prop({ required: true, enum: ['appointment', 'nutrition', 'medication', 'pregnancy'] })
+  @Prop({
+    required: true,
+    enum: ['appointment', 'nutrition', 'medication', 'pregnancy', 'OUTBOUND', 'INBOUND'],
+    default: 'OUTBOUND'
+  })
   type: string;
 
   @Prop({ required: true, enum: ['pending', 'sent', 'failed'], default: 'pending' })

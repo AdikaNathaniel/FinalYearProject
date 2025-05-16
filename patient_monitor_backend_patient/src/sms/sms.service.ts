@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
@@ -24,6 +24,10 @@ import {
   Pregnancy,
   PregnancyDocument,
 } from 'src/shared/schema/pregnancy.schema';
+import {
+  PendingReminder,
+  PendingReminderDocument,
+} from 'src/shared/schema/pending-reminder.schema';
 import { SendSmsDto } from 'src/users/dto/send-sms.dto';
 import { AppointmentReminderDto } from 'src/users/dto/appointment-reminder.dto';
 import { NutritionReminderDto } from 'src/users/dto/nutrition-reminder.dto';
@@ -42,6 +46,8 @@ import { PREGNANCY_STAGES, WEEKLY_UPDATES } from './constants/pregnancy-stages.c
 @Injectable()
 export class SmsService {
   private readonly logger = new Logger(SmsService.name);
+  private readonly smsApiUrl = 'https://sms.arkesel.com/api/v2/sms/send';
+  private readonly senderId = 'Awo)Pa';
 
   constructor(
     @InjectModel(SmsRecord.name)
@@ -54,223 +60,99 @@ export class SmsService {
     private readonly medicationModel: Model<MedicationDocument>,
     @InjectModel(Pregnancy.name)
     private readonly pregnancyModel: Model<PregnancyDocument>,
+    @InjectModel(PendingReminder.name)
+    private readonly pendingReminderModel: Model<PendingReminderDocument>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
 
- 
+  /**
+   * Core SMS sending functionality using Arkesel API
+   */
+  async sendSms(phone: string, message: string): Promise<boolean> {
+    const formattedPhone = this.formatPhoneNumber(phone);
+    const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
+    try {
+      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'cWZPeGl3anVMTXFheHRTb3F5QkE';
+      if (!apiKey) {
+        throw new Error('SMS_API_KEY environment variable is not set');
+      }
+
+      this.logger.log(`Sending SMS to ${formattedPhone} with message: ${message}`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          this.smsApiUrl,
+          {
+            sender: this.senderId,
+            message,
+            recipients: [formattedPhone],
+          },
+          {
+            headers: { 'api-key': apiKey },
+            timeout: 10000,
+          },
+        ),
+      );
+
+      this.logger.debug(`SMS API response: ${JSON.stringify(response.data)}`);
+
+      if (response.data.status === 'success') {
+        smsRecord.status = 'sent';
+        smsRecord.sentAt = new Date();
+        await smsRecord.save();
+        return true;
+      } else {
+        throw new Error(`SMS API returned non-success status: ${JSON.stringify(response.data)}`);
+      }
+    } catch (error) {
+      await this.handleSmsError(error, smsRecord, formattedPhone, message);
+      return false;
+    }
+  }
+
+  /**
+   * Appointment Reminder Functions
+   */
   async scheduleAppointmentReminder(dto: AppointmentReminderDto): Promise<Appointment> {
     const appointment = new this.appointmentModel(dto);
     await appointment.save();
     
-    // Send an immediate confirmation SMS after creating appointment
     const confirmationMessage = `Your appointment with ${dto.doctor} on ${new Date(dto.date).toLocaleDateString()} at ${dto.location} has been scheduled. Reply Y to confirm or N to cancel.`;
-    await this.sendSms(dto.phone, confirmationMessage);
+    await this.ensureSmsSent(
+      dto.phone, 
+      confirmationMessage, 
+      'appointment', 
+      new Types.ObjectId(appointment._id.toString())
+    );
     
     return appointment;
   }
 
-
-
-
-
-  async sendSms(phone: string, message: string): Promise<boolean> {
-  // Format the phone number: remove + if present and ensure it has country code
-  let formattedPhone = phone.trim();
-  
-  // Remove the plus sign if it exists
-  if (formattedPhone.startsWith('+')) {
-    formattedPhone = formattedPhone.substring(1);
-  }
-  
-  // If it starts with 0, replace with Ghana country code (233)
-  if (formattedPhone.startsWith('0')) {
-    formattedPhone = '233' + formattedPhone.substring(1);
-  }
-
-  // Create a record of this SMS attempt
-  const smsRecord = new this.smsModel({
-    phone: formattedPhone,
-    message,
-    type: 'appointment',
-    status: 'pending',
-  });
-
-  try {
-    // Get API key from config service instead of hardcoding
-    const apiKey = 'cWZPeGl3anVMTXFheHRTb3F5QkE';
-    if (!apiKey) {
-      this.logger.error('SMS_API_KEY environment variable is not set');
-      smsRecord.status = 'failed';
-      smsRecord.failureReason = 'Missing API key';
-      await smsRecord.save();
-      return false;
-    }
-
-    const senderId = 'Awo)Pa';
-    const baseUrl = 'https://sms.arkesel.com/api/v2/sms/send';
-
-    this.logger.log(`Sending SMS to ${formattedPhone} with message: ${message}`);
-
-    // Check Arkesel documentation for the exact payload structure
-    const response = await firstValueFrom(
-      this.httpService.post(
-        baseUrl,
-        {
-          sender: senderId,
-          message,
-          recipients: [formattedPhone],
-        },
-        {
-          headers: {
-            'api-key': apiKey,
-            'Content-Type': 'application/json',
-          },
-        },
-      ),
-    );
-
-    this.logger.log(`SMS API response: ${JSON.stringify(response.data)}`);
-
-    if (response.data.status === 'success') {
-      smsRecord.status = 'sent';
-      smsRecord.sentAt = new Date();
-      await smsRecord.save();
-      return true;
-    } else {
-      smsRecord.status = 'failed';
-      smsRecord.failureReason = JSON.stringify(response.data);
-      await smsRecord.save();
-      return false;
-    }
-  } catch (error) {
-    this.logger.error(`Failed to send SMS: ${error.message}`, error.stack);
-    
-    // Add extra debugging for specific error details
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      this.logger.error(`Error response data: ${JSON.stringify(error.response.data)}`);
-      this.logger.error(`Error response status: ${error.response.status}`);
-      this.logger.error(`Error response headers: ${JSON.stringify(error.response.headers)}`);
-      smsRecord.failureReason = `Status ${error.response.status}: ${JSON.stringify(error.response.data)}`;
-    } else if (error.request) {
-      // The request was made but no response was received
-      this.logger.error('No response received from SMS API');
-      smsRecord.failureReason = 'No response from API';
-    } else {
-      // Something happened in setting up the request
-      smsRecord.failureReason = error.message;
-    }
-    
-    smsRecord.status = 'failed';
-    await smsRecord.save();
-    return false;
-  }
-}
-
-  async createMedicationReminder(dto: MedicationReminderDto): Promise<Medication> {
-    const medication = new this.medicationModel(dto);
-    await medication.save();
-    
-    // Send an immediate confirmation SMS after creating medication reminder
-    const confirmationMessage = `Your medication reminder for ${dto.medicationName} (${dto.dosage}) has been set up. You will receive ${dto.frequency} reminders.`;
-    await this.sendSms(dto.phone, confirmationMessage);
-    
-    return medication;
-  }
-
-  async createNutritionProfile(dto: NutritionReminderDto): Promise<NutritionProfile> {
-    const profile = new this.nutritionModel({
-      ...dto,
-      waterIntakeGoal: dto.waterIntakeGoal || 8,
-    });
-    await profile.save();
-    
-    // Send an immediate welcome message
-    const welcomeMessage = `Your nutrition profile has been created. You will receive daily water intake reminders and nutrition tips for your ${dto.trimester} trimester.`;
-    await this.sendSms(dto.phone, welcomeMessage);
-    
-    return profile;
-  }
-
-  async createPregnancyProfile(dto: PregnancyUpdateDto): Promise<Pregnancy> {
-    const pregnancy = new this.pregnancyModel(dto);
-    this.calculateNextAppointmentSchedule(pregnancy);
-    await pregnancy.save();
-    
-    // Send an immediate welcome message
-    const welcomeMessage = `Your pregnancy profile has been created. You are currently in week ${pregnancy.currentWeek}. You will receive weekly updates about your pregnancy journey.`;
-    await this.sendSms(dto.phone, welcomeMessage);
-    
-    return pregnancy;
-  }
-
-  // Rest of the methods remain the same...
   async sendAppointmentReminders(): Promise<void> {
     const now = new Date();
-    const weekBeforeDate = new Date();
-    weekBeforeDate.setDate(now.getDate() + 7);
     
-    const weekBeforeAppointments = await this.appointmentModel.find({
-      date: { $lte: weekBeforeDate, $gte: now },
-      'reminders.weekBefore': false,
-    });
+    await this.processAppointmentReminders(
+      new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      now,
+      'weekBefore',
+      APPOINTMENT_REMINDER_MESSAGES.WEEK_BEFORE
+    );
 
-    for (const appointment of weekBeforeAppointments) {
-      const message = APPOINTMENT_REMINDER_MESSAGES.WEEK_BEFORE({
-        date: appointment.date,
-        doctor: appointment.doctor,
-        location: appointment.location
-      });
-      const sent = await this.sendSms(appointment.phone, message);
-      if (sent) {
-        appointment.reminders.weekBefore = true;
-        await appointment.save();
-      }
-    }
+    await this.processAppointmentReminders(
+      new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
+      now,
+      'twoDaysBefore',
+      APPOINTMENT_REMINDER_MESSAGES.TWO_DAYS_BEFORE
+    );
 
-    const twoDaysBeforeDate = new Date();
-    twoDaysBeforeDate.setDate(now.getDate() + 2);
-    
-    const twoDaysBeforeAppointments = await this.appointmentModel.find({
-      date: { $lte: twoDaysBeforeDate, $gte: now },
-      'reminders.twoDaysBefore': false,
-    });
-
-    for (const appointment of twoDaysBeforeAppointments) {
-      const message = APPOINTMENT_REMINDER_MESSAGES.TWO_DAYS_BEFORE({
-        date: appointment.date,
-        doctor: appointment.doctor,
-        location: appointment.location
-      });
-      const sent = await this.sendSms(appointment.phone, message);
-      if (sent) {
-        appointment.reminders.twoDaysBefore = true;
-        await appointment.save();
-      }
-    }
-
-    const dayBeforeDate = new Date();
-    dayBeforeDate.setDate(now.getDate() + 1);
-    
-    const dayBeforeAppointments = await this.appointmentModel.find({
-      date: { $lte: dayBeforeDate, $gte: now },
-      'reminders.dayBefore': false,
-    });
-
-    for (const appointment of dayBeforeAppointments) {
-      const message = APPOINTMENT_REMINDER_MESSAGES.DAY_BEFORE({
-        date: appointment.date,
-        doctor: appointment.doctor,
-        location: appointment.location
-      });
-      const sent = await this.sendSms(appointment.phone, message);
-      if (sent) {
-        appointment.reminders.dayBefore = true;
-        await appointment.save();
-      }
-    }
+    await this.processAppointmentReminders(
+      new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000),
+      now,
+      'dayBefore',
+      APPOINTMENT_REMINDER_MESSAGES.DAY_BEFORE
+    );
   }
 
   async handleAppointmentConfirmation(phone: string, confirmation: 'Y' | 'N'): Promise<void> {
@@ -286,8 +168,29 @@ export class SmsService {
       const responseMessage = confirmation === 'Y' 
         ? 'Thank you for confirming your appointment.' 
         : 'We will contact you to reschedule your appointment.';
-      await this.sendSms(phone, responseMessage);
+      await this.ensureSmsSent(phone, responseMessage);
     }
+  }
+
+  /**
+   * Nutrition Reminder Functions
+   */
+  async createNutritionProfile(dto: NutritionReminderDto): Promise<NutritionProfile> {
+    const profile = new this.nutritionModel({
+      ...dto,
+      waterIntakeGoal: dto.waterIntakeGoal || 8,
+    });
+    await profile.save();
+    
+    const welcomeMessage = `Your nutrition profile has been created. You will receive daily water intake reminders and nutrition tips for your ${dto.trimester} trimester.`;
+    await this.ensureSmsSent(
+      dto.phone, 
+      welcomeMessage, 
+      'nutrition', 
+      new Types.ObjectId(profile._id.toString())
+    );
+    
+    return profile;
   }
 
   async sendWaterIntakeReminders(): Promise<void> {
@@ -303,7 +206,12 @@ export class SmsService {
 
     for (const profile of profiles) {
       const message = NUTRITION_MESSAGES.WATER_INTAKE(profile.waterIntakeGoal);
-      const sent = await this.sendSms(profile.phone, message);
+      const sent = await this.ensureSmsSent(
+        profile.phone, 
+        message, 
+        'nutrition', 
+        new Types.ObjectId(profile._id.toString())
+      );
       if (sent) {
         profile.lastWaterReminderSent = now;
         await profile.save();
@@ -325,29 +233,66 @@ export class SmsService {
     for (const profile of profiles) {
       const tips = NUTRITION_TIPS[profile.trimester];
       const randomTip = tips[Math.floor(Math.random() * tips.length)];
-      const message = NUTRITION_MESSAGES.SNACK_TIP(
-        profile.trimester,
-        randomTip
+      const message = NUTRITION_MESSAGES.SNACK_TIP(profile.trimester, randomTip);
+      
+      const sent = await this.ensureSmsSent(
+        profile.phone, 
+        message, 
+        'nutrition', 
+        new Types.ObjectId(profile._id.toString())
       );
-      const sent = await this.sendSms(profile.phone, message);
       if (sent) {
         profile.lastNutritionTipSent = now;
         await profile.save();
       }
 
-      if (profile.deficiencies && profile.deficiencies.length > 0) {
-        for (const deficiency of profile.deficiencies) {
-          const deficiencyMessage = NUTRITION_MESSAGES.DEFICIENCY_REMINDER(
-            DEFICIENCY_TIPS[deficiency] || deficiency
-          );
-          await this.sendSms(profile.phone, deficiencyMessage);
-        }
+      if (profile.deficiencies?.length > 0) {
+        await this.sendDeficiencyReminders(profile);
       }
     }
   }
 
+  private async sendDeficiencyReminders(profile: NutritionProfileDocument): Promise<void> {
+    for (const deficiency of profile.deficiencies) {
+      const deficiencyMessage = NUTRITION_MESSAGES.DEFICIENCY_REMINDER(
+        DEFICIENCY_TIPS[deficiency] || deficiency
+      );
+      await this.ensureSmsSent(
+        profile.phone, 
+        deficiencyMessage, 
+        'nutrition', 
+        new Types.ObjectId(profile._id.toString())
+      );
+    }
+  }
+
+  /**
+   * Medication Reminder Functions
+   */
+  async createMedicationReminder(dto: MedicationReminderDto): Promise<Medication> {
+    const medication = new this.medicationModel(dto);
+    await medication.save();
+    
+    const confirmationMessage = `Your medication reminder for ${dto.medicationName} (${dto.dosage}) has been set up. You will receive ${dto.frequency} reminders.`;
+    await this.ensureSmsSent(
+      dto.phone, 
+      confirmationMessage, 
+      'medication', 
+      new Types.ObjectId(medication._id.toString())
+    );
+    
+    return medication;
+  }
+
   async sendMedicationReminders(): Promise<void> {
     const now = new Date();
+    
+    await this.processDailyMedicationReminders(now);
+    await this.processWeeklyMedicationReminders(now);
+    await this.processRefillReminders(now);
+  }
+
+  private async processDailyMedicationReminders(now: Date): Promise<void> {
     const dailyMeds = await this.medicationModel.find({
       frequency: 'daily',
       $or: [
@@ -361,13 +306,21 @@ export class SmsService {
         medicationName: med.medicationName,
         dosage: med.dosage
       });
-      const sent = await this.sendSms(med.phone, message);
+      
+      const sent = await this.ensureSmsSent(
+        med.phone, 
+        message, 
+        'medication', 
+        new Types.ObjectId(med._id.toString())
+      );
       if (sent) {
         med.lastReminderSent = now;
         await med.save();
       }
     }
+  }
 
+  private async processWeeklyMedicationReminders(now: Date): Promise<void> {
     const weeklyMeds = await this.medicationModel.find({
       frequency: 'weekly',
       $or: [
@@ -381,13 +334,21 @@ export class SmsService {
         medicationName: med.medicationName,
         dosage: med.dosage
       });
-      const sent = await this.sendSms(med.phone, message);
+      
+      const sent = await this.ensureSmsSent(
+        med.phone, 
+        message, 
+        'medication', 
+        new Types.ObjectId(med._id.toString())
+      );
       if (sent) {
         med.lastReminderSent = now;
         await med.save();
       }
     }
+  }
 
+  private async processRefillReminders(now: Date): Promise<void> {
     const refillDateStart = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
     const refillDateEnd = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
 
@@ -404,12 +365,75 @@ export class SmsService {
         medicationName: med.medicationName,
         refillDate: med.refillDate
       });
-      const sent = await this.sendSms(med.phone, message);
+      
+      const sent = await this.ensureSmsSent(
+        med.phone, 
+        message, 
+        'medication', 
+        new Types.ObjectId(med._id.toString())
+      );
       if (sent) {
         med.lastReminderSent = now;
         await med.save();
       }
     }
+  }
+
+  async processPendingMedicationReminders(): Promise<{ sent: number; failed: number }> {
+    const pendingReminders = await this.pendingReminderModel.find({ 
+      type: 'medication',
+      retryCount: { $lt: 5 }
+    }).sort({ createdAt: 1 });
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    for (const reminder of pendingReminders) {
+      try {
+        const sent = await this.sendSms(reminder.phone, reminder.message);
+        
+        if (sent) {
+          if (reminder.referenceId) {
+            await this.medicationModel.findByIdAndUpdate(reminder.referenceId, {
+              lastReminderSent: new Date()
+            });
+          }
+          await this.pendingReminderModel.findByIdAndDelete(reminder._id);
+          sentCount++;
+        } else {
+          reminder.retryCount += 1;
+          await reminder.save();
+          failedCount++;
+        }
+      } catch (error) {
+        this.logger.error(`Failed to process pending medication reminder: ${error.message}`);
+        reminder.retryCount += 1;
+        reminder.lastError = error.message;
+        await reminder.save();
+        failedCount++;
+      }
+    }
+
+    return { sent: sentCount, failed: failedCount };
+  }
+
+  /**
+   * Pregnancy Tracking Functions
+   */
+  async createPregnancyProfile(dto: PregnancyUpdateDto): Promise<Pregnancy> {
+    const pregnancy = new this.pregnancyModel(dto);
+    this.calculateNextAppointmentSchedule(pregnancy);
+    await pregnancy.save();
+    
+    const welcomeMessage = `Your pregnancy profile has been created. You are currently in week ${pregnancy.currentWeek}. You will receive weekly updates about your pregnancy journey.`;
+    await this.ensureSmsSent(
+      dto.phone, 
+      welcomeMessage, 
+      'pregnancy', 
+      new Types.ObjectId(pregnancy._id.toString())
+    );
+    
+    return pregnancy;
   }
 
   async updatePregnancyWeek(patientId: string): Promise<Pregnancy> {
@@ -419,8 +443,7 @@ export class SmsService {
     }
 
     const now = new Date();
-    const diffInMs = now.getTime() - pregnancy.startDate.getTime();
-    const diffInWeeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
+    const diffInWeeks = Math.floor((now.getTime() - pregnancy.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
     
     if (diffInWeeks !== pregnancy.currentWeek) {
       pregnancy.currentWeek = diffInWeeks;
@@ -431,18 +454,15 @@ export class SmsService {
     return pregnancy;
   }
 
-  private calculateNextAppointmentSchedule(pregnancy: Pregnancy): void {
+  private calculateNextAppointmentSchedule(pregnancy: PregnancyDocument): void {
     const { currentWeek } = pregnancy;
-    let nextAppointmentDate: Date;
-
+    const nextAppointmentDate = new Date(pregnancy.startDate);
+    
     if (currentWeek < PREGNANCY_STAGES.STAGE_1.end) {
-      nextAppointmentDate = new Date(pregnancy.startDate);
       nextAppointmentDate.setDate(nextAppointmentDate.getDate() + (currentWeek + 4) * 7);
     } else if (currentWeek < PREGNANCY_STAGES.STAGE_2.end) {
-      nextAppointmentDate = new Date(pregnancy.startDate);
       nextAppointmentDate.setDate(nextAppointmentDate.getDate() + (currentWeek + 2) * 7);
     } else {
-      nextAppointmentDate = new Date(pregnancy.startDate);
       nextAppointmentDate.setDate(nextAppointmentDate.getDate() + (currentWeek + 1) * 7);
     }
 
@@ -458,28 +478,42 @@ export class SmsService {
         { lastUpdateSent: { $lt: oneWeekAgo } },
         { lastUpdateSent: { $exists: false } },
       ],
+      currentWeek: { $lte: 42 },
     });
 
     for (const pregnancy of pregnancies) {
-      const week = pregnancy.currentWeek;
-      if (week > 42) continue;
-
-      const weeklyUpdate = WEEKLY_UPDATES[week] || `Your baby is growing! You're now at week ${week} of your pregnancy.`;
-      const message = PREGNANCY_UPDATE_MESSAGES.WEEKLY_UPDATE(week, weeklyUpdate);
+      const weeklyUpdate = WEEKLY_UPDATES[pregnancy.currentWeek] || 
+        `Your baby is growing! You're now at week ${pregnancy.currentWeek} of your pregnancy.`;
       
-      const sent = await this.sendSms(pregnancy.phone, message);
+      const message = PREGNANCY_UPDATE_MESSAGES.WEEKLY_UPDATE(pregnancy.currentWeek, weeklyUpdate);
+      
+      const sent = await this.ensureSmsSent(
+        pregnancy.phone, 
+        message, 
+        'pregnancy', 
+        new Types.ObjectId(pregnancy._id.toString())
+      );
       if (sent) {
         pregnancy.lastUpdateSent = now;
         await pregnancy.save();
       }
 
       if (pregnancy.nextAppointmentSchedule) {
-        const scheduleMessage = PREGNANCY_UPDATE_MESSAGES.APPOINTMENT_SCHEDULE(
-          `Next appointment in ${this.getAppointmentFrequency(pregnancy.currentWeek)}`
-        );
-        await this.sendSms(pregnancy.phone, scheduleMessage);
+        await this.sendAppointmentSchedule(pregnancy);
       }
     }
+  }
+
+  private async sendAppointmentSchedule(pregnancy: PregnancyDocument): Promise<void> {
+    const scheduleMessage = PREGNANCY_UPDATE_MESSAGES.APPOINTMENT_SCHEDULE(
+      `Next appointment in ${this.getAppointmentFrequency(pregnancy.currentWeek)}`
+    );
+    await this.ensureSmsSent(
+      pregnancy.phone, 
+      scheduleMessage, 
+      'pregnancy', 
+      new Types.ObjectId(pregnancy._id.toString())
+    );
   }
 
   private getAppointmentFrequency(currentWeek: number): string {
@@ -487,14 +521,208 @@ export class SmsService {
       return '4 weeks (monthly)';
     } else if (currentWeek < PREGNANCY_STAGES.STAGE_2.end) {
       return '2 weeks (twice monthly)';
+    }
+    return '1 week (weekly)';
+  }
+
+  /**
+   * General SMS Functions
+   */
+  async testSms(phone: string): Promise<boolean> {
+    const testMessage = "This is a test message from your healthcare provider's system.";
+    return this.ensureSmsSent(phone, testMessage);
+  }
+
+  async processPendingReminders(): Promise<{ sent: number; failed: number }> {
+    const pendingReminders = await this.pendingReminderModel.find({ 
+      retryCount: { $lt: 5 }
+    }).sort({ createdAt: 1 });
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    for (const reminder of pendingReminders) {
+      try {
+        const sent = await this.sendSms(reminder.phone, reminder.message);
+        
+        if (sent) {
+          await this.updateReferenceRecord(reminder);
+          await this.pendingReminderModel.findByIdAndDelete(reminder._id);
+          sentCount++;
+        } else {
+          await this.incrementRetryCount(reminder);
+          failedCount++;
+        }
+      } catch (error) {
+        await this.handlePendingReminderError(reminder, error);
+        failedCount++;
+      }
+    }
+
+    return { sent: sentCount, failed: failedCount };
+  }
+
+  /**
+   * Helper Methods
+   */
+  private formatPhoneNumber(phone: string): string {
+    let formatted = phone.trim();
+    if (formatted.startsWith('+')) formatted = formatted.substring(1);
+    if (formatted.startsWith('0')) formatted = '233' + formatted.substring(1);
+    return formatted;
+  }
+
+  private async createSmsRecord(phone: string, message: string): Promise<SmsRecordDocument> {
+    return this.smsModel.create({
+      phone,
+      message,
+      // Changed from 'outbound' to 'OUTBOUND' to match your schema's enum values
+      type: 'OUTBOUND',
+      status: 'pending',
+    });
+  }
+
+  private async handleSmsError(
+    error: any,
+    smsRecord: SmsRecordDocument,
+    phone: string,
+    message: string
+  ): Promise<void> {
+    smsRecord.status = 'failed';
+    
+    if (error.response) {
+      smsRecord.failureReason = `Status ${error.response.status}: ${JSON.stringify(error.response.data)}`;
     } else {
-      return '1 week (weekly)';
+      smsRecord.failureReason = error.message;
+    }
+    
+    await smsRecord.save();
+    this.logger.error(`Failed to send SMS to ${phone}: ${error.message}`);
+  }
+
+  private async ensureSmsSent(
+    phone: string,
+    message: string,
+    type?: string,
+    referenceId?: Types.ObjectId
+  ): Promise<boolean> {
+    try {
+      const sent = await this.sendSms(phone, message);
+      if (!sent) {
+        await this.storePendingReminder(phone, message, type, referenceId);
+      }
+      return sent;
+    } catch (error) {
+      await this.storePendingReminder(phone, message, type, referenceId);
+      return false;
     }
   }
 
-  // Method to test SMS sending directly
-  async testSms(phone: string): Promise<boolean> {
-    const testMessage = "This is a test message from your healthcare provider's system.";
-    return this.sendSms(phone, testMessage);
+  private async storePendingReminder(
+    phone: string, 
+    message: string, 
+    type?: string, 
+    referenceId?: Types.ObjectId
+  ): Promise<PendingReminderDocument> {
+    return this.pendingReminderModel.create({
+      phone,
+      message,
+      type,
+      referenceId,
+      createdAt: new Date(),
+      retryCount: 0,
+    });
+  }
+
+  private async processAppointmentReminders(
+    endDate: Date,
+    now: Date,
+    reminderType: string,
+    messageBuilder: (details: any) => string
+  ): Promise<void> {
+    const appointments = await this.appointmentModel.find({
+      date: { $lte: endDate, $gte: now },
+      [`reminders.${reminderType}`]: false,
+    });
+
+    for (const appointment of appointments) {
+      const message = messageBuilder({
+        date: appointment.date,
+        doctor: appointment.doctor,
+        location: appointment.location
+      });
+      
+      const sent = await this.ensureSmsSent(
+        appointment.phone, 
+        message, 
+        'appointment', 
+        new Types.ObjectId(appointment._id.toString())
+      );
+      if (sent) {
+        appointment.reminders[reminderType] = true;
+        await appointment.save();
+      }
+    }
+  }
+
+  private async updateReferenceRecord(reminder: PendingReminderDocument): Promise<void> {
+    if (!reminder.referenceId) return;
+
+    switch (reminder.type) {
+      case 'appointment':
+        await this.updateAppointmentReminderStatus(reminder);
+        break;
+      case 'medication':
+        await this.medicationModel.findByIdAndUpdate(reminder.referenceId, {
+          lastReminderSent: new Date()
+        });
+        break;
+      case 'nutrition':
+        await this.updateNutritionReminderStatus(reminder);
+        break;
+      case 'pregnancy':
+        await this.pregnancyModel.findByIdAndUpdate(reminder.referenceId, {
+          lastUpdateSent: new Date()
+        });
+        break;
+    }
+  }
+
+  private async updateAppointmentReminderStatus(reminder: PendingReminderDocument): Promise<void> {
+    const update: any = {};
+    if (reminder.message.includes('week before')) {
+      update['reminders.weekBefore'] = true;
+    } else if (reminder.message.includes('two days before')) {
+      update['reminders.twoDaysBefore'] = true;
+    } else if (reminder.message.includes('day before')) {
+      update['reminders.dayBefore'] = true;
+    }
+
+    if (Object.keys(update).length > 0) {
+      await this.appointmentModel.findByIdAndUpdate(reminder.referenceId, update);
+    }
+  }
+
+  private async updateNutritionReminderStatus(reminder: PendingReminderDocument): Promise<void> {
+    const update = reminder.message.includes('water intake') 
+      ? { lastWaterReminderSent: new Date() }
+      : { lastNutritionTipSent: new Date() };
+
+    await this.nutritionModel.findByIdAndUpdate(reminder.referenceId, update);
+  }
+
+  private async incrementRetryCount(reminder: PendingReminderDocument): Promise<void> {
+    reminder.retryCount += 1;
+    await reminder.save();
+  }
+
+  private async handlePendingReminderError(
+    reminder: PendingReminderDocument,
+    error: any
+  ): Promise<void> {
+    this.logger.error(`Failed to process pending reminder: ${error.message}`);
+    reminder.retryCount += 1;
+    reminder.lastError = error.message;
+    await reminder.save();
   }
 }
