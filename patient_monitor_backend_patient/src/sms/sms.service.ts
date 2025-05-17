@@ -120,9 +120,9 @@ async scheduleAppointmentReminder(dto: AppointmentReminderDto): Promise<Appointm
     ...dto,
     status: 'pending',
     reminders: {
-      weekBefore: false,
-      twoDaysBefore: false,
-      dayBefore: false,
+      weekBefore: true,
+      twoDaysBefore: true,
+      dayBefore: true,
     },
   });
   await appointment.save();

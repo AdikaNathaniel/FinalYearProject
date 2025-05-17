@@ -40,9 +40,9 @@ export class Appointment {
 
   @Prop({
     type: {
-      weekBefore: { type: Boolean, default: false },
-      twoDaysBefore: { type: Boolean, default: false },
-      dayBefore: { type: Boolean, default: false },
+      weekBefore: { type: Boolean, default: true },
+      twoDaysBefore: { type: Boolean, default: true },
+      dayBefore: { type: Boolean, default: true },
     },
   })
   reminders: {
