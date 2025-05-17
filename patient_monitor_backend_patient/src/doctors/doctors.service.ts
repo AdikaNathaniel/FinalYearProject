@@ -1,4 +1,3 @@
-
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -7,6 +6,7 @@ import {
   AppointmentDocument,
   AppointmentStatus,
 } from 'src/shared/schema/appointments.schema';
+import { MessageService } from './sms-message.service';
 
 @Injectable()
 export class DoctorsService {
@@ -15,6 +15,7 @@ export class DoctorsService {
   constructor(
     @InjectModel(Appointment.name)
     private readonly appointmentModel: Model<AppointmentDocument>,
+    private readonly smsService: MessageService,
   ) {}
 
   async getDoctorAppointments(
@@ -57,6 +58,10 @@ export class DoctorsService {
         .exec();
       
       this.logger.debug(`Found ${appointments.length} appointments`);
+      
+      // Send SMS notification for API call
+      await this.smsService.sendSms(`Doctor ${doctor} appointments fetched: ${appointments.length} found.`);
+      
       return appointments;
     } catch (error) {
       this.logger.error(`Error fetching doctor appointments: ${error.message}`);
@@ -134,7 +139,7 @@ export class DoctorsService {
         ? (confirmedCount / totalAppointments) 
         : 0;
 
-      return {
+      const result = {
         today: {
           count: todayAppointments.length,
           appointments: todayAppointments,
@@ -155,6 +160,11 @@ export class DoctorsService {
           appointments: upcomingAppointments,
         },
       };
+      
+      // Send SMS notification for API call
+      await this.smsService.sendSms(`Doctor ${doctor} stats retrieved. Confirmed: ${confirmedCount}, Pending: ${pendingCount}, Canceled: ${canceledCount}`);
+      
+      return result;
     } catch (error) {
       this.logger.error(`Error fetching doctor appointment stats: ${error.message}`);
       throw error;
@@ -177,12 +187,24 @@ export class DoctorsService {
       throw new NotFoundException('Appointment not found');
     }
 
+    // Store old status for comparison
+    const oldStatus = appointment.status;
+    
+    // Update appointment status
     appointment.status = status;
     if (status === 'confirmed' || status === 'canceled') {
       appointment.confirmedAt = new Date();
     }
 
+    // Save the appointment
     await appointment.save();
+    
+    // Only send status change notification if status actually changed
+    if (oldStatus !== status) {
+      const statusMessage = this.smsService.formatStatusChangeSms(appointment);
+      await this.smsService.sendSms(statusMessage);
+    }
+    
     return appointment;
   }
 
@@ -203,12 +225,23 @@ export class DoctorsService {
       throw new NotFoundException('Appointment not found');
     }
 
+    // Store old status for comparison
+    const oldStatus = appointment.status;
+    
+    // Update appointment status based on confirmation
     appointment.status = confirmation ? 'confirmed' : 'canceled';
     appointment.confirmed = confirmation;
     appointment.confirmedAt = new Date();
 
-
+    // Save the appointment
     await appointment.save();
+    
+    // Send status change notification if status changed
+    if (oldStatus !== appointment.status) {
+      const statusMessage = this.smsService.formatStatusChangeSms(appointment);
+      await this.smsService.sendSms(statusMessage);
+    }
+    
     return appointment;
   }
 }

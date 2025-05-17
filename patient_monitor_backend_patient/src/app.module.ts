@@ -4,8 +4,10 @@ import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DoctorsModule } from './doctors/doctors.module';
+import { SharedModule } from './doctors/shared.module';
+import { TasksModule } from './doctors/task.module';
 import config from 'config';
-
+import { AppointmentsCronService } from './doctors/appointment.cron';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -90,6 +92,8 @@ import { SmsController } from './sms/sms.controller';
     EmailModule,
     NotificationModule, 
     ChatRealTimeModule,
+     SharedModule,
+     TasksModule,
     
     // Schemas
     MongooseModule.forFeature([
@@ -113,6 +117,7 @@ import { SmsController } from './sms/sms.controller';
     SmsService, // Add SMS service
     SmsScheduler, // Add scheduler for daily reminders
     MobileAppSyncService, // Add mobile sync service
+    AppointmentsCronService
   ],
   exports: [
     SmsService,
