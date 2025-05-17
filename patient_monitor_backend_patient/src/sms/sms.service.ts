@@ -74,7 +74,7 @@ export class SmsService {
     const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
     try {
-      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'cWZPeGl3anVMTXFheHRTb3F5QkE';
+      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'QVZXZW9zVUdBREFZWlRIbVNqRUo';
       if (!apiKey) {
         throw new Error('SMS_API_KEY environment variable is not set');
       }
@@ -115,21 +115,30 @@ export class SmsService {
   /**
    * Appointment Reminder Functions
    */
-  async scheduleAppointmentReminder(dto: AppointmentReminderDto): Promise<Appointment> {
-    const appointment = new this.appointmentModel(dto);
-    await appointment.save();
-    
-   const confirmationMessage = `Dear ${dto.patientName}, your appointment for ${dto.purpose} with Dr. ${dto.doctor} has been scheduled on ${new Date(dto.date).toLocaleDateString()} at ${dto.location}. Reply Y to confirm or N to cancel.`.trim();
+async scheduleAppointmentReminder(dto: AppointmentReminderDto): Promise<Appointment> {
+  const appointment = new this.appointmentModel({
+    ...dto,
+    status: 'pending',
+    reminders: {
+      weekBefore: false,
+      twoDaysBefore: false,
+      dayBefore: false,
+    },
+  });
+  await appointment.save();
+  
+  const confirmationMessage = `Dear ${dto.patientName}, your appointment for ${dto.purpose || 'checkup'} with Dr. ${dto.doctor} has been scheduled on ${new Date(dto.date).toLocaleDateString()} at ${dto.location || 'our clinic'}. Reply Y to confirm or N to cancel.`.trim();
 
-    await this.ensureSmsSent(
-      dto.phone, 
-      confirmationMessage, 
-      'appointment', 
-      new Types.ObjectId(appointment._id.toString())
-    );
-    
-    return appointment;
-  }
+  await this.ensureSmsSent(
+    dto.phone, 
+    confirmationMessage, 
+    'appointment', 
+    new Types.ObjectId(appointment._id.toString())
+  );
+  
+  return appointment;
+}
+
 
   async sendAppointmentReminders(): Promise<void> {
     const now = new Date();
@@ -163,7 +172,10 @@ export class SmsService {
     }).sort({ date: 1 });
 
     if (appointment) {
+      appointment.status = confirmation === 'Y' ? 'confirmed' : 'canceled';
       appointment.confirmed = confirmation === 'Y';
+      appointment.confirmedAt = new Date(); // optionally mark when they confirmed
+
       await appointment.save();
 
       const responseMessage = confirmation === 'Y' 
@@ -605,7 +617,8 @@ export class SmsService {
     }
     
     await smsRecord.save();
-    this.logger.error(`Failed to send SMS to ${phone}: ${error.message}`);
+   this.logger.error(`Failed to send SMS to ${phone}: ${error.response?.data?.message || error.message}`);
+
   }
 
   private async ensureSmsSent(

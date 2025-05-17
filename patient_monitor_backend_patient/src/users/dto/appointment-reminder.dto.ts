@@ -8,6 +8,10 @@ export class AppointmentReminderDto {
   @IsString()
   patientName: string;
 
+  @IsNotEmpty()
+  @IsString()
+  doctor: string;
+
    @IsNotEmpty()
   @IsString()
   purpose: string;
@@ -25,9 +29,9 @@ export class AppointmentReminderDto {
   @IsDate()
   date: Date;
 
-  @IsNotEmpty()
-  @IsString()
-  doctor: string;
+  
+  // @IsString()
+  // doctor: string;
 
   @IsNotEmpty()
   @IsString()

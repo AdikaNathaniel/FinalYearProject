@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { DoctorsModule } from './doctors/doctors.module';
 import config from 'config';
 
 import { AppController } from './app.controller';
@@ -36,6 +37,7 @@ import { Pregnancy, PregnancySchema } from 'src/shared/schema/pregnancy.schema';
 import { PendingReminder, PendingReminderSchema } from 'src/shared/schema/pending-reminder.schema';
 import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offline-reminder.schema';
 import { SmsController } from './sms/sms.controller';
+
 
 
 @Module({
@@ -80,6 +82,7 @@ import { SmsController } from './sms/sms.controller';
     StripeModule,
     PrescriptionsModule,
     HealthModule,
+    DoctorsModule,
     TrackingModule,
     SmsModule,
     ReportModule,

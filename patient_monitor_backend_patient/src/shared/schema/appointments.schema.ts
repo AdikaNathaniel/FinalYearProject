@@ -1,31 +1,42 @@
+// src/shared/schema/appointments.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+
+export type AppointmentDocument = Appointment & Document;
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'canceled';
 
 @Schema({ timestamps: true })
 export class Appointment {
   @Prop({ required: true })
+  patientName: string;
+
+  @Prop({ required: true })
   phone: string;
 
   @Prop({ required: true })
-  patientName: string;
+  doctor: string;
+  
+  // @Prop({ type: String, required: true })
+  // doctorName: string;
 
   @Prop({ required: true })
   date: Date;
 
-  @Prop({ required: true })
-  doctor: string;
-
-  @Prop({ required: true })
-  location: string;
-
-  @Prop({ required: true })
+  @Prop()
   purpose: string;
 
   @Prop()
-  specialInstructions?: string;
+  location: string;
 
-  @Prop({ default: false })
-  confirmed: boolean;
+  @Prop({ type: String, enum: ['pending', 'confirmed', 'canceled'], default: 'pending' })
+  status: AppointmentStatus;
+
+  @Prop({ type: Boolean })
+  confirmed?: boolean;
+
+  @Prop({ type: Date })
+  confirmedAt?: Date;
 
   @Prop({
     type: {
@@ -33,7 +44,6 @@ export class Appointment {
       twoDaysBefore: { type: Boolean, default: false },
       dayBefore: { type: Boolean, default: false },
     },
-    default: {},
   })
   reminders: {
     weekBefore: boolean;
@@ -42,5 +52,4 @@ export class Appointment {
   };
 }
 
-export type AppointmentDocument = Appointment & Document;
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);
