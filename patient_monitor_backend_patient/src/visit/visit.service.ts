@@ -82,6 +82,31 @@ export class VisitService {
     return this.visitModel.find({ patientName }).sort({ visitDate: 1 }).exec();
   }
 
+
+
+
+
+
+  async getVisitsByDate(date: string): Promise<Visit[]> {
+  this.logger.log(`Getting visits for date: ${date}`);
+  
+  // Create start and end date for the provided date to cover the entire day
+  const startDate = new Date(date);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(date);
+  endDate.setHours(23, 59, 59, 999);
+  
+  // Find all visits within the specified date range
+  return this.visitModel.find({
+    visitDate: { 
+      $gte: startDate, 
+      $lte: endDate 
+    }
+  }).sort({ visitDate: 1 }).exec();
+}
+
+
   // Run every day at 9:00 AM
   @Cron('0 0 9 * * *', {
     name: 'dailyVisitReminders',
