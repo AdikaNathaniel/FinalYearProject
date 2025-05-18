@@ -25,6 +25,9 @@ import { EmailModule } from 'src/email/email.module';
 import { NotificationModule } from 'src/notification/notification.module';
 import { ReportModule } from './report/report.module';
 import { ChatRealTimeModule } from './chat-real-time/chat-real-time.module';
+import { EmergencyModule } from './emergency/emergency.module';
+import { HttpModules } from 'src/shared/http/http.module';
+// import { HttpModule } from '@nestjs/axios';
 
 // SMS Related imports
 import { SmsService } from './sms/sms.service';
@@ -86,6 +89,8 @@ import { SmsController } from './sms/sms.controller';
     HealthModule,
     DoctorsModule,
     TrackingModule,
+    EmergencyModule,
+    HttpModules,
     SmsModule,
     ReportModule,
     ChatbotModule,
