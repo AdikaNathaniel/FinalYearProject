@@ -6,6 +6,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { DoctorsModule } from './doctors/doctors.module';
 import { SharedModule } from './doctors/shared.module';
 import { TasksModule } from './doctors/task.module';
+import { PatientModule } from './patient/patient.module';
+import { VisitModule } from './visit/visit.module';
 import config from 'config';
 import { AppointmentsCronService } from './doctors/appointment.cron';
 import { AppController } from './app.controller';
@@ -80,6 +82,8 @@ import { SmsController } from './sms/sms.controller';
     ScheduleModule.forRoot(),
     
     // Feature Modules
+    PatientModule,
+    VisitModule,
     UsersModule,
     OrderModule,
     PaymentsModule,

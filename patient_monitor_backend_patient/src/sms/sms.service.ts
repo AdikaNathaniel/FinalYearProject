@@ -69,7 +69,7 @@ export class SmsService {
   /**
    * Core SMS sending functionality using Arkesel API
    */
-  async sendSms(phone: string, message: string): Promise<boolean> {
+async sendSms(phone: string, message: string): Promise<boolean> {
     const formattedPhone = this.formatPhoneNumber(phone);
     const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
