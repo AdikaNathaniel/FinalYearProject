@@ -31,6 +31,9 @@ export class VisitService {
       requiredVisits = 4; // 1 visit per week
     }
 
+    // YYYY-MM-DDTHH:MM:SSZ
+
+
     if (dates.length !== requiredVisits) {
       throw new BadRequestException(
         `For ${weeks} weeks pregnant, exactly ${requiredVisits} visit(s) must be scheduled`,
