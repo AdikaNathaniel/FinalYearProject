@@ -241,31 +241,64 @@ export class UsersService {
     return `This action removes a #${id} user`;
   }
 
-  private async generateAndSendOtp(email: string) {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiryTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+ 
+// private async generateAndSendOtp(email: string) {
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//   const otpExpiryTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await this.userDB.updateOne(
-      { email },
-      {
-        otp,
-        otpExpiryTime,
-      },
-    );
+//   await this.userDB.updateOne(
+//     { email },
+//     {
+//       otp,
+//       otpExpiryTime,
+//     },
+//   );
 
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post('http://localhost:3001/notifications/send-otp', {
-          email,
-          otp,
-        }),
-      );
-      return otp;
-    } catch (error) {
-      throw new HttpException(
-        'Failed to send OTP',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+//   try {
+//     // Use the EmailService instead of HTTP request
+//     await this.emailService.sendOTPEmail(email, otp);
+//     return otp;
+//   } catch (error) {
+//     throw new HttpException(
+//       'Failed to send OTP',
+//       HttpStatus.INTERNAL_SERVER_ERROR,
+//     );
+//   }
+// }
+
+
+
+private async generateAndSendOtp(email: string) {
+  console.log(`Generating OTP for ${email}`);
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log(`Generated OTP: ${otp}`);
+  const otpExpiryTime = new Date(Date.now() + 10 * 60 * 1000);
+
+  await this.userDB.updateOne(
+    { email },
+    {
+      otp,
+      otpExpiryTime,
+    },
+  );
+
+  try {
+    console.log(`Attempting to send OTP email to ${email}`);
+    const emailResult = await this.emailService.sendOTPEmail(email, otp);
+    console.log(`Email service result:`, emailResult);
+    
+    if (!emailResult.success) {
+      throw new Error(emailResult.message);
     }
+    
+    return otp;
+  } catch (error) {
+    console.error(`Failed to send OTP email: ${error.message}`);
+    throw new HttpException(
+      `Failed to send OTP: ${error.message}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
+}
+
 }
