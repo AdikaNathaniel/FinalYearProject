@@ -14,6 +14,7 @@ import 'pregnancy-chatbot.dart';
 import 'real-time-chat.dart';
 import 'doctor-chat.dart';
 import 'pregnant-woman-chat.dart';
+import 'auth_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +36,9 @@ class MyApp extends StatelessWidget {
       // home: CreateCancelAppointmentPage(),
       //  home: ViewAppointmentsPage(),
       // home: UserListPage(),
-       home: LoginPage(),
+      home: LoginPage(),
+
+      //  home: const AuthScreen(),  This contains the fingerprint SetUp
       //  home: PregnantWomanChatPage(),
       // home:  PregnancyCalculatorScreen(),
       // home: UrineStripColorSelector(),
