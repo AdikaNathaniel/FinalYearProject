@@ -89,4 +89,47 @@ export class AntenatalVisitSmsService {
       return false;
     }
   }
+
+
+
+  async sendSms(phone: string, message: string): Promise<boolean> {
+  const formattedPhone = this.formatPhoneNumber(phone);
+  const smsRecord = await this.createSmsRecord(formattedPhone, message);
+
+  try {
+    const apiKey = 'a2NRTWZ3ZHpNREVtZ3ZtQ0NQWlk';
+    if (!apiKey) {
+      throw new Error('ARKESEL_API_KEY environment variable is not set');
+    }
+
+    this.logger.log(`Sending SMS to ${formattedPhone}`);
+
+    const response = await firstValueFrom(
+      this.httpService.post(
+        this.smsApiUrl,
+        {
+          sender: this.senderId,
+          message,
+          recipients: [formattedPhone],
+        },
+        {
+          headers: { 'api-key': apiKey },
+          timeout: 10000,
+        },
+      ),
+    );
+
+    if (response.data.status === 'success') {
+      smsRecord.status = 'sent';
+      smsRecord.sentAt = new Date();
+      await smsRecord.save();
+      return true;
+    } else {
+      throw new Error(`SMS API returned non-success status: ${JSON.stringify(response.data)}`);
+    }
+  } catch (error) {
+    await this.handleSmsError(error, smsRecord, formattedPhone, message);
+    return false;
+  }
+}
 }

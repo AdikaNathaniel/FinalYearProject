@@ -29,6 +29,7 @@ import { ReportModule } from './report/report.module';
 import { ChatRealTimeModule } from './chat-real-time/chat-real-time.module';
 import { EmergencyModule } from './emergency/emergency.module';
 import { HttpModules } from 'src/shared/http/http.module';
+import { PinModule } from './pin/pin.module';
 // import { HttpModule } from '@nestjs/axios';
 
 // SMS Related imports
@@ -103,6 +104,7 @@ import { SmsController } from './sms/sms.controller';
     ChatRealTimeModule,
      SharedModule,
      TasksModule,
+     PinModule,
     
     // Schemas
     MongooseModule.forFeature([
