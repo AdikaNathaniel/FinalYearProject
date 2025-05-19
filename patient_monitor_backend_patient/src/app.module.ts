@@ -8,6 +8,7 @@ import { SharedModule } from './doctors/shared.module';
 import { TasksModule } from './doctors/task.module';
 import { PatientModule } from './patient/patient.module';
 import { VisitModule } from './visit/visit.module';
+import { TerminusModule } from '@nestjs/terminus';
 import config from 'config';
 import { AppointmentsCronService } from './doctors/appointment.cron';
 import { AppController } from './app.controller';
@@ -30,6 +31,9 @@ import { ChatRealTimeModule } from './chat-real-time/chat-real-time.module';
 import { EmergencyModule } from './emergency/emergency.module';
 import { HttpModules } from 'src/shared/http/http.module';
 import { PinModule } from './pin/pin.module';
+
+import { FaceAuthModule } from './face-auth/face-auth.module';
+import { AuthModule } from './auth/auth.module';
 // import { HttpModule } from '@nestjs/axios';
 
 // SMS Related imports
@@ -87,7 +91,10 @@ import { SmsController } from './sms/sms.controller';
     VisitModule,
     UsersModule,
     OrderModule,
+    TerminusModule,
     PaymentsModule,
+    FaceAuthModule,
+    AuthModule,
     AppointmentsModule,
     StripeModule,
     PrescriptionsModule,

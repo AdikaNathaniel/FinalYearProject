@@ -2,34 +2,72 @@
 <html>
 <head>
   <base href="$FLUTTER_BASE_HREF">
-
+  
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
   <meta name="description" content="A new Flutter project.">
-
+  
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="pregnancy-monitor">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
+  
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-
+  
   <title>pregnancy-monitor</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Face API Library -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
+  <!-- Flutter Bootstrap Script -->
   <script src="flutter_bootstrap.js" async></script>
-
+  
   <!-- Google Maps API Integration -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPN4hKbBvu7FMXs6q9bxQdRqMbnairj9g&callback=initMap&libraries=places" async defer></script>
-
+  
   <script>
+    // Google Maps Initialization
     function initMap() {
       console.log("Google Maps API loaded successfully.");
       // Initialize map logic here (optional)
     }
+    
+    // Face API.js Initialization
+    async function loadModels() {
+      await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+      await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+      await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+      await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+      console.log("Face API models loaded successfully.");
+      return true;
+    }
+    
+    // Detect faces in an image or video element
+    async function detectSingleFace(input) {
+      return await faceapi.detectSingleFace(input, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+    }
+    
+    // Get face descriptor from detection
+    async function getFaceDescriptor(detection) {
+      return detection.descriptor;
+    }
+    
+    // Make functions available to Dart
+    window.faceapi = {
+      loadModels,
+      detectSingleFace,
+      getFaceDescriptor,
+    };
   </script>
+  
+  <!-- Flutter target div -->
+  <div id="flutter_target"></div>
 </body>
 </html>

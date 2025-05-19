@@ -15,11 +15,18 @@ import 'real-time-chat.dart';
 import 'doctor-chat.dart';
 import 'pregnant-woman-chat.dart';
 import 'auth_screen.dart';
+// Import face_auth_flutter package
+import 'app/app.dart';
 
 void main() {
-  runApp(const MyApp());
+  // Comment out the original app
+  // runApp(const MyApp());
+  
+  // Use the FaceAuthApp for testing
+  runApp(const FaceAuthApp());
 }
 
+// Keep your original app code (commented out for now but preserved for later use)
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -37,8 +44,7 @@ class MyApp extends StatelessWidget {
       //  home: ViewAppointmentsPage(),
       // home: UserListPage(),
       home: LoginPage(),
-
-      //  home: const AuthScreen(),  This contains the fingerprint SetUp
+      //  home: const AuthScreen(),  // This contains the fingerprint SetUp
       //  home: PregnantWomanChatPage(),
       // home:  PregnancyCalculatorScreen(),
       // home: UrineStripColorSelector(),
@@ -93,8 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-
-
- //  home: const LoginPage(),
+// Commented out options from original code:
+//  home: const LoginPage(),
 //  home : PregnancyComplicationsPage(),
-  // home: const LoginPage(),
+// home: const LoginPage(),

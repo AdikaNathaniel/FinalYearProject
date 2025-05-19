@@ -1,3 +1,4 @@
+
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, ValidationPipe } from '@nestjs/common';
@@ -22,7 +23,7 @@ const CONFIG = {
     timeout: 10000,
   },
   server: {
-    port: parseInt(process.env.PORT, 10) || 3100,
+    port: parseInt(process.env.PORT, 10) || 3000, // Changed to 3000 to match your main.ts
     notificationPort: 3001,
     apiPrefix: process.env.API_PREFIX || 'api/v1',
   },
@@ -95,7 +96,9 @@ class ApplicationManager {
   }
 
   private configureMainApplication() {
+    // Apply CORS settings from simple main.ts (enabled without options)
     this.mainApp.enableCors(CONFIG.cors);
+    
     this.mainApp.use(express.json({ limit: '50mb' }));
     this.mainApp.use(express.urlencoded({ extended: true, limit: '50mb' }));
     this.mainApp.use(cookieParser());
@@ -103,6 +106,8 @@ class ApplicationManager {
 
     this.mainApp.setGlobalPrefix(CONFIG.server.apiPrefix);
     this.mainApp.useGlobalInterceptors(new TransformationInterceptor());
+    
+    // Added ValidationPipe from your simple main.ts
     this.mainApp.useGlobalPipes(new ValidationPipe({ transform: true }));
 
     this.logApplicationRoutes();
@@ -156,28 +161,28 @@ class ApplicationManager {
     });
   }
 
-  // private async handleRabbitMQReconnection() {
-  //   while (this.reconnectAttempts < CONFIG.rabbitmq.maxAttempts && !this.isShuttingDown) {
-  //     this.reconnectAttempts++;
-  //     logger.warn(`Attempting to reconnect to RabbitMQ (Attempt ${this.reconnectAttempts}/${CONFIG.rabbitmq.maxAttempts})`);
+// private async handleRabbitMQReconnection() {
+//     while (this.reconnectAttempts < CONFIG.rabbitmq.maxAttempts && !this.isShuttingDown) {
+//       this.reconnectAttempts++;
+//       logger.warn(`Attempting to reconnect to RabbitMQ (Attempt ${this.reconnectAttempts}/${CONFIG.rabbitmq.maxAttempts})`);
 
-  //     try {
-  //       await new Promise(resolve => setTimeout(resolve, CONFIG.rabbitmq.reconnectDelay));
-  //       this.emailMicroservice = await this.createEmailMicroservice();
-  //       await this.emailMicroservice.listen();
-  //       logger.log('Successfully reconnected to RabbitMQ');
-  //       this.reconnectAttempts = 0;
-  //       this.startProcessingFallbackQueue();
-  //       return;
-  //     } catch (error) {
-  //       logger.error(`Reconnection attempt ${this.reconnectAttempts} failed: ${error.message}`);
-  //     }
-  //   }
+//       try {
+//         await new Promise(resolve => setTimeout(resolve, CONFIG.rabbitmq.reconnectDelay));
+//         this.emailMicroservice = await this.createEmailMicroservice();
+//         await this.emailMicroservice.listen();
+//         logger.log('Successfully reconnected to RabbitMQ');
+//         this.reconnectAttempts = 0;
+//         this.startProcessingFallbackQueue();
+//         return;
+//       } catch (error) {
+//         logger.error(`Reconnection attempt ${this.reconnectAttempts} failed: ${error.message}`);
+//       }
+//     }
 
-  //   if (!this.isShuttingDown) {
-  //     logger.error(`Max reconnection attempts (${CONFIG.rabbitmq.maxAttempts}) reached. Continuing without RabbitMQ.`);
-  //   }
-  // }
+//     if (!this.isShuttingDown) {
+//       logger.error(`Max reconnection attempts (${CONFIG.rabbitmq.maxAttempts}) reached. Continuing without RabbitMQ.`);
+//     }
+//   }
 
   private async setupEmailFallbackMechanism() {
     try {
@@ -347,10 +352,15 @@ export const handler = async (req: any, res: any) => {
   return appManager.mainApp.getHttpAdapter().getInstance()(req, res);
 };
 
+// Bootstrap function from your simple main.ts, modified to use the ApplicationManager
+async function bootstrap() {
+  const appManager = new ApplicationManager();
+  await appManager.initialize();
+}
+
 // Start application in non-production environment
 if (process.env.NODE_ENV !== 'production') {
-  const appManager = new ApplicationManager();
-  appManager.initialize().catch(err => {
+  bootstrap().catch(err => {
     logger.error('Fatal error during initialization', err.stack);
     process.exit(1);
   });
