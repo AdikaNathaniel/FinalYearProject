@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,8 +21,8 @@
   <title>pregnancy-monitor</title>
   <link rel="manifest" href="manifest.json">
   
-  <!-- Face API Library -->
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <!-- Face API Library - Make sure it loads completely before using it -->
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
   <!-- Flutter Bootstrap Script -->
@@ -37,34 +38,85 @@
       // Initialize map logic here (optional)
     }
     
-    // Face API.js Initialization
-    async function loadModels() {
-      await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-      await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-      await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
-      await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-      console.log("Face API models loaded successfully.");
-      return true;
-    }
+    // Wait for document and face-api to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if face-api is loaded every 100ms
+      const checkFaceApi = setInterval(() => {
+        if (window.faceapi) {
+          clearInterval(checkFaceApi);
+          console.log("Face API detected, setting up methods");
+          setupFaceApiMethods();
+        }
+      }, 100);
+    });
     
-    // Detect faces in an image or video element
-    async function detectSingleFace(input) {
-      return await faceapi.detectSingleFace(input, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptor();
+    // Setup face-api methods after it's properly loaded
+    function setupFaceApiMethods() {
+      // Face API.js Initialization
+      async function loadModels() {
+        try {
+          await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+          await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+          await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+          await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+          console.log("Face API models loaded successfully.");
+          return true;
+        } catch (error) {
+          console.error("Error loading Face API models:", error);
+          return false;
+        }
+      }
+      
+      // Detect faces in an image or video element
+      async function detectSingleFace(input) {
+        try {
+          // Make sure TinyFaceDetectorOptions exists before using it
+          if (!faceapi.TinyFaceDetectorOptions) {
+            console.error("TinyFaceDetectorOptions not available");
+            return null;
+          }
+          
+          const options = new faceapi.TinyFaceDetectorOptions();
+          return await faceapi.detectSingleFace(input, options)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+        } catch (error) {
+          console.error("Error in face detection:", error);
+          return null;
+        }
+      }
+      
+      // Get face descriptor from detection
+      async function getFaceDescriptor(detection) {
+        try {
+          return detection.descriptor;
+        } catch (error) {
+          console.error("Error getting face descriptor:", error);
+          return null;
+        }
+      }
+      
+      // Register video element view factory for Flutter
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.registerViewFactory('video', (viewId) => {
+          const video = document.createElement('video');
+          video.id = 'video-' + viewId;
+          video.autoplay = true;
+          video.playsInline = true;
+          return video;
+        });
+      }
+      
+      // Make functions available to Dart
+      window.faceapi = {
+        ...window.faceapi, // Keep existing properties
+        loadModels,
+        detectSingleFace,
+        getFaceDescriptor,
+      };
+      
+      console.log("Face API methods setup complete");
     }
-    
-    // Get face descriptor from detection
-    async function getFaceDescriptor(detection) {
-      return detection.descriptor;
-    }
-    
-    // Make functions available to Dart
-    window.faceapi = {
-      loadModels,
-      detectSingleFace,
-      getFaceDescriptor,
-    };
   </script>
   
   <!-- Flutter target div -->
