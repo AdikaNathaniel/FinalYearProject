@@ -33,6 +33,7 @@ import { EmergencyModule } from './emergency/emergency.module';
 import { HttpModules } from 'src/shared/http/http.module';
 import { PinModule } from './pin/pin.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { MedicsModule } from './medic/medics.module';
 
 import { FaceAuthModule } from './face-auth/face-auth.module';
 import { AuthModule } from './auth/auth.module';
@@ -97,6 +98,7 @@ import { SmsController } from './sms/sms.controller';
     TerminusModule,
     FaceRecognitionModule,
     PaymentsModule,
+    MedicsModule,
     FaceAuthModule,
     AuthModule,
     AppointmentsModule,

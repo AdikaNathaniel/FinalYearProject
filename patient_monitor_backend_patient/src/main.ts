@@ -8,6 +8,7 @@ import { TransformationInterceptor } from './responseInterceptor';
 import cookieParser from 'cookie-parser';
 import { raw } from 'express';
 import express from 'express';
+import { join } from 'path';
 import { HealthCheckService, MicroserviceHealthIndicator } from '@nestjs/terminus';
 
 // Fix for crypto is not defined error
@@ -30,7 +31,7 @@ const CONFIG = {
     timeout: 10000,
   },
   server: {
-    port: parseInt(process.env.PORT, 10) || 3000, // Changed to 3000 to match your main.ts
+    port: parseInt(process.env.PORT, 10) || 3000,
     notificationPort: 3001,
     apiPrefix: process.env.API_PREFIX || 'api/v1',
   },
@@ -47,6 +48,10 @@ const CONFIG = {
     retryInterval: 60000, // 1 minute
     maxRetries: 5,
   },
+  static: {
+    profilePhotosPath: join(__dirname, '..', 'uploads', 'profile-photos'),
+    profilePhotosRoute: '/profile-photos',
+  }
 };
 
 class ApplicationManager {
@@ -103,18 +108,24 @@ class ApplicationManager {
   }
 
   private configureMainApplication() {
-    // Apply CORS settings from simple main.ts (enabled without options)
+    // Apply CORS settings
     this.mainApp.enableCors(CONFIG.cors);
     
+    // Configure middleware
     this.mainApp.use(express.json({ limit: '50mb' }));
     this.mainApp.use(express.urlencoded({ extended: true, limit: '50mb' }));
     this.mainApp.use(cookieParser());
     this.mainApp.use('/api/v1/orders/webhook', raw({ type: '*/*' }));
+    
+    // Set up static file serving for profile photos
+    this.mainApp.use(CONFIG.static.profilePhotosRoute, express.static(CONFIG.static.profilePhotosPath));
+    logger.log(`Static files configured: ${CONFIG.static.profilePhotosRoute} -> ${CONFIG.static.profilePhotosPath}`);
 
+    // Set global prefix and interceptors
     this.mainApp.setGlobalPrefix(CONFIG.server.apiPrefix);
     this.mainApp.useGlobalInterceptors(new TransformationInterceptor());
     
-    // Added ValidationPipe from your simple main.ts
+    // Add validation pipe
     this.mainApp.useGlobalPipes(new ValidationPipe({ transform: true }));
 
     this.logApplicationRoutes();
@@ -322,6 +333,7 @@ class ApplicationManager {
     logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
     logger.log(`Notification Service: http://localhost:${CONFIG.server.notificationPort}`);
+    logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
     logger.log('=================================');
   }
 
@@ -359,7 +371,7 @@ export const handler = async (req: any, res: any) => {
   return appManager.mainApp.getHttpAdapter().getInstance()(req, res);
 };
 
-// Bootstrap function from your simple main.ts, modified to use the ApplicationManager
+// Bootstrap function
 async function bootstrap() {
   const appManager = new ApplicationManager();
   await appManager.initialize();

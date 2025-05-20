@@ -37,15 +37,17 @@ export class TransformationInterceptor<T>
             ? data.message
             : 'Request successful';
 
-        const success =
-          typeof data === 'object' && 'success' in data
-            ? data.success
-            : true;
+      const success =
+  data != null && typeof data === 'object' && 'success' in data
+    ? data.success
+    : true;
 
-        const result =
-          typeof data === 'object' && 'result' in data
-            ? data.result
-            : data ?? null;
+
+        const result = 
+  data != null && typeof data === 'object' && 'result' in data
+    ? data.result
+    : data;
+
 
         return {
           message,
