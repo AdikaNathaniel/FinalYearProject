@@ -17,13 +17,17 @@ import 'pregnant-woman-chat.dart';
 import 'auth_screen.dart';
 // Import face_auth_flutter package
 import 'app/app.dart';
+import 'application.dart';
+import 'video_chat_screen.dart';
 
 void main() {
   // Comment out the original app
   // runApp(const MyApp());
   
   // Use the FaceAuthApp for testing
-  runApp(const FaceAuthApp());
+  // runApp(const FaceAuthApp());
+
+  // runApp(const MyApp());
 }
 
 // Keep your original app code (commented out for now but preserved for later use)
@@ -43,7 +47,9 @@ class MyApp extends StatelessWidget {
       // home: CreateCancelAppointmentPage(),
       //  home: ViewAppointmentsPage(),
       // home: UserListPage(),
-      home: LoginPage(),
+      // home: LoginPage(),
+      // home: MyApp(),
+          home: VideoChatScreen(roomName: 'default-room'),
       //  home: const AuthScreen(),  // This contains the fingerprint SetUp
       //  home: PregnantWomanChatPage(),
       // home:  PregnancyCalculatorScreen(),

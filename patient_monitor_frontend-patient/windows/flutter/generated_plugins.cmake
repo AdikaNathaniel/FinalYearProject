@@ -3,7 +3,9 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  file_selector_windows
   firebase_core
+  flutter_webrtc
   local_auth_windows
   url_launcher_windows
 )

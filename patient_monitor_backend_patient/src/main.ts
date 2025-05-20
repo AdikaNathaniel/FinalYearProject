@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 import { NotificationModule } from './notification/notification.module';
 import { EmailModule } from './email/email.module';
@@ -37,7 +39,7 @@ const CONFIG = {
   },
   cors: {
     allowedOrigins: process.env.NODE_ENV === 'production'
-      ? [process.env.FRONTEND_URL || '*']
+      ? [process.env.FRONTEND_URL || 'http://localhost:3000']
       : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -105,11 +107,22 @@ class ApplicationManager {
     this.configureMainApplication();
     await this.mainApp.listen(CONFIG.server.port);
     logger.log(`Main application running on port ${CONFIG.server.port}`);
+    logger.log(`Application is running on: ${await this.mainApp.getUrl()}`);
   }
 
   private configureMainApplication() {
-    // Apply CORS settings
-    this.mainApp.enableCors(CONFIG.cors);
+    const configService = this.mainApp.get(ConfigService);
+    
+    // Apply CORS settings using the ConfigService for frontend URL
+    this.mainApp.enableCors({
+      origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
+      credentials: CONFIG.cors.credentials,
+      methods: CONFIG.cors.methods,
+      allowedHeaders: CONFIG.cors.allowedHeaders,
+    });
+    
+    // Configure WebSocket adapter
+    this.mainApp.useWebSocketAdapter(new IoAdapter(this.mainApp));
     
     // Configure middleware
     this.mainApp.use(express.json({ limit: '50mb' }));
@@ -149,58 +162,6 @@ class ApplicationManager {
     await this.notificationApp.listen(CONFIG.server.notificationPort);
     logger.log(`Notification service running on port ${CONFIG.server.notificationPort}`);
   }
-
-  // private async initializeEmailMicroservice() {
-  //   try {
-  //     this.emailMicroservice = await this.createEmailMicroservice();
-  //     await this.emailMicroservice.listen();
-  //     logger.log('Email microservice successfully connected to RabbitMQ');
-  //     this.startProcessingFallbackQueue();
-  //   } catch (error) {
-  //     logger.error('Initial RabbitMQ connection failed', error.stack);
-  //     await this.handleRabbitMQReconnection();
-  //   }
-  // }
-
-  private async createEmailMicroservice() {
-    return await NestFactory.createMicroservice<MicroserviceOptions>(EmailModule, {
-      transport: Transport.RMQ,
-      options: {
-        urls: [CONFIG.rabbitmq.url],
-        queue: CONFIG.rabbitmq.queue,
-        queueOptions: {
-          durable: true,
-        },
-        socketOptions: {
-          heartbeatIntervalInSeconds: 60,
-          reconnectTimeInSeconds: 5,
-        },
-      },
-    });
-  }
-
-// private async handleRabbitMQReconnection() {
-//     while (this.reconnectAttempts < CONFIG.rabbitmq.maxAttempts && !this.isShuttingDown) {
-//       this.reconnectAttempts++;
-//       logger.warn(`Attempting to reconnect to RabbitMQ (Attempt ${this.reconnectAttempts}/${CONFIG.rabbitmq.maxAttempts})`);
-
-//       try {
-//         await new Promise(resolve => setTimeout(resolve, CONFIG.rabbitmq.reconnectDelay));
-//         this.emailMicroservice = await this.createEmailMicroservice();
-//         await this.emailMicroservice.listen();
-//         logger.log('Successfully reconnected to RabbitMQ');
-//         this.reconnectAttempts = 0;
-//         this.startProcessingFallbackQueue();
-//         return;
-//       } catch (error) {
-//         logger.error(`Reconnection attempt ${this.reconnectAttempts} failed: ${error.message}`);
-//       }
-//     }
-
-//     if (!this.isShuttingDown) {
-//       logger.error(`Max reconnection attempts (${CONFIG.rabbitmq.maxAttempts}) reached. Continuing without RabbitMQ.`);
-//     }
-//   }
 
   private async setupEmailFallbackMechanism() {
     try {
@@ -286,46 +247,6 @@ class ApplicationManager {
       logger.error(`Failed to process ${failedItems.length} emails after max retries`);
     }
   }
-
-  private startProcessingFallbackQueue() {
-    if (this.inMemoryEmailQueue.length > 0) {
-      logger.log(`RabbitMQ reconnected, processing ${this.inMemoryEmailQueue.length} queued emails`);
-      this.processFallbackQueue().catch(error => {
-        logger.error('Error processing fallback queue after reconnection:', error);
-      });
-    }
-  }
-
-  // private async setupHealthChecks() {
-  //   if (!this.mainApp) return;
-
-  //   try {
-  //     const healthCheckService = this.mainApp.get(HealthCheckService);
-  //     const microserviceHealth = this.mainApp.get(MicroserviceHealthIndicator);
-
-  //     this.mainApp.get('/health', async (req, res) => {
-  //       try {
-  //         const result = await healthCheckService.check([
-  //           async () => microserviceHealth.pingCheck('rabbitmq', {
-  //             transport: Transport.RMQ,
-  //             options: { urls: [CONFIG.rabbitmq.url] },
-  //             timeout: CONFIG.rabbitmq.timeout,
-  //           }),
-  //         ]);
-  //         res.status(200).json(result);
-  //       } catch (error) {
-  //         res.status(503).json({
-  //           status: 'error',
-  //           details: {
-  //             rabbitmq: { status: 'down', error: error.message },
-  //           },
-  //         });
-  //       }
-  //     });
-  //   } catch (error) {
-  //     logger.warn('Failed to setup health checks:', error.message);
-  //   }
-  // }
 
   private logStartupComplete() {
     logger.log('=================================');
