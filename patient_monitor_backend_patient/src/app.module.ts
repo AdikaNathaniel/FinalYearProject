@@ -18,7 +18,7 @@ import { OrderModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { StripeModule } from './payments/stripe.module';
 import { TrackingModule } from 'src/tracking/tracking.module';
-import { FacialRecognitionModule  } from 'src/facial-recognition/facial-recognition.module';
+import { FaceRecognitionModule  } from 'src/facial-recognition/facial-recognition.module';
 import { AppointmentsModule } from 'src/appointments/appointment.module';
 import { HealthModule } from 'src/health/health.module';
 import { PrescriptionsModule } from 'src/prescriptions/prescription.module';
@@ -32,6 +32,7 @@ import { ChatRealTimeModule } from './chat-real-time/chat-real-time.module';
 import { EmergencyModule } from './emergency/emergency.module';
 import { HttpModules } from 'src/shared/http/http.module';
 import { PinModule } from './pin/pin.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 import { FaceAuthModule } from './face-auth/face-auth.module';
 import { AuthModule } from './auth/auth.module';
@@ -88,12 +89,13 @@ import { SmsController } from './sms/sms.controller';
     ScheduleModule.forRoot(),
     
     // Feature Modules
+    MulterModule.register({ dest: './uploads' }),
     PatientModule,
     VisitModule,
     UsersModule,
     OrderModule,
     TerminusModule,
-    FacialRecognitionModule,
+    FaceRecognitionModule,
     PaymentsModule,
     FaceAuthModule,
     AuthModule,

@@ -1,4 +1,3 @@
-
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, ValidationPipe } from '@nestjs/common';
@@ -10,6 +9,14 @@ import cookieParser from 'cookie-parser';
 import { raw } from 'express';
 import express from 'express';
 import { HealthCheckService, MicroserviceHealthIndicator } from '@nestjs/terminus';
+
+// Fix for crypto is not defined error
+import * as crypto from 'crypto';
+// @ts-ignore
+global.crypto = crypto;
+
+// Add TensorFlow.js Node.js bindings
+// import '@tensorflow/tfjs-node';
 
 const logger = new Logger('Bootstrap');
 
