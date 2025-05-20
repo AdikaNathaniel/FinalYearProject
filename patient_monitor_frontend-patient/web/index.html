@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,7 +20,7 @@
   <title>pregnancy-monitor</title>
   <link rel="manifest" href="manifest.json">
   
-  <!-- Face API Library - Make sure it loads completely before using it -->
+  <!-- Face API Library -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
@@ -32,15 +31,11 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPN4hKbBvu7FMXs6q9bxQdRqMbnairj9g&callback=initMap&libraries=places" async defer></script>
   
   <script>
-    // Google Maps Initialization
     function initMap() {
       console.log("Google Maps API loaded successfully.");
-      // Initialize map logic here (optional)
     }
-    
-    // Wait for document and face-api to be fully loaded
+
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if face-api is loaded every 100ms
       const checkFaceApi = setInterval(() => {
         if (window.faceapi) {
           clearInterval(checkFaceApi);
@@ -49,54 +44,43 @@
         }
       }, 100);
     });
-    
-    // Setup face-api methods after it's properly loaded
+
     function setupFaceApiMethods() {
-      // Face API.js Initialization
       async function loadModels() {
         try {
           await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-          await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-          await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
-          await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-          console.log("Face API models loaded successfully.");
+          console.log("TinyFaceDetector model loaded successfully.");
           return true;
         } catch (error) {
           console.error("Error loading Face API models:", error);
           return false;
         }
       }
-      
-      // Detect faces in an image or video element
+
       async function detectSingleFace(input) {
         try {
-          // Make sure TinyFaceDetectorOptions exists before using it
           if (!faceapi.TinyFaceDetectorOptions) {
             console.error("TinyFaceDetectorOptions not available");
             return null;
           }
-          
+
           const options = new faceapi.TinyFaceDetectorOptions();
-          return await faceapi.detectSingleFace(input, options)
-            .withFaceLandmarks()
-            .withFaceDescriptor();
+          return await faceapi.detectSingleFace(input, options);
         } catch (error) {
           console.error("Error in face detection:", error);
           return null;
         }
       }
-      
-      // Get face descriptor from detection
+
       async function getFaceDescriptor(detection) {
         try {
-          return detection.descriptor;
+          return detection?.descriptor ?? null;
         } catch (error) {
           console.error("Error getting face descriptor:", error);
           return null;
         }
       }
-      
-      // Register video element view factory for Flutter
+
       if (window.flutter_inappwebview) {
         window.flutter_inappwebview.registerViewFactory('video', (viewId) => {
           const video = document.createElement('video');
@@ -106,20 +90,18 @@
           return video;
         });
       }
-      
-      // Make functions available to Dart
+
       window.faceapi = {
-        ...window.faceapi, // Keep existing properties
+        ...window.faceapi,
         loadModels,
         detectSingleFace,
         getFaceDescriptor,
       };
-      
+
       console.log("Face API methods setup complete");
     }
   </script>
-  
-  <!-- Flutter target div -->
+
   <div id="flutter_target"></div>
 </body>
 </html>

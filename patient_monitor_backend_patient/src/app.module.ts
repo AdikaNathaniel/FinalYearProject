@@ -18,6 +18,7 @@ import { OrderModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { StripeModule } from './payments/stripe.module';
 import { TrackingModule } from 'src/tracking/tracking.module';
+import { FacialRecognitionModule  } from 'src/facial-recognition/facial-recognition.module';
 import { AppointmentsModule } from 'src/appointments/appointment.module';
 import { HealthModule } from 'src/health/health.module';
 import { PrescriptionsModule } from 'src/prescriptions/prescription.module';
@@ -92,6 +93,7 @@ import { SmsController } from './sms/sms.controller';
     UsersModule,
     OrderModule,
     TerminusModule,
+    FacialRecognitionModule,
     PaymentsModule,
     FaceAuthModule,
     AuthModule,

@@ -7,7 +7,7 @@ export class StripeService {
 
   constructor() {
     this.stripe = new Stripe('sk_test_51Ql8Us4GUh5P0VNW3tFukM02hwvCQFoaLXGFbN1Vrlqzqa2z2McmymCVcADCyAB74cJxVxGCy2hacOdABCuaGrRS00R32nWOIQ', {
-      apiVersion: '2025-01-27.acacia', // Ensure to use the correct API version
+      apiVersion: '2025-02-24.acacia',
     });
   }
 
