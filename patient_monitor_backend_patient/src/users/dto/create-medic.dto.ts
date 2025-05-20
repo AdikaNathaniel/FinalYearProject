@@ -1,39 +1,54 @@
-import { IsNotEmpty, IsNumber, IsArray, IsString } from 'class-validator';
+import { IsString, IsArray, IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class ConsultationHoursDto {
+  @IsArray()
+  @IsString({ each: true })
+  days: string[];
+
+  @IsString()
+  @IsNotEmpty()
+  startTime: string;
+
+  @IsString()
+  @IsNotEmpty()
+  endTime: string;
+}
 
 export class CreateMedicDto {
-  @IsNotEmpty()
   @IsString()
-  readonly fullName: string;
+  @IsNotEmpty()
+  fullName: string;
 
   @IsString()
-  readonly hospital?: string;
+  @IsOptional()
+  hospital?: string;
 
-  readonly profilePhoto?: any;
-
-  @IsNotEmpty()
   @IsString()
-  readonly specialization: string;
+  @IsOptional()
+  profilePhoto?: string;
 
-  @IsNotEmpty()
   @IsString()
-  readonly yearsOfPractice: string;
-
   @IsNotEmpty()
-  readonly consultationHours: {
-    days: string[];
-    startTime: string;
-    endTime: string;
-  };
+  specialization: string;
 
+  @IsString()
   @IsNotEmpty()
+  yearsOfPractice: string;
+
+  @ValidateNested()
+  @Type(() => ConsultationHoursDto)
+  consultationHours: ConsultationHoursDto | string;
+
+  @IsArray()
   @IsString({ each: true })
-  readonly languagesSpoken: string;
+  languagesSpoken: string[] | string;
 
-  @IsNotEmpty()
   @IsString()
-  readonly phoneNumber: string;
+  @IsNotEmpty()
+  phoneNumber: string;
 
-  @IsNotEmpty()
   @IsString()
-  readonly consultationFee: string;
+  @IsNotEmpty()
+  consultationFee: string;
 }

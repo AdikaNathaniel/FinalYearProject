@@ -1,36 +1,44 @@
-import { IsNumber, IsArray, IsString, IsOptional } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateMedicDto, ConsultationHoursDto } from './create-medic.dto';
+import { IsString, IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class UpdateMedicDto {
-  @IsOptional()
+export class UpdateMedicDto extends PartialType(CreateMedicDto) {
   @IsString()
-  readonly hospital?: string;
-
-  readonly profilePhoto?: any;
-
   @IsOptional()
+  fullName?: string;
+
   @IsString()
-  readonly specialization?: string;
-
   @IsOptional()
+  hospital?: string;
+
   @IsString()
-  readonly yearsOfPractice?: string;
-
   @IsOptional()
-  readonly consultationHours?: {
-    days?: string[];
-    startTime?: string;
-    endTime?: string;
-  };
+  profilePhoto?: string;
 
-  @IsOptional()
   @IsString()
-  readonly languagesSpoken?: string;
-
   @IsOptional()
+  specialization?: string;
+
   @IsString()
-  readonly phoneNumber?: string;
-
   @IsOptional()
-  @IsNumber()
-  readonly consultationFee?: string;
+  yearsOfPractice?: string;
+
+  @ValidateNested()
+  @Type(() => ConsultationHoursDto)
+  @IsOptional()
+  consultationHours?: ConsultationHoursDto | string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  languagesSpoken?: string[] | string;
+
+  @IsString()
+  @IsOptional()
+  phoneNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  consultationFee?: string;
 }
