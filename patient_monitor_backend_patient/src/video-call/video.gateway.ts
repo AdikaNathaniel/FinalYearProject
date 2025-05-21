@@ -12,7 +12,13 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Room } from 'src/shared/schema/room.schema';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+  cors: {
+    origin: ['http://localhost:3000', 'http://localhost:8080'], // Add the URL where your Flutter web app will run
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 export class VideoGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;

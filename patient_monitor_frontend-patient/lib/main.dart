@@ -1,111 +1,52 @@
+
 import 'package:flutter/material.dart';
-import 'package:patient_monitor/pregnancy-chatbot.dart';
-import 'login_page.dart';
-import 'otp_page.dart';
-import 'health_metrics.dart';
-import 'predictions.dart';
-import 'create_cancel-appointment.dart';
-import 'view-appointment.dart';
-import 'wellness-page.dart';
-import 'protein-strip.dart';
-import 'users_summary.dart';
-import 'pregnancy-calculator.dart';
-import 'pregnancy-chatbot.dart';
-import 'real-time-chat.dart';
-import 'doctor-chat.dart';
-import 'pregnant-woman-chat.dart';
-import 'auth_screen.dart';
-// Import face_auth_flutter package
-import 'app/app.dart';
-import 'application.dart';
-import 'video_chat_screen.dart';
+import 'package:provider/provider.dart';
+
+// Import your pages
+import 'login_appwrite.dart';
+import 'call_home_page.dart'; // Make sure this exists or create it
+import 'appwrite.dart'; // Adjust path if needed
+import 'agora.dart'; // Adjust path if needed
 
 void main() {
-  // Comment out the original app
-  // runApp(const MyApp());
-  
-  // Use the FaceAuthApp for testing
-  // runApp(const FaceAuthApp());
-
-  // runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppwriteService()),
+        ChangeNotifierProvider(create: (_) => AgoraService()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-// Keep your original app code (commented out for now but preserved for later use)
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+  const MyApp({Key? key}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Video Call App',
       debugShowCheckedModeBanner: false,
-      title: 'PregMonitor',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      //  home:  WellnessTipsScreen(userEmail: 'example@example.com'),
-      // home: CreateCancelAppointmentPage(),
-      //  home: ViewAppointmentsPage(),
-      // home: UserListPage(),
-      // home: LoginPage(),
-      // home: MyApp(),
-          home: VideoChatScreen(roomName: 'default-room'),
-      //  home: const AuthScreen(),  // This contains the fingerprint SetUp
-      //  home: PregnantWomanChatPage(),
-      // home:  PregnancyCalculatorScreen(),
-      // home: UrineStripColorSelector(),
+      home: FutureBuilder(
+        // Check if user is already logged in
+        future: Provider.of<AppwriteService>(context, listen: false).getCurrentUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          } else {
+            // If user is logged in, go to Call Home, else show Login
+            return snapshot.hasData ? const CallHomePage() : const LoginPage();
+          }
+        },
+      ),
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/call': (context) => const CallHomePage(),
+      },
     );
   }
 }
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-// Commented out options from original code:
-//  home: const LoginPage(),
-//  home : PregnancyComplicationsPage(),
-// home: const LoginPage(),
