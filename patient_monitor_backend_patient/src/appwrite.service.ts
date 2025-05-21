@@ -20,7 +20,8 @@ export class AppwriteService {
 
     // In your AppwriteService constructor
 this.client = new Client()
- 
+  
+  
     this.databases = new Databases(this.client);
   }
 
