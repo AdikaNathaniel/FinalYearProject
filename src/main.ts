@@ -43,14 +43,32 @@ async function bootstrap() {
         logger: ['error', 'warn', 'log'] 
       });
 
-      app.enableCors({
-        origin: process.env.NODE_ENV === 'production'
-          ? [process.env.FRONTEND_URL || 'http://localhost:3000']
-          : true,
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN'] // Added 'Role' header
-      });
+ 
+
+app.enableCors({
+  origin: process.env.NODE_ENV === 'production'
+    ? [process.env.FRONTEND_URL || 'http://localhost:3000']
+    : [
+        'http://localhost:3000',
+        'http://localhost:60991',  // Add your Flutter app's port
+        // You can also include a wider range if your port changes frequently:
+        /^http:\/\/localhost:[0-9]+$/  // This will match any localhost port
+      ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN']
+});
+
+
+
+// app.enableCors({
+//   origin: true,  // Allows ANY origin in development (⚠️ Only for testing!)
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN']
+// });
+
+
 
       app.use(express.json({ limit: '50mb' }));
       app.use(express.urlencoded({ extended: true, limit: '50mb' }));

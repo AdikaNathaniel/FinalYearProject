@@ -27,22 +27,39 @@ class AppwriteService extends ChangeNotifier {
     account = Account(client);
   }
   
-  Future<Session> login(String email, String password) async {
-    try {
-      // Create a new session 
-      final session = await account.createSession(
-        email: email,
-        password: password,
-      );
-      // Get user data
-      currentUser = await _getUserData();
-      notifyListeners();
+  // Future<Session> login(String password) async {
+  //   try {
+  //     // Create a new session 
+  //     // final session = await account.createSession(
+  //     //   email: email,
+  //     //   password: password,
+  //     // );
+
+  //     final session = await account.createAnonymousSession();
+
+  //     // Get user data
+  //     currentUser = await _getUserData();
+  //     notifyListeners();
       
-      return session;
-    } catch (e) {
-      rethrow;
-    }
+  //     return session;
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
+
+
+  Future<Session> login() async {
+  try {
+    final session = await account.createAnonymousSession();
+
+    currentUser = await _getUserData();
+    notifyListeners();
+    return session;
+  } catch (e) {
+    rethrow;
   }
+}
+
   
   Future<void> logout() async {
     try {

@@ -45,6 +45,14 @@ const CONFIG = {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN'],
   },
+//   cors: {
+//   allowedOrigins: process.env.NODE_ENV === 'production'
+//     ? '*'  // Allow all origins in production
+//     : '*',  // Allow all origins in development (you can modify this if you want to restrict it during development)
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN'],
+// },
   fallback: {
     maxQueueSize: 1000,
     retryInterval: 60000, // 1 minute
@@ -114,12 +122,20 @@ class ApplicationManager {
     const configService = this.mainApp.get(ConfigService);
     
     // Apply CORS settings using the ConfigService for frontend URL
+    // this.mainApp.enableCors({
+    //   origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
+    //   credentials: CONFIG.cors.credentials,
+    //   methods: CONFIG.cors.methods,
+    //   allowedHeaders: CONFIG.cors.allowedHeaders,
+    // });
+
     this.mainApp.enableCors({
-      origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
-      credentials: CONFIG.cors.credentials,
-      methods: CONFIG.cors.methods,
-      allowedHeaders: CONFIG.cors.allowedHeaders,
-    });
+  origin: '*', // This allows all origins
+  credentials: CONFIG.cors.credentials,
+  methods: CONFIG.cors.methods,
+  allowedHeaders: CONFIG.cors.allowedHeaders,
+});
+
     
     // Configure WebSocket adapter
     this.mainApp.useWebSocketAdapter(new IoAdapter(this.mainApp));

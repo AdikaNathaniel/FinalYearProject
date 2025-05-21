@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'call_home_page.dart'; // Make sure this file exists
-import 'appwrite.dart'; // Adjust path if needed
+import 'appwrite_service.dart'; // Adjust path if needed
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -44,11 +44,15 @@ class LoginPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () async {
                   try {
-                    await appwriteService.login(
-                      emailController.text, 
-                      passwordController.text
-                    );
+                    // await appwriteService.login(
+                    //   emailController.text, 
+                    //   passwordController.text
+                    // );
                     // Navigate to call home page after login
+
+
+                    await appwriteService.login();
+
                     if (context.mounted) {
                       Navigator.pushReplacementNamed(context, '/call');
                     }

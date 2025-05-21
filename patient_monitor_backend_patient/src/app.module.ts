@@ -8,7 +8,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import * as Joi from 'joi';
 
 // Controllers
-import { AppController } from './app.controller';
+import { AppController } from './application.controller';
 import { SmsController } from './sms/sms.controller';
 import { MedicationReminderController } from './sms/medication-tracking/medication-reminder.controller';
 
@@ -18,6 +18,8 @@ import { SmsService } from './sms/sms.service';
 import { SmsScheduler } from './sms/sms.scheduler';
 import { MobileAppSyncService } from './sms/mobile-app-sync.service';
 import { AppointmentsCronService } from './doctors/appointment.cron';
+import { AppwriteService } from './appwrite.service';
+import { AgoraService } from './agora.service';
 
 // Modules
 import { VideoModule } from './video-call/video.module';
@@ -65,7 +67,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
       isGlobal: true,
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
-        FRONTEND_URL: Joi.string().required(),
+         FRONTEND_URL: Joi.string().required(),
         // You can add more validation rules from the original config as needed
       }),
     }),
@@ -152,11 +154,15 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     SmsService,
     SmsScheduler,
     MobileAppSyncService,
-    AppointmentsCronService
+    AppointmentsCronService,
+    AppwriteService,
+    AgoraService
   ],
   exports: [
     SmsService,
     MobileAppSyncService,
+    AppwriteService,
+    AgoraService
   ],
 })
 export class AppModule {}

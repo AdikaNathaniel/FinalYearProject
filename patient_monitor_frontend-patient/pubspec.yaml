@@ -32,11 +32,11 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   flutter_otp_text_field: ^1.5.1+1
-  flutter_svg: ^1.0.3
+  flutter_svg: ^2.1.0
   font_awesome_flutter: ^10.8.0
   intl: ^0.20.2
   firebase_messaging: ^15.2.4
-  flutter_chat_ui: ^1.6.15
+  flutter_chat_ui: ^2.2.3
   flutter_chat_types: ^3.6.2
   flutter_markdown: ^0.7.7
   socket_io_client: ^3.1.1
@@ -54,6 +54,7 @@ dependencies:
   appwrite: ^16.0.0
   agora_rtc_engine: ^6.5.2
   permission_handler: ^12.0.0+1
+  
 
 
 dev_dependencies:
@@ -65,7 +66,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
