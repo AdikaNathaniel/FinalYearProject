@@ -18,7 +18,7 @@ import { Chat, ChatSchema } from 'src/shared/schema/chat.schema';
 import { ChatModule } from './chat/chat.module';
 // Import EmailModule and NotificationModule
 import { EmailModule } from 'src/email/email.module'; // Adjust the path as necessary
-import { NotificationModule } from 'src/notification/notification.module'; // Adjust the path as necessary
+
 
 @Module({
   imports: [
@@ -38,7 +38,7 @@ import { NotificationModule } from 'src/notification/notification.module'; // Ad
     ChatModule, // Add ChatModule here
     MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }]), // Add Chat Schema if needed
     EmailModule, // Add EmailModule here
-    NotificationModule, // Add NotificationModule here
+
   ],
   controllers: [AppController], // Add DeliveryController
   providers: [AppService, MQService], // Add DeliveryService and MQService

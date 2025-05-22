@@ -4,7 +4,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
-import { NotificationModule } from './notification/notification.module';
+// import { NotificationModule } from './notification/notification.module';
 import { EmailModule } from './email/email.module';
 import { TransformationInterceptor } from './responseInterceptor';
 import cookieParser from 'cookie-parser';
@@ -81,7 +81,7 @@ class ApplicationManager {
     try {
       await this.setupErrorHandlers();
       await this.initializeMainApplication();
-      await this.initializeNotificationService();
+      // await this.initializeNotificationService();
       // await this.initializeEmailMicroservice();
       // await this.setupHealthChecks();
       await this.setupEmailFallbackMechanism();
@@ -173,11 +173,11 @@ class ApplicationManager {
     routes.forEach(route => logger.log(`${route.method} ${route.path}`));
   }
 
-  private async initializeNotificationService() {
-    this.notificationApp = await NestFactory.create(NotificationModule);
-    await this.notificationApp.listen(CONFIG.server.notificationPort);
-    logger.log(`Notification service running on port ${CONFIG.server.notificationPort}`);
-  }
+  // private async initializeNotificationService() {
+  //   this.notificationApp = await NestFactory.create(NotificationModule);
+  //   await this.notificationApp.listen(CONFIG.server.notificationPort);
+  //   logger.log(`Notification service running on port ${CONFIG.server.notificationPort}`);
+  // }
 
   private async setupEmailFallbackMechanism() {
     try {

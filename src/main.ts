@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { NotificationModule } from 'src/notification/notification.module';
+// import { NotificationModule } from 'src/notification/notification.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { EmailModule } from 'src/email/email.module';
 import { AppModule } from './app.module';
@@ -32,7 +32,7 @@ function isPathIgnored(path: string): boolean {
 }
 
 let app: any;
-let notificationApp: any;
+// let notificationApp: any;
 let emailMicroservice: any;
 
 async function bootstrap() {
@@ -108,11 +108,11 @@ app.enableCors({
   }
 
   // Bootstrapping the Notification Module
-  if (!notificationApp) {
-    notificationApp = await NestFactory.create(NotificationModule);
-    await notificationApp.listen(3001);
-    console.log('Notification service running on port 3001');
-  }
+  // if (!notificationApp) {
+  //   notificationApp = await NestFactory.create(NotificationModule);
+  //   await notificationApp.listen(3001);
+  //   console.log('Notification service running on port 3001');
+  // }
 
   // Bootstrapping the Email Microservice
   if (!emailMicroservice) {

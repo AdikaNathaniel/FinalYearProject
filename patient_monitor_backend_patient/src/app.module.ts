@@ -50,7 +50,7 @@ import { MedicsModule } from './medic/medics.module';
 import { FaceAuthModule } from './face-auth/face-auth.module';
 import { AuthModule } from './auth/auth.module';
 
-// Schemas
+// Schemas - ONLY FOR SCHEMAS USED DIRECTLY IN APP MODULE
 import { Chat, ChatSchema } from 'src/shared/schema/chat.schema';
 import { SmsRecord, SmsRecordSchema } from 'src/shared/schema/sms.schema';
 import { Appointment, AppointmentSchema } from 'src/shared/schema/appointments.schema';
@@ -67,7 +67,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
       isGlobal: true,
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
-         FRONTEND_URL: Joi.string().required(),
+        FRONTEND_URL: Joi.string().required(),
         // You can add more validation rules from the original config as needed
       }),
     }),
@@ -126,13 +126,14 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     ReportModule,
     ChatbotModule,
     EmailModule,
-    NotificationModule, 
+    NotificationModule,  // This module already registers the Notification schema
     ChatRealTimeModule,
     SharedModule,
     TasksModule,
     PinModule,
     
-    // Schemas
+    // Schemas - Only register schemas that are used directly in THIS module's services
+    // DO NOT register schemas that are already registered in their respective feature modules
     MongooseModule.forFeature([
       { name: Chat.name, schema: ChatSchema },
       { name: SmsRecord.name, schema: SmsRecordSchema },
@@ -142,6 +143,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
       { name: Pregnancy.name, schema: PregnancySchema },
       { name: PendingReminder.name, schema: PendingReminderSchema },
       { name: OfflineReminder.name, schema: OfflineReminderSchema },
+      // Removed Notification schema because it's already registered in NotificationModule
     ]),
   ],
   controllers: [
