@@ -49,6 +49,7 @@ import { PinModule } from './pin/pin.module';
 import { MedicsModule } from './medic/medics.module';
 import { FaceAuthModule } from './face-auth/face-auth.module';
 import { AuthModule } from './auth/auth.module';
+import { SupportModule } from './support/support.module';
 
 // Schemas - ONLY FOR SCHEMAS USED DIRECTLY IN APP MODULE
 import { Chat, ChatSchema } from 'src/shared/schema/chat.schema';
@@ -116,6 +117,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     AuthModule,
     AppointmentsModule,
     StripeModule,
+    SupportModule,
     PrescriptionsModule,
     HealthModule,
     DoctorsModule,

@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Notification } from 'src/shared/schema/notification.schema';
-import { CreateNotificationDto } from 'src/users/dto/create-notification.dto';
+import { CreateNotificationDto } from  'src/users/dto/create-notification.dto';
 import { UpdateNotificationDto } from 'src/users/dto/update-notification.dto';
 import { SmsNotificationService } from './sms-notification.service';
 

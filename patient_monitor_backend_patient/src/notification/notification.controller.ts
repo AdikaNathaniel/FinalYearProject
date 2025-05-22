@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from 'src/users/dto/create-notification.dto';
+import { CreateNotificationDto } from  'src/users/dto/create-notification.dto';
 import { UpdateNotificationDto } from 'src/users/dto/update-notification.dto';
 import { NotificationRole } from 'src/shared/schema/notification.schema';
 
