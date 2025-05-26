@@ -169,7 +169,7 @@ class _PregnancyCalculatorScreenState extends State<PregnancyCalculatorScreen> {
                 },
                 child: Text(
                   "View My Vitals",
-                  style: TextStyle(fontSize: 18, color: Colors.white, decoration: TextDecoration.underline),
+                  style: TextStyle(fontSize: 18, color: Colors.white),
                 ),
               ),
               SizedBox(height: 20),

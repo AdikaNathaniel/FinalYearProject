@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'face_login.dart';
+import 'login_page.dart'; // Make sure to import LoginPage
 
 class FaceRegisterPage extends StatefulWidget {
   const FaceRegisterPage({Key? key}) : super(key: key);
@@ -18,7 +19,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
   File? _selectedImage;
   Uint8List? _webImage;
   bool _isLoading = false;
-  bool _registrationSuccess = false;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -71,12 +71,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
-      setState(() {
-        _isLoading = false;
-        if (response.statusCode == 201) {
-          _registrationSuccess = true;
-        }
-      });
+      setState(() => _isLoading = false);
 
       if (response.statusCode == 201) {
         _showSuccessDialog();
@@ -96,6 +91,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
   void _showSuccessDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
         contentPadding: const EdgeInsets.all(20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -109,22 +105,49 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
               style: TextStyle(fontSize: 18, color: Colors.green),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 10),
+            const Text(
+              "You can now login with your face",
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FaceLoginPage(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FaceLoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Continue to Face Login'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
                   ),
-                );
-              },
-              child: const Text('Continue to Face Login'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-              ),
+                ),
+                const SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Return to Login Page'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.blueAccent,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -157,132 +180,93 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              if (!_registrationSuccess) ...[
-                _inputField("UserName", _userIdController),
-                const SizedBox(height: 20),
-                // Image Preview Container
-                Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: (kIsWeb && _webImage != null)
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxHeight: 600,
-                                maxWidth: MediaQuery.of(context).size.width - 32,
-                              ),
-                              child: Image.memory(
-                                _webImage!,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          )
-                        : (!kIsWeb && _selectedImage != null)
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    maxHeight: 180,
-                                    maxWidth: MediaQuery.of(context).size.width - 32,
-                                  ),
-                                  child: Image.file(
-                                    _selectedImage!,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                "No image selected",
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Select Image Button
-                ElevatedButton.icon(
-                  onPressed: _pickImage,
-                  icon: const Icon(Icons.image, color: Colors.white),
-                  label: const Text('Select Image'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurpleAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+              _inputField("UserName", _userIdController),
+              const SizedBox(height: 20),
+              // Image Preview Container
+              Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                    elevation: 4,
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                // Register Button
-                _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : ElevatedButton.icon(
-                        onPressed: _submitData,
-                        icon: const Icon(Icons.upload_rounded, color: Colors.white),
-                        label: const Text('Register'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.greenAccent.shade700,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 4,
-                        ),
-                      ),
-              ] else ...[
-                const SizedBox(height: 40),
-                const Icon(Icons.check_circle, color: Colors.white, size: 80),
-                const SizedBox(height: 20),
-                const Text(
-                  "Registration Complete!",
-                  style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "You can now login with your face",
-                  style: TextStyle(fontSize: 16, color: Colors.white70),
-                ),
-                const SizedBox(height: 40),
-                _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const FaceLoginPage(),
+                child: Center(
+                  child: (kIsWeb && _webImage != null)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxHeight: 600,
+                              maxWidth: MediaQuery.of(context).size.width - 32,
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.face, color: Colors.white),
-                        label: const Text('Login with Face Authentication'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            child: Image.memory(
+                              _webImage!,
+                              fit: BoxFit.contain,
+                            ),
                           ),
-                          elevation: 4,
+                        )
+                      : (!kIsWeb && _selectedImage != null)
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxHeight: 180,
+                                  maxWidth: MediaQuery.of(context).size.width - 32,
+                                ),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              "No image selected",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Select Image Button
+              ElevatedButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.image, color: Colors.white),
+                label: const Text('Select Image'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurpleAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Register Button
+              _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : ElevatedButton.icon(
+                      onPressed: _submitData,
+                      icon: const Icon(Icons.upload_rounded, color: Colors.white),
+                      label: const Text('Register'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent.shade700,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
+                        elevation: 4,
                       ),
-              ],
+                    ),
             ],
           ),
         ),

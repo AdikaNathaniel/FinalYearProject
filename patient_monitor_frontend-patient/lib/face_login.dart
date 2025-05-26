@@ -69,33 +69,36 @@ class _FaceLoginPageState extends State<FaceLoginPage> {
     );
   }
 
-  void _handleSuccessfulLogin(String userId, String faceGender) {
-    if (userId == 'Einsteina') {
-      _showSuccessNotification('Logging In As Pregnant Woman');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PregnancyCalculatorScreen(userEmail: userId),
-        ),
-      );
-    } 
-    else if (userId == 'George') {
-      _showSuccessNotification('Logging In As Medic');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PregnancyComplicationsPage(userEmail: userId),
-        ),
-      );
-    }
-    else {
-      _showErrorNotification('Invalid user');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    }
+ 
+ void _handleSuccessfulLogin(String userId, String faceGender) {
+  if (userId == 'Einsteina Owoh') {
+    _showSuccessNotification('Logging In As Pregnant Woman');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PregnancyCalculatorScreen(userEmail: userId),
+      ),
+      (route) => false, 
+    );
+  } 
+  else if (userId == 'Dr.George Anane') {
+    _showSuccessNotification('Logging In As Medic');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PregnancyComplicationsPage(userEmail: userId),
+      ),
+      (route) => false,
+    );
   }
+  else {
+    _showErrorNotification('Invalid user');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
+}
 
   void _showSuccessNotification(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
