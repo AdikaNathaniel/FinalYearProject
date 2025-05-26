@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'face_login.dart';
-import 'login_page.dart'; // Make sure to import LoginPage
+import 'login_page.dart';
 
 class FaceRegisterPage extends StatefulWidget {
   const FaceRegisterPage({Key? key}) : super(key: key);
@@ -20,7 +20,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
   Uint8List? _webImage;
   bool _isLoading = false;
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImageFromGallery() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -36,6 +36,124 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
         });
       }
     }
+  }
+
+  Future<void> _takePhoto() async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front, // Use front camera for selfies
+        maxWidth: 800,
+        maxHeight: 600,
+        imageQuality: 80,
+      );
+
+      if (pickedFile != null) {
+        if (kIsWeb) {
+          final bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _webImage = bytes;
+          });
+        } else {
+          setState(() {
+            _selectedImage = File(pickedFile.path);
+          });
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Camera error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Select Image Source',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildSourceOption(
+                    icon: Icons.camera_alt,
+                    label: 'Camera',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _takePhoto();
+                    },
+                  ),
+                  _buildSourceOption(
+                    icon: Icons.photo_library,
+                    label: 'Gallery',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImageFromGallery();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: Colors.blue.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 40,
+              color: Colors.blue,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _submitData() async {
@@ -204,7 +322,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             constraints: BoxConstraints(
-                              maxHeight: 600,
+                              maxHeight: 160,
                               maxWidth: MediaQuery.of(context).size.width - 32,
                             ),
                             child: Image.memory(
@@ -218,7 +336,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                               borderRadius: BorderRadius.circular(16),
                               child: Container(
                                 constraints: BoxConstraints(
-                                  maxHeight: 180,
+                                  maxHeight: 160,
                                   maxWidth: MediaQuery.of(context).size.width - 32,
                                 ),
                                 child: Image.file(
@@ -227,18 +345,36 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                                 ),
                               ),
                             )
-                          : const Text(
-                              "No image selected",
-                              style: TextStyle(color: Colors.white70),
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.person_outline,
+                                  size: 60,
+                                  color: Colors.white.withOpacity(0.5),
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "No image selected",
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                                const Text(
+                                  "Take a photo or select from gallery",
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                 ),
               ),
               const SizedBox(height: 20),
-              // Select Image Button
+              // Select Image Button (Updated to show options)
               ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: const Icon(Icons.image, color: Colors.white),
-                label: const Text('Select Image'),
+                onPressed: _showImageSourceDialog,
+                icon: const Icon(Icons.add_a_photo, color: Colors.white),
+                label: const Text('Add Photo'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurpleAccent,
                   foregroundColor: Colors.white,
@@ -249,6 +385,20 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                   elevation: 4,
                 ),
               ),
+              const SizedBox(height: 10),
+              // Quick Camera Button
+              if (_webImage == null && _selectedImage == null)
+                TextButton.icon(
+                  onPressed: _takePhoto,
+                  icon: const Icon(Icons.camera_front, color: Colors.white70),
+                  label: const Text(
+                    'Quick Camera Capture',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  ),
+                ),
               const SizedBox(height: 20),
               // Register Button
               _isLoading
