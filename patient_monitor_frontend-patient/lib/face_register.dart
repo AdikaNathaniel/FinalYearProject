@@ -24,13 +24,11 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
 
     if (pickedFile != null) {
       if (kIsWeb) {
-        // For web
         final bytes = await pickedFile.readAsBytes();
         setState(() {
           _webImage = bytes;
         });
       } else {
-        // For mobile
         setState(() {
           _selectedImage = File(pickedFile.path);
         });
@@ -56,14 +54,12 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
 
     try {
       if (kIsWeb) {
-        // For web
         request.files.add(http.MultipartFile.fromBytes(
           'image',
           _webImage!,
           filename: 'face.jpg',
         ));
       } else {
-        // For mobile
         request.files.add(await http.MultipartFile.fromPath(
           'image',
           _selectedImage!.path,
@@ -122,37 +118,112 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Face Registration')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _userIdController,
-              decoration: const InputDecoration(labelText: 'User ID'),
-            ),
-            const SizedBox(height: 20),
-            if (kIsWeb)
-              _webImage != null
-                  ? Image.memory(_webImage!, height: 150)
-                  : const Text("No image selected")
-            else
-              _selectedImage != null
-                  ? Image.file(_selectedImage!, height: 150)
-                  : const Text("No image selected"),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Select Image'),
-            ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _submitData,
-                    child: const Text('Register'),
-                  ),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [Colors.blue, Colors.red],
+          ),
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              _inputField("User ID", _userIdController),
+              const SizedBox(height: 20),
+
+              // Image Preview Container
+              Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: (kIsWeb && _webImage != null)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.memory(_webImage!, height: 160))
+                      : (!kIsWeb && _selectedImage != null)
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.file(_selectedImage!, height: 160))
+                          : const Text(
+                              "No image selected",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Select Image Button
+              ElevatedButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.image, color: Colors.white),
+                label: const Text('Select Image'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurpleAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 4,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Register Button
+              _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : ElevatedButton.icon(
+                      onPressed: _submitData,
+                      icon: const Icon(Icons.upload_rounded, color: Colors.white),
+                      label: const Text('Register'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent.shade700,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 4,
+                      ),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _inputField(String labelText, TextEditingController controller) {
+    return TextField(
+      style: const TextStyle(color: Colors.white),
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: const TextStyle(color: Colors.white70),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Colors.white),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Colors.white, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
       ),
     );
   }
