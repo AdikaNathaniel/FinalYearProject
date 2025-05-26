@@ -6,6 +6,7 @@ import 'register.dart';
 import 'health_metrics.dart';
 import 'users_summary.dart'; // Import UserListPage
 import 'pregnancy-calculator.dart'; 
+import 'face_register.dart'; // Import FaceRegisterPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -64,6 +65,8 @@ class _LoginPageState extends State<LoginPage> {
               _extraText(),
               const SizedBox(height: 20),
               _forgotPasswordText(),
+              const SizedBox(height: 10),
+              _facialRecognitionText(),
             ],
           ),
         ),
@@ -214,6 +217,26 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(fontSize: 20),
               ),
             ),
+    );
+  }
+
+  Widget _facialRecognitionText() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FaceRegisterPage()),
+        );
+      },
+      child: const Text(
+        "Login with Facial Recognition",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.white,
+          decoration: TextDecoration.underline,
+        ),
+      ),
     );
   }
 
