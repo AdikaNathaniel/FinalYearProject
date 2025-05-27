@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:html' as html;
+import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -38,36 +41,221 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
     }
   }
 
-  Future<void> _takePhoto() async {
-    final picker = ImagePicker();
-    try {
-      final pickedFile = await picker.pickImage(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front, // Use front camera for selfies
-        maxWidth: 800,
-        maxHeight: 600,
-        imageQuality: 80,
-      );
-
+  Future<void> _takePhotoWeb() async {
+    if (!kIsWeb) {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
       if (pickedFile != null) {
-        if (kIsWeb) {
-          final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+      return;
+    }
+
+    final html.FileUploadInputElement uploadInput = html.FileUploadInputElement()
+      ..accept = 'image/*'
+      ..setAttribute('capture', 'environment');
+    
+    html.document.body?.append(uploadInput);
+    uploadInput.click();
+    
+    uploadInput.onChange.listen((e) {
+      final files = uploadInput.files;
+      if (files != null && files.isNotEmpty) {
+        final file = files[0];
+        final reader = html.FileReader();
+        
+        reader.onLoadEnd.listen((e) {
+          final dataUrl = reader.result as String;
+          final base64 = dataUrl.split(',')[1];
+          final bytes = base64Decode(base64);
+          
           setState(() {
             _webImage = bytes;
           });
-        } else {
-          setState(() {
-            _selectedImage = File(pickedFile.path);
-          });
-        }
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Photo captured successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        });
+        
+        reader.readAsDataUrl(file);
+      }
+      uploadInput.remove();
+    });
+  }
+
+  Future<void> _openWebCamera() async {
+    if (!kIsWeb) return;
+    
+    final html.DivElement cameraContainer = html.DivElement()
+      ..id = 'camera-container'
+      ..style.position = 'fixed'
+      ..style.top = '0'
+      ..style.left = '0'
+      ..style.width = '100vw'
+      ..style.height = '100vh'
+      ..style.backgroundColor = 'rgba(0,0,0,0.9)'
+      ..style.zIndex = '9999'
+      ..style.display = 'flex'
+      ..style.flexDirection = 'column'
+      ..style.alignItems = 'center'
+      ..style.justifyContent = 'center';
+
+    final html.VideoElement video = html.VideoElement()
+      ..style.width = '80%'
+      ..style.maxWidth = '640px'
+      ..style.height = 'auto'
+      ..style.borderRadius = '10px'
+      ..autoplay = true;
+
+    final html.ButtonElement captureBtn = html.ButtonElement()
+      ..text = 'Capture Photo'
+      ..style.marginTop = '20px'
+      ..style.padding = '15px 30px'
+      ..style.fontSize = '16px'
+      ..style.backgroundColor = '#2196F3'
+      ..style.color = 'white'
+      ..style.border = 'none'
+      ..style.borderRadius = '25px'
+      ..style.cursor = 'pointer';
+
+    final html.ButtonElement closeBtn = html.ButtonElement()
+      ..text = 'Close'
+      ..style.marginTop = '10px'
+      ..style.padding = '10px 20px'
+      ..style.fontSize = '14px'
+      ..style.backgroundColor = '#f44336'
+      ..style.color = 'white'
+      ..style.border = 'none'
+      ..style.borderRadius = '20px'
+      ..style.cursor = 'pointer';
+
+    cameraContainer.children.addAll([video, captureBtn, closeBtn]);
+    html.document.body?.append(cameraContainer);
+
+    try {
+      final stream = await html.window.navigator.mediaDevices?.getUserMedia({
+        'video': {'facingMode': 'user'},
+        'audio': false,
+      });
+
+      if (stream != null) {
+        video.srcObject = stream;
+
+        captureBtn.onClick.listen((_) {
+          _captureFromVideo(video, stream);
+          cameraContainer.remove();
+        });
+
+        closeBtn.onClick.listen((_) {
+          stream.getTracks().forEach((track) => track.stop());
+          cameraContainer.remove();
+        });
       }
     } catch (e) {
+      cameraContainer.remove();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Camera access failed: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _captureFromVideo(html.VideoElement video, html.MediaStream stream) {
+    final html.CanvasElement canvas = html.CanvasElement()
+      ..width = video.videoWidth
+      ..height = video.videoHeight;
+    
+    final canvasContext = canvas.getContext('2d') as html.CanvasRenderingContext2D;
+    canvasContext.drawImage(video, 0, 0);
+    
+    stream.getTracks().forEach((track) => track.stop());
+    
+    // Convert canvas to data URL directly
+    final dataUrl = canvas.toDataUrl('image/jpeg', 0.8);
+    final base64 = dataUrl.split(',')[1];
+    final bytes = base64Decode(base64);
+    
+    setState(() {
+      _webImage = bytes;
+    });
+    
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Camera error: ${e.toString()}"),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text("Photo captured successfully!"),
+          backgroundColor: Colors.green,
         ),
       );
+    }
+  }
+
+  void _capturePhoto(html.VideoElement video, html.CanvasElement canvas, html.MediaStream stream) {
+    final canvasContext = canvas.getContext('2d') as html.CanvasRenderingContext2D;
+    canvasContext.drawImage(video, 0, 0);
+    
+    stream.getTracks().forEach((track) => track.stop());
+    
+    // Convert canvas to data URL directly
+    final dataUrl = canvas.toDataUrl('image/jpeg', 0.8);
+    final base64 = dataUrl.split(',')[1];
+    final bytes = base64Decode(base64);
+    
+    setState(() {
+      _webImage = bytes;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Photo captured successfully!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  Future<void> _takePhotoFallback() async {
+    if (kIsWeb) {
+      final html.FileUploadInputElement uploadInput = html.FileUploadInputElement()
+        ..accept = 'image/*'
+        ..setAttribute('capture', 'user');
+      
+      uploadInput.click();
+      
+      uploadInput.onChange.listen((e) {
+        final files = uploadInput.files;
+        if (files!.isNotEmpty) {
+          final file = files[0];
+          final reader = html.FileReader();
+          
+          reader.onLoadEnd.listen((e) {
+            final bytes = reader.result as Uint8List;
+            setState(() {
+              _webImage = bytes;
+            });
+          });
+          
+          reader.readAsArrayBuffer(file);
+        }
+      });
+    } else {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
     }
   }
 
@@ -99,7 +287,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                     label: 'Camera',
                     onTap: () {
                       Navigator.pop(context);
-                      _takePhoto();
+                      _openWebCamera();
                     },
                   ),
                   _buildSourceOption(
@@ -112,7 +300,16 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              if (kIsWeb)
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _takePhotoFallback();
+                  },
+                  child: const Text('Alternative Camera Access'),
+                ),
+              const SizedBox(height: 10),
             ],
           ),
         );
@@ -243,11 +440,11 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                       ),
                     );
                   },
-                  child: const Text('Continue to Face Login'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,
                   ),
+                  child: const Text('Continue to Face Login'),
                 ),
                 const SizedBox(height: 10),
                 TextButton(
@@ -260,10 +457,10 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                       ),
                     );
                   },
-                  child: const Text('Return to Login Page'),
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.blueAccent,
                   ),
+                  child: const Text('Return to Login Page'),
                 ),
               ],
             ),
@@ -300,7 +497,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
             children: [
               _inputField("UserName", _userIdController),
               const SizedBox(height: 20),
-              // Image Preview Container
               Container(
                 height: 180,
                 width: double.infinity,
@@ -370,7 +566,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Select Image Button (Updated to show options)
               ElevatedButton.icon(
                 onPressed: _showImageSourceDialog,
                 icon: const Icon(Icons.add_a_photo, color: Colors.white),
@@ -386,10 +581,9 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Quick Camera Button
               if (_webImage == null && _selectedImage == null)
                 TextButton.icon(
-                  onPressed: _takePhoto,
+                  onPressed: _openWebCamera,
                   icon: const Icon(Icons.camera_front, color: Colors.white70),
                   label: const Text(
                     'Quick Camera Capture',
@@ -400,7 +594,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                   ),
                 ),
               const SizedBox(height: 20),
-              // Register Button
               _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : ElevatedButton.icon(
