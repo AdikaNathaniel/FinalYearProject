@@ -93,10 +93,71 @@ class _CreateCancelAppointmentPageState
     }
   }
 
-  void _showUserInfoDialog(BuildContext context) {
-     String email = widget.userEmail;
-    // String role = 'Doctor'; // Hardcoded role
+  // void _showUserInfoDialog(BuildContext context) {
+  //    String email = widget.userEmail;
+  //   // String role = 'Doctor'; // Hardcoded role
 
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: Center(child: Text('Profile')),
+  //       content: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             children: [
+  //               Icon(Icons.email),
+  //               SizedBox(width: 10),
+  //               Text(widget.userEmail),
+  //             ],
+  //           ),
+  //           SizedBox(height: 10),
+  //           Row(
+  //             children: [
+  //               // Icon(Icons.person),
+  //               SizedBox(width: 10),
+  //               // Text(role),
+  //             ],
+  //           ),
+  //           SizedBox(height: 10),
+  //           TextButton(
+  //             onPressed: () async {
+  //               final response = await http.put(
+  //                 Uri.parse('http://localhost:3100/api/v1/users/logout'),
+  //                 headers: {'Content-Type': 'application/json'},
+  //               );
+
+  //               if (response.statusCode == 200) {
+  //                 final responseData = json.decode(response.body);
+  //                 if (responseData['success']) {
+  //                   Navigator.pushReplacement(
+  //                     context,
+  //                     MaterialPageRoute(builder: (context) => LoginPage()),
+  //                   );
+  //                 } else {
+  //                   _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
+  //                 }
+  //               } else {
+  //                 _showSnackbar(context, "Logout failed: Server error", Colors.red);
+  //               }
+  //             },
+  //             child: Text('Logout', style: TextStyle(color: Colors.red)),
+  //           ),
+  //         ],
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: Text('Close'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+
+  void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -114,15 +175,17 @@ class _CreateCancelAppointmentPageState
             ),
             SizedBox(height: 10),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icon(Icons.person),
+                Icon(Icons.settings),
                 SizedBox(width: 10),
-                // Text(role),
+                Text('Settings'),
               ],
             ),
             SizedBox(height: 10),
             TextButton(
               onPressed: () async {
+                // Call logout API
                 final response = await http.put(
                   Uri.parse('http://localhost:3100/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
@@ -136,10 +199,14 @@ class _CreateCancelAppointmentPageState
                       MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   } else {
-                    _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
+                    _showSnackbar(
+                        context,
+                        "Logout failed: ${responseData['message']}",
+                        Colors.red);
                   }
                 } else {
-                  _showSnackbar(context, "Logout failed: Server error", Colors.red);
+                  _showSnackbar(
+                      context, "Logout failed: Server error", Colors.red);
                 }
               },
               child: Text('Logout', style: TextStyle(color: Colors.red)),

@@ -54,7 +54,7 @@ export class AntenatalVisitSmsService {
     const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
     try {
-      const apiKey = 'a2NRTWZ3ZHpNREVtZ3ZtQ0NQWlk';
+      const apiKey = 'RmhDSVpJTnRKYWVwbW9lRFRxcWs';
       if (!apiKey) {
         throw new Error('ARKESEL_API_KEY environment variable is not set');
       }
@@ -97,7 +97,7 @@ export class AntenatalVisitSmsService {
   const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
   try {
-    const apiKey = 'a2NRTWZ3ZHpNREVtZ3ZtQ0NQWlk';
+    const apiKey = 'RmhDSVpJTnRKYWVwbW9lRFRxcWs';
     if (!apiKey) {
       throw new Error('ARKESEL_API_KEY environment variable is not set');
     }

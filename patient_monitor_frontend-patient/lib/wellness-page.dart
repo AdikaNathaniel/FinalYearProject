@@ -75,6 +75,59 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     super.dispose();
   }
 
+  // void _showUserInfoDialog(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: Center(child: Text('Profile')),
+  //       content: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             children: [
+  //               Icon(Icons.email),
+  //               SizedBox(width: 10),
+  //               Text(widget.userEmail),
+  //             ],
+  //           ),
+  //           SizedBox(height: 10),
+  //           TextButton(
+  //             onPressed: () async {
+  //               final response = await http.put(
+  //                 Uri.parse('http://localhost:3100/api/v1/users/logout'),
+  //                 headers: {'Content-Type': 'application/json'},
+  //               );
+
+  //               if (response.statusCode == 200) {
+  //                 final responseData = json.decode(response.body);
+  //                 if (responseData['success']) {
+  //                   Navigator.pushReplacement(
+  //                     context,
+  //                     MaterialPageRoute(builder: (context) => LoginPage()),
+  //                   );
+  //                 } else {
+  //                   _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
+  //                 }
+  //               } else {
+  //                 _showSnackbar(context, "Logout failed: Server error", Colors.red);
+  //               }
+  //             },
+  //             child: Text('Logout', style: TextStyle(color: Colors.red)),
+  //           ),
+  //         ],
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: Text('Close'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+
   void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -92,8 +145,18 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
               ],
             ),
             SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.settings),
+                SizedBox(width: 10),
+                Text('Settings'),
+              ],
+            ),
+            SizedBox(height: 10),
             TextButton(
               onPressed: () async {
+                // Call logout API
                 final response = await http.put(
                   Uri.parse('http://localhost:3100/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
@@ -107,10 +170,14 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
                       MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   } else {
-                    _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
+                    _showSnackbar(
+                        context,
+                        "Logout failed: ${responseData['message']}",
+                        Colors.red);
                   }
                 } else {
-                  _showSnackbar(context, "Logout failed: Server error", Colors.red);
+                  _showSnackbar(
+                      context, "Logout failed: Server error", Colors.red);
                 }
               },
               child: Text('Logout', style: TextStyle(color: Colors.red)),

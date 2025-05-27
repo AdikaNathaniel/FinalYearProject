@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'login_page.dart'; // Import for logout navigation
+import 'login_page.dart';
+import 'set_profile.dart'; // Add this import
 
 class ViewAppointmentsPage extends StatefulWidget {
   final String userEmail;
 
-  ViewAppointmentsPage({required this.userEmail}); // Accept userEmail
+  ViewAppointmentsPage({required this.userEmail});
 
   @override
   _ViewAppointmentsPageState createState() => _ViewAppointmentsPageState();
@@ -29,26 +30,26 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
         final decodedData = json.decode(response.body);
         if (decodedData['success'] == true && decodedData.containsKey('result')) {
           setState(() {
-            appointments = decodedData['result']; // Extract appointments from the result key
+            appointments = decodedData['result'];
           });
         } else {
           setState(() {
-            appointments = []; // Set to empty if there's no valid result
+            appointments = [];
           });
         }
       } else {
         setState(() {
-          appointments = []; // Handle non-200 status codes
+          appointments = [];
         });
       }
     } catch (e) {
       print("Error fetching appointments: $e");
       setState(() {
-        appointments = []; // Handle any fetch errors
+        appointments = [];
       });
     } finally {
       setState(() {
-        isLoading = false; // Stop loading indicator
+        isLoading = false;
       });
     }
   }
@@ -58,10 +59,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
     fetchAppointments();
   }
 
-  void _showUserInfoDialog() {
-    String email = widget.userEmail;
-    // String role = 'Doctor'; 
-
+  void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -74,21 +72,36 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
               children: [
                 Icon(Icons.email),
                 SizedBox(width: 10),
-                Text(email),
+                Text(widget.userEmail),
               ],
             ),
             SizedBox(height: 10),
-            Row(
-              children: [
-                // Icon(Icons.person),
-                SizedBox(width: 10),
-                // Text(role),
-              ],
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context); // Close the dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SetProfilePage(userEmail: widget.userEmail)),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.settings),
+                  SizedBox(width: 10),
+                  Text(
+                    'Settings',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 10),
             TextButton(
               onPressed: () async {
-                // Call logout API
                 final response = await http.put(
                   Uri.parse('http://localhost:3100/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
@@ -102,10 +115,10 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
                       MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   } else {
-                    _showSnackbar("Logout failed: ${responseData['message']}", Colors.red);
+                    _showSnackbar("Logout failed: ${responseData['message']}");
                   }
                 } else {
-                  _showSnackbar("Logout failed: Server error", Colors.red);
+                  _showSnackbar("Logout failed: Server error");
                 }
               },
               child: Text('Logout', style: TextStyle(color: Colors.red)),
@@ -122,13 +135,12 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
     );
   }
 
-  void _showSnackbar(String message, Color color) {
+  void _showSnackbar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
-      backgroundColor: color,
+      backgroundColor: Colors.red,
       duration: Duration(seconds: 2),
     );
-
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
@@ -139,20 +151,13 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: [
-            Colors.blue,
-            Colors.red,
-          ],
+          colors: [Colors.blue, Colors.red],
         ),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text('All Appointments', 
-           style: TextStyle(
-            color: Colors.white,
-          ),
-          ),
+          title: Text('All Appointments', style: TextStyle(color: Colors.white)),
           centerTitle: true,
           backgroundColor: Colors.blueAccent,
           actions: [
@@ -164,7 +169,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
                 ),
                 backgroundColor: Colors.white,
               ),
-              onPressed: _showUserInfoDialog,
+              onPressed: () => _showUserInfoDialog(context),
             ),
           ],
         ),

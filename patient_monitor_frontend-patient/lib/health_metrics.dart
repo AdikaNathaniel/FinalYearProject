@@ -251,7 +251,8 @@ ListTile(
     );
   }
 
-  void _showUserInfoDialog(BuildContext context) {
+
+void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -265,6 +266,15 @@ ListTile(
                 Icon(Icons.email),
                 SizedBox(width: 10),
                 Text(widget.userEmail),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.settings),
+                SizedBox(width: 10),
+                Text('Settings'),
               ],
             ),
             SizedBox(height: 10),
