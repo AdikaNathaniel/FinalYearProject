@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'verify-pin.dart'; 
 
 class CreatePinPage extends StatefulWidget {
   @override
@@ -68,12 +69,18 @@ class _CreatePinPageState extends State<CreatePinPage> {
             Text("PIN Created Successfully", textAlign: TextAlign.center),
           ],
         ),
+        
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text("OK", style: TextStyle(fontSize: 18)),
-          )
-        ],
+  TextButton(
+    onPressed: () {
+      Navigator.of(context).pop(); // close the dialog first
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => PinVerifyScreen()),
+      );
+    },
+    child: Text("Kindly verify the Pin", style: TextStyle(fontSize: 18)),
+  )
+],
       ),
     );
   }
