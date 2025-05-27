@@ -118,6 +118,7 @@ class _CreateEmergencyContactState extends State<CreateEmergencyContact> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Emergency Contact'),
+        centerTitle: true,
         backgroundColor: Colors.redAccent,
       ),
       body: Padding(
