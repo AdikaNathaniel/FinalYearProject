@@ -399,32 +399,41 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                     },
                   ),
                   const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : updatePin,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                    ),
-                    child: _isLoading 
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Text("Update PIN"),
-                  ),
+
+ElevatedButton(
+  onPressed: _isLoading ? null : updatePin,
+  style: ElevatedButton.styleFrom(
+    minimumSize: const Size(double.infinity, 56),
+    backgroundColor: Colors.blueAccent,
+    foregroundColor: Colors.white,
+    textStyle: const TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    elevation: 2,
+  ),
+  child: _isLoading
+      ? const SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2.5,
+          ),
+        )
+      : Row(
+          mainAxisSize: MainAxisSize.min, // Keeps icon + text centered
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.lock_open, color: Colors.white),
+            SizedBox(width: 8), // Spacing between icon and text
+            Text("Update PIN"),
+          ],
+        ),
+),
                   const SizedBox(height: 20),
                 ],
               ),
