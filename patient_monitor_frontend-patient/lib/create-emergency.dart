@@ -117,7 +117,10 @@ class _CreateEmergencyContactState extends State<CreateEmergencyContact> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Emergency Contact'),
+        title: const Text(
+        'Create Emergency Contact',
+        style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: Colors.redAccent,
       ),

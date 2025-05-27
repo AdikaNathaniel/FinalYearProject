@@ -10,6 +10,7 @@ import 'pregnancy-health.dart';
 import 'pregnancy-chatbot.dart';
 import 'pregnant-woman-chat.dart';
 import 'create-emergency.dart';
+import 'emergency-contact.dart';
 
 
 void main() {
@@ -165,7 +166,7 @@ ListTile(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CreateEmergencyContact(), 
+        builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail), 
       ),
     );
   },
