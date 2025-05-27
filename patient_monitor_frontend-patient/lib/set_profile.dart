@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'create-pin.dart'; // Import the CreatePinPage
+import 'create-pin.dart'; 
+import 'update-pin.dart';
 
 class SetProfilePage extends StatelessWidget {
   final String userEmail;
@@ -74,12 +75,18 @@ _buildSettingTile(
     );
   },
 ),
-            _buildSettingTile(
-              icon: Icons.edit,
-              title: 'Edit PIN',
-              iconColor: Colors.orange,
-              onTap: () => _onOptionSelected(context, 'Edit PIN'),
-            ),
+    
+    _buildSettingTile(
+  icon: Icons.edit,
+  title: 'Update PIN',
+  iconColor: Colors.blueAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PinUpdateScreen()),
+    );
+  },
+),
             _buildSettingTile(
               icon: Icons.delete_outline,
               title: 'Delete PIN',
