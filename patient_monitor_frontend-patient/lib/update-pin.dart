@@ -15,43 +15,54 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController newPinController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-  late List<TextEditingController> _pinControllers;
-  late List<FocusNode> _pinFocusNodes;
+  List<TextEditingController> _pinControllers = [];
+  List<FocusNode> _pinFocusNodes = [];
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
+    // Clear existing controllers if any
+    _disposeControllers();
+    
+    // Initialize new controllers
     _pinControllers = List.generate(6, (index) => TextEditingController());
     _pinFocusNodes = List.generate(6, (index) => FocusNode());
     
-    // Add listeners to focus nodes for better UI updates
+    // Add listeners to focus nodes
     for (int i = 0; i < _pinFocusNodes.length; i++) {
       _pinFocusNodes[i].addListener(() {
-        if (mounted) {
-          setState(() {});
-        }
+        if (mounted) setState(() {});
       });
+    }
+  }
+
+  void _disposeControllers() {
+    for (var controller in _pinControllers) {
+      controller.dispose();
+    }
+    for (var focusNode in _pinFocusNodes) {
+      focusNode.dispose();
     }
   }
 
   Future<void> updatePin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validate PIN input
-    final oldPin = _pinControllers.map((controller) => controller.text.trim()).join('');
+    final oldPin = _pinControllers.map((c) => c.text.trim()).join('');
     if (oldPin.length != 6) {
       _showErrorDialog("Please enter complete 6-digit old PIN");
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final url = Uri.parse('http://localhost:3100/api/v1/pin');
-      
       final requestBody = {
         "userId": userIdController.text.trim(),
         "oldPin": oldPin,
@@ -59,51 +70,39 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
         "phone": phoneController.text.trim(),
       };
 
-      print('Sending request: ${jsonEncode(requestBody)}'); // Debug log
+      print('Request: ${jsonEncode(requestBody)}');
 
       final response = await http.patch(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       ).timeout(const Duration(seconds: 30));
 
-      print('Response status: ${response.statusCode}'); // Debug log
-      print('Response body: ${response.body}'); // Debug log
+      print('Response: ${response.statusCode} - ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        final message = responseData['message'] ?? 'PIN updated successfully';
-        _showSuccessDialog(message);
+        _showSuccessDialog(responseData['message'] ?? 'PIN updated successfully');
       } else {
-        String errorMessage = "Failed to update PIN (Status: ${response.statusCode})";
+        String error = "Failed to update PIN (${response.statusCode})";
         try {
-          final errorData = jsonDecode(response.body);
-          errorMessage = errorData['message'] ?? errorMessage;
-        } catch (e) {
-          // If response body is not JSON, use default message
-        }
-        _showErrorDialog(errorMessage);
+          error = jsonDecode(response.body)['message'] ?? error;
+        } catch (_) {}
+        _showErrorDialog(error);
       }
     } catch (e) {
-      print('Error occurred: $e'); // Debug log
-      String errorMessage = "Error occurred: ";
+      print('Error: $e');
+      String error = "Error occurred: ";
       if (e.toString().contains('TimeoutException')) {
-        errorMessage += "Request timed out. Please try again.";
+        error += "Request timed out";
       } else if (e.toString().contains('SocketException')) {
-        errorMessage += "Network error. Please check your connection.";
+        error += "Network error";
       } else {
-        errorMessage += e.toString();
+        error += e.toString();
       }
-      _showErrorDialog(errorMessage);
+      _showErrorDialog(error);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -121,11 +120,11 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
             Text("Success"),
           ],
         ),
-        content: Text(message ?? "PIN updated successfully."),
+        content: Text(message ?? "PIN updated successfully"),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pop(context);
               _clearAllFields();
             },
             child: const Text("OK", style: TextStyle(color: Colors.green)),
@@ -151,7 +150,7 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.pop(context),
             child: const Text("OK", style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -163,11 +162,9 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
     userIdController.clear();
     newPinController.clear();
     phoneController.clear();
-    for (var controller in _pinControllers) {
-      controller.clear();
-    }
-    // Move focus to first field
+    for (var c in _pinControllers) c.clear();
     FocusScope.of(context).requestFocus(FocusNode());
+    if (mounted) setState(() {});
   }
 
   Widget _buildPinInput() {
@@ -200,43 +197,20 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: _pinFocusNodes[index].hasFocus ? Colors.blueAccent : Colors.grey,
+                      color: _pinFocusNodes[index].hasFocus 
+                          ? Colors.blueAccent 
+                          : Colors.grey,
                       width: 2,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
-                      width: 1.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.blueAccent,
-                      width: 2,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                      width: 2,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: Colors.grey, width: 1.5),
                   ),
                   filled: true,
-                  fillColor: _pinFocusNodes[index].hasFocus 
+                  fillColor: _pinFocusNodes[index].hasFocus
                       ? Colors.blue.shade50
                       : Colors.grey.shade100,
-                  counterText: '',
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 onChanged: (value) {
@@ -245,13 +219,10 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                   } else if (value.isEmpty && index > 0) {
                     FocusScope.of(context).requestFocus(_pinFocusNodes[index - 1]);
                   }
+                  if (mounted) setState(() {});
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '';
-                  }
-                  return null;
-                },
+                validator: (value) => 
+                    value?.isEmpty ?? true ? '' : null,
               ),
             );
           }),
@@ -265,12 +236,7 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
     userIdController.dispose();
     newPinController.dispose();
     phoneController.dispose();
-    for (var controller in _pinControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _pinFocusNodes) {
-      focusNode.dispose();
-    }
+    _disposeControllers();
     super.dispose();
   }
 
@@ -282,7 +248,6 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
         backgroundColor: Colors.blueAccent,
         centerTitle: true,
         foregroundColor: Colors.white,
-        elevation: 2,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -308,19 +273,12 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                      ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
                     ),
                     validator: (value) => 
-                        (value == null || value.trim().isEmpty) ? 'Please enter user name' : null,
+                        value?.trim().isEmpty ?? true 
+                            ? 'Please enter user name' 
+                            : null,
                   ),
                   const SizedBox(height: 24),
                   _buildPinInput(),
@@ -333,16 +291,7 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                      ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [
@@ -357,9 +306,6 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                       if (value.trim().length < 4) {
                         return 'PIN must be at least 4 digits';
                       }
-                      if (value.trim().length > 6) {
-                        return 'PIN must not exceed 6 digits';
-                      }
                       return null;
                     },
                   ),
@@ -372,21 +318,11 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                      ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
                     ),
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(15), // Reasonable phone number limit
                     ],
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -399,42 +335,38 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                     },
                   ),
                   const SizedBox(height: 32),
-
-ElevatedButton(
-  onPressed: _isLoading ? null : updatePin,
-  style: ElevatedButton.styleFrom(
-    minimumSize: const Size(double.infinity, 56),
-    backgroundColor: Colors.blueAccent,
-    foregroundColor: Colors.white,
-    textStyle: const TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-    elevation: 2,
-  ),
-  child: _isLoading
-      ? const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            color: Colors.white,
-            strokeWidth: 2.5,
-          ),
-        )
-      : Row(
-          mainAxisSize: MainAxisSize.min, // Keeps icon + text centered
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.lock_open, color: Colors.white),
-            SizedBox(width: 8), // Spacing between icon and text
-            Text("Update PIN"),
-          ],
-        ),
-),
-                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : updatePin,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_open),
+                              SizedBox(width: 8),
+                              Text("Update PIN"),
+                            ],
+                          ),
+                  ),
                 ],
               ),
             ),

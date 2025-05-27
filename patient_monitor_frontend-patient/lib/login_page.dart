@@ -8,6 +8,7 @@ import 'users_summary.dart'; // Import UserListPage
 import 'pregnancy-calculator.dart'; 
 import 'face_register.dart'; // Import FaceRegisterPage
 import 'face_login.dart'; // Import FaceLoginPage
+import 'pin-login.dart'; // Import LoginPinPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -266,43 +267,87 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackbar("Login successful", Colors.green);
 
         // Navigate to the appropriate page based on user type
-        if (selectedUserType.toLowerCase() == 'doctor') {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PregnancyComplicationsPage(userEmail: email),
-              ),
-            );
-          }
-        } else if (selectedUserType.toLowerCase() == 'pregnant woman') {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PregnancyCalculatorScreen(userEmail: email), // Pass the userEmail here
-              ),
-            );
-          }
-        } else if (selectedUserType.toLowerCase() == 'family relative') {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HealthDashboard(userEmail: email),
-              ),
-            );
-          }
-        } else if (selectedUserType.toLowerCase() == 'admin') {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => UserListPage(), // Navigate to UserListPage
-              ),
-            );
-          }
-        } else {
+if (selectedUserType.toLowerCase() == 'doctor') {
+  if (mounted) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPinPage(
+          userEmail: email,
+          userType: selectedUserType.toLowerCase(),
+          // onSuccess: () {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => PregnancyComplicationsPage(userEmail: email),
+          //     ),
+          //   );
+          // },
+        ),
+      ),
+    );
+  }
+} else if (selectedUserType.toLowerCase() == 'pregnant woman') {
+  if (mounted) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPinPage(
+          userEmail: email,
+          userType: selectedUserType.toLowerCase(),
+          // onSuccess: () {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => PregnancyCalculatorScreen(userEmail: email),
+          //     ),
+          //   );
+          // },
+        ),
+      ),
+    );
+  }
+} else if (selectedUserType.toLowerCase() == 'family relative') {
+  if (mounted) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPinPage(
+          userEmail: email,
+          userType: selectedUserType.toLowerCase(),
+          // onSuccess: () {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => HealthDashboard(userEmail: email),
+          //     ),
+          //   );
+          // },
+        ),
+      ),
+    );
+  }
+} else if (selectedUserType.toLowerCase() == 'admin') {
+  if (mounted) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPinPage(
+          userEmail: email,
+          userType: selectedUserType.toLowerCase(),
+          // onSuccess: () {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => UserListPage(),
+          //     ),
+          //   );
+          // },
+        ),
+      ),
+    );
+  }
+}else {
           _showSnackbar("Invalid user type.", Colors.red);
         }
       } else {

@@ -9,6 +9,7 @@ import 'protein-strip.dart';
 import 'pregnancy-health.dart';
 import 'pregnancy-chatbot.dart';
 import 'pregnant-woman-chat.dart';
+import 'create-emergency.dart';
 
 
 void main() {
@@ -159,12 +160,12 @@ ListTile(
 ),
 ListTile(
   leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
-  title: const Text('Pregnancy Chatbot'), // Add a title text
+  title: const Text('Emergency Contacts'), 
   onTap: () {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PregnantWomanChatPage(), // Ensure PregChatBotPage is a const constructor
+        builder: (context) => CreateEmergencyContact(), 
       ),
     );
   },
