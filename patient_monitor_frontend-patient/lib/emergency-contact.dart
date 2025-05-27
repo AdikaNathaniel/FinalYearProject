@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'create-emergency.dart'; 
 import 'emergency-list.dart';
+import 'emergency-search.dart';
+import 'emergency-update.dart';
+import 'emergency-delete.dart';
 
 class EmergencyContactsPage extends StatelessWidget {
   final String userEmail;
@@ -132,38 +135,58 @@ class EmergencyContactsPage extends StatelessWidget {
             //   },
             // ),
             
-            _buildSettingCard(
+             _buildSettingCard(
               icon: Icons.contact_page,
-              title: 'Find Emergency Contact',
-              iconColor: Colors.purple,
+              title: 'Find An Emergency Contact',
+              iconColor: Colors.green,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Find Contact functionality coming soon')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EmergencyContactSearch()),
                 );
               },
             ),
-            
-            _buildSettingCard(
+
+
+            // UpdateEmergencyContact
+
+             _buildSettingCard(
               icon: Icons.edit,
               title: 'Edit Emergency Contact',
-              iconColor: Colors.orange,
+              iconColor: Colors.blueAccent,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit Contact functionality coming soon')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UpdateEmergencyContact()),
                 );
               },
             ),
+        
             
-            _buildSettingCard(
+
+            // DeleteEmergencyContactPage
+             _buildSettingCard(
               icon: Icons.delete_forever,
               title: 'Remove Emergency Contact',
               iconColor: Colors.red,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Remove Contact functionality coming soon')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  DeleteEmergencyContactPage()),
                 );
               },
             ),
+
+            // _buildSettingCard(
+            //   icon: Icons.delete_forever,
+            //   title: 'Remove Emergency Contact',
+            //   iconColor: Colors.red,
+            //   onTap: () {
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(content: Text('Remove Contact functionality coming soon')),
+            //     );
+            //   },
+            // ),
 
             const SizedBox(height: 16),
 
