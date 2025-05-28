@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'create_cancel-appointment.dart';
-import 'login_page.dart'; // Import for logout navigation
+import 'login_page.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -11,7 +11,6 @@ import 'pregnancy-chatbot.dart';
 import 'pregnant-woman-chat.dart';
 import 'create-emergency.dart';
 import 'emergency-contact.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +34,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HealthDashboard(userEmail: 'user@example.com'), // Pass userEmail here
+      home: HealthDashboard(userEmail: 'user@example.com'),
     );
   }
 }
@@ -51,6 +50,80 @@ class HealthDashboard extends StatefulWidget {
 
 class _HealthDashboardState extends State<HealthDashboard> {
   String weightValue = '68.5 kg';
+  final TextEditingController _emergencyMessageController = TextEditingController();
+
+  Future<void> _sendEmergencyAlert(String message) async {
+    if (message.isEmpty) {
+      _showSnackbar(context, "Please enter an emergency message", Colors.red);
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3100/api/v1/emergency/contacts/send'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({"message": message}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['success']) {
+          _showSnackbar(context, "Emergency alert sent successfully!", Colors.green);
+        } else {
+          _showSnackbar(context, "Failed to send alert: ${responseData['message']}", Colors.red);
+        }
+      } else {
+        _showSnackbar(context, "Failed to send alert: Server error", Colors.red);
+      }
+    } catch (e) {
+      _showSnackbar(context, "Error: ${e.toString()}", Colors.red);
+    }
+  }
+
+  void _showEmergencyAlertDialog(BuildContext context) {
+    _emergencyMessageController.clear();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Emergency Alert'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // const Text('Please describe your emergency:'),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _emergencyMessageController,
+              decoration: const InputDecoration(
+                hintText: 'Enter Emergency Message!',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (_emergencyMessageController.text.trim().isNotEmpty) {
+                Navigator.pop(context);
+                _sendEmergencyAlert(_emergencyMessageController.text.trim());
+              } else {
+                _showSnackbar(context, "Please enter an emergency message", Colors.red);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Send Alert'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +148,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               backgroundColor: Colors.white,
             ),
             onPressed: () {
-              _showUserInfoDialog(context); // Show user info dialog
+              _showUserInfoDialog(context);
             },
           ),
         ],
@@ -135,47 +208,46 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-  ListTile(
-  leading: Icon(Icons.info),
-  title: Text('Pregnancy InfoDesk'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PregnancyHealthForm(),
-      ),
-    );
-  },
-),
-ListTile(
-  leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
-  title: const Text('Pregnancy Chatbot'), // Add a title text
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PregChatBotPage(), // Ensure PregChatBotPage is a const constructor
-      ),
-    );
-  },
-),
-ListTile(
-  leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
-  title: const Text('Emergency Contacts'), 
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail), 
-      ),
-    );
-  },
-),
+            ListTile(
+              leading: Icon(Icons.info),
+              title: Text('Pregnancy InfoDesk'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PregnancyHealthForm(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
+              title: const Text('Pregnancy Chatbot'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PregChatBotPage(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
+              title: const Text('Emergency Contacts'), 
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail), 
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
       body: SingleChildScrollView(
-        // Wrap the body in SingleChildScrollView
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -191,9 +263,8 @@ ListTile(
             childAspectRatio: 1.3,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            shrinkWrap: true, // Allow GridView to take only the space it needs
-            physics:
-                NeverScrollableScrollPhysics(), // Disable scrolling in GridView
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             children: [
               MetricCard(
                 title: 'Body Temperature',
@@ -236,7 +307,7 @@ ListTile(
                 icon: Icons.monitor_weight,
                 color: Colors.green,
                 lastUpdated: '1 day ago',
-                onEdit: _showWeightInputDialog, // Pass the edit function
+                onEdit: _showWeightInputDialog,
               ),
             ],
           ),
@@ -244,7 +315,7 @@ ListTile(
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showWeightInputDialog(context); // Show weight input dialog
+          _showWeightInputDialog(context);
         },
         child: const Icon(Icons.add),
         tooltip: 'Add Newly Measured Weight',
@@ -253,8 +324,7 @@ ListTile(
     );
   }
 
-
-void _showUserInfoDialog(BuildContext context) {
+  void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -271,6 +341,27 @@ void _showUserInfoDialog(BuildContext context) {
               ],
             ),
             SizedBox(height: 10),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                _showEmergencyAlertDialog(context);
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.warning, color: Colors.red),
+                  SizedBox(width: 10),
+                  Text(
+                    'Send An Emergency Alert',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      // decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -282,7 +373,6 @@ void _showUserInfoDialog(BuildContext context) {
             SizedBox(height: 10),
             TextButton(
               onPressed: () async {
-                // Call logout API
                 final response = await http.put(
                   Uri.parse('http://localhost:3100/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
@@ -339,7 +429,7 @@ void _showUserInfoDialog(BuildContext context) {
             onPressed: () {
               if (weightController.text.isNotEmpty) {
                 setState(() {
-                  weightValue = '${weightController.text} kg'; // Update the weight value
+                  weightValue = '${weightController.text} kg';
                 });
                 Navigator.pop(context);
               }
@@ -372,7 +462,7 @@ class MetricCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String lastUpdated;
-  final Function(BuildContext)? onEdit; // Callback for editing weight
+  final Function(BuildContext)? onEdit;
 
   const MetricCard({
     Key? key,
@@ -389,7 +479,7 @@ class MetricCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (onEdit != null) {
-          onEdit!(context); // Call the edit function if it exists
+          onEdit!(context);
         }
       },
       child: Card(
