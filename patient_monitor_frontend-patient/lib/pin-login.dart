@@ -111,9 +111,9 @@ class _LoginPinPageState extends State<LoginPinPage> {
     } else if (userType == 'admin') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => UserListPage(),
-        ),
+    MaterialPageRoute(
+  builder: (context) => UserListPage(userEmail: widget.userEmail),
+),
       );
     } else {
       // Fallback for unknown user types
