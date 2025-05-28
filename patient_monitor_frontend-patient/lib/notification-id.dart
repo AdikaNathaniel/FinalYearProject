@@ -48,49 +48,6 @@ class _NotificationByIdPageState extends State<NotificationByIdPage> {
     }
   }
 
-//   void _showNotificationDialog(Map<String, dynamic> notification) {
-//     showDialog(
-//       context: context,
-//       builder: (context) => AlertDialog(
-//         title: const Text('Notification Details'),
-//         content: SingleChildScrollView(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               _buildDetailRow('ID:', notification['_id'] ?? notification['id'] ?? 'N/A'),
-//               const Divider(),
-//               _buildDetailRow('Role:', notification['role'] ?? 'N/A'),
-//               const Divider(),
-//               _buildDetailRow('Message:', notification['message'] ?? 'No message'),
-//               const Divider(),
-//               _buildDetailRow('Scheduled At:', _formatDate(notification['scheduledAt'])),
-//               const Divider(),
-//               _buildDetailRow('Sent At:', _formatDate(notification['sentAt'])),
-//               const Divider(),
-//               _buildStatusRow(
-//                 'Status:', 
-//                 notification['isSent'] == true ? 'Sent' : 'Not Sent',
-//                 notification['isSent'] == true ? Colors.green : Colors.red,
-//               ),
-//               const Divider(),
-//               _buildStatusRow(
-//                 'Read Status:', 
-//                 notification['isRead'] == true ? 'Read' : 'Unread',
-//                 notification['isRead'] == true ? Colors.blue : Colors.orange,
-//               ),
-//             ],
-//           ),
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () => Navigator.of(context).pop(),
-//             child: const Text('Close'),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
 
 
 void _showNotificationDialog(Map<String, dynamic> notification) {

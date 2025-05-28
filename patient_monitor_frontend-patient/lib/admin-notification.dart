@@ -3,6 +3,8 @@ import 'create-notification.dart';
 import 'notification-list.dart';
 import 'delete-notification.dart';
 import 'notification-id.dart';
+import 'notification-role.dart';
+
 
 class NotificationSettingsPage extends StatelessWidget {
   final String userEmail;
@@ -96,12 +98,38 @@ class NotificationSettingsPage extends StatelessWidget {
 ),
 
             
+            // _buildNotificationCard(
+            //   icon: Icons.group,
+            //   title: 'Get Notifications by Role',
+            //   iconColor: Colors.teal,
+            //   onTap: () => _onOptionSelected(context, 'Get by Role'),
+            // ),
+
+
+  _buildNotificationCard(
+  icon: Icons.group,
+  title: 'Get Notifications by Role',
+  iconColor: Colors.teal,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const   NotificationsByRolePage()),
+    );
+  },
+),
+
+            
             _buildNotificationCard(
-              icon: Icons.group,
-              title: 'Get Notifications by Role',
-              iconColor: Colors.teal,
-              onTap: () => _onOptionSelected(context, 'Get by Role'),
-            ),
+  icon: Icons.group,
+  title: 'Create Notifications By Role',
+  iconColor: Colors.green,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const   NotificationsByRolePage()),
+    );
+  },
+),
             
 
                 _buildNotificationCard(
