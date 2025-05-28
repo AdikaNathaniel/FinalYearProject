@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'create-notification.dart';
+import 'notification-list.dart';
+import 'delete-notification.dart';
+import 'notification-id.dart';
 
 class NotificationSettingsPage extends StatelessWidget {
   final String userEmail;
@@ -82,7 +85,7 @@ class NotificationSettingsPage extends StatelessWidget {
 
             _buildNotificationCard(
   icon: Icons.add_alert,
-  title: 'Create Notification (Admin)',
+  title: 'Create Notification',
   iconColor: Colors.green,
   onTap: () {
     Navigator.push(
@@ -100,12 +103,18 @@ class NotificationSettingsPage extends StatelessWidget {
               onTap: () => _onOptionSelected(context, 'Get by Role'),
             ),
             
-            _buildNotificationCard(
-              icon: Icons.notifications_active,
-              title: 'Get All Notifications',
-              iconColor: Colors.orange,
-              onTap: () => _onOptionSelected(context, 'Get All Notifications'),
-            ),
+
+                _buildNotificationCard(
+  icon: Icons.notifications_active,
+  title: 'Get All Notifications',
+  iconColor: Colors.orange,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationListPage()),
+    );
+  },
+),
             
             _buildNotificationCard(
               icon: Icons.edit_notifications,
@@ -114,12 +123,27 @@ class NotificationSettingsPage extends StatelessWidget {
               onTap: () => _onOptionSelected(context, 'Update Notification'),
             ),
             
-            _buildNotificationCard(
-              icon: Icons.info_outline,
-              title: 'Get Notification by ID (Admin)',
-              iconColor: Colors.purple,
-              onTap: () => _onOptionSelected(context, 'Get by ID'),
-            ),
+
+            // NotificationByIdPage
+            // _buildNotificationCard(
+            //   icon: Icons.info_outline,
+            //   title: 'Get Notification by ID',
+            //   iconColor: Colors.purple,
+            //   onTap: () => _onOptionSelected(context, 'Get by ID'),
+            // ),
+
+
+                  _buildNotificationCard(
+  icon: Icons.info_outline,
+  title: 'Get Notification by ID',
+  iconColor: Colors.orange,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationByIdPage()),
+    );
+  },
+),
             
             _buildNotificationCard(
               icon: Icons.check_circle_outline,
@@ -128,13 +152,26 @@ class NotificationSettingsPage extends StatelessWidget {
               onTap: () => _onOptionSelected(context, 'Mark as Sent'),
             ),
             
-            _buildNotificationCard(
-              icon: Icons.delete_forever,
-              title: 'Delete Notification (Admin)',
-              iconColor: Colors.red,
-              onTap: () => _onOptionSelected(context, 'Delete Notification'),
-            ),
+            // _buildNotificationCard(
+            //   icon: Icons.delete_forever,
+            //   title: 'Delete Notification ',
+            //   iconColor: Colors.red,
+            //   onTap: () => _onOptionSelected(context, 'Delete Notification'),
+            // ),
 
+
+
+          _buildNotificationCard(
+  icon: Icons.delete_forever,
+  title: 'Delete Notifications',
+  iconColor: Colors.red,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DeleteNotificationPage()),
+    );
+  },
+),
             const SizedBox(height: 16), // Bottom spacing
           ],
         ),

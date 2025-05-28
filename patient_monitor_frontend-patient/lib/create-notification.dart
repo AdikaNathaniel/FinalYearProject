@@ -12,6 +12,19 @@ class CreateNotificationPage extends StatefulWidget {
 class _CreateNotificationPageState extends State<CreateNotificationPage> {
   final TextEditingController _messageController = TextEditingController();
   DateTime? _scheduledAt;
+  bool _isFormValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageController.addListener(_validateForm);
+  }
+
+  void _validateForm() {
+    setState(() {
+      _isFormValid = _messageController.text.trim().isNotEmpty && _scheduledAt != null;
+    });
+  }
 
   Future<void> _pickDateTime() async {
     final date = await showDatePicker(
@@ -37,30 +50,46 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
             time.minute,
           ).toUtc(); // Convert to UTC
         });
+        _validateForm(); // Revalidate form after date selection
       }
     }
   }
 
   Future<void> _submitNotification() async {
-    final url = Uri.parse('http://localhost:3100/api/v1/notifications');
+    if (!_isFormValid) return;
 
-    final body = {
-      'role': 'Admin',
-      'message': _messageController.text,
-      'scheduledAt': _scheduledAt?.toIso8601String(),
-    };
+    try {
+      final url = Uri.parse('http://localhost:3100/api/v1/notifications');
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(body),
-    );
+      final body = {
+        'role': 'Admin',
+        'message': _messageController.text.trim(),
+        'scheduledAt': _scheduledAt?.toIso8601String(),
+      };
 
-    if (response.statusCode == 201) {
-      _showSuccessDialog();
-    } else {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 201) {
+        _showSuccessDialog();
+      } else {
+        final errorData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${errorData['message'] ?? 'Failed to create notification'}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${response.statusCode}')),
+        SnackBar(
+          content: Text('Network error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -89,6 +118,7 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
               setState(() {
                 _scheduledAt = null;
               });
+              _validateForm(); // Revalidate after clearing
             },
             child: const Text('OK'),
           ),
@@ -99,6 +129,7 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
 
   @override
   void dispose() {
+    _messageController.removeListener(_validateForm);
     _messageController.dispose();
     super.dispose();
   }
@@ -106,7 +137,7 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
   @override
   Widget build(BuildContext context) {
     final String formattedDate = _scheduledAt != null
-        ? _scheduledAt!.toLocal().toString()
+        ? _scheduledAt!.toLocal().toString().substring(0, 16) // Better formatting
         : 'Select Date & Time';
 
     return Scaffold(
@@ -125,12 +156,18 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
               decoration: const InputDecoration(
                 labelText: 'Notification Message',
                 border: OutlineInputBorder(),
+                helperText: 'Enter your notification message',
               ),
               maxLines: 3,
             ),
             const SizedBox(height: 20),
             ListTile(
-              title: Text(formattedDate),
+              title: Text(
+                formattedDate,
+                style: TextStyle(
+                  color: _scheduledAt != null ? Colors.black : Colors.grey,
+                ),
+              ),
               leading: const Icon(Icons.calendar_today),
               trailing: const Icon(Icons.access_time),
               onTap: _pickDateTime,
@@ -141,17 +178,28 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
-              onPressed: (_messageController.text.isNotEmpty && _scheduledAt != null)
-                  ? _submitNotification
-                  : null,
+              onPressed: _isFormValid ? _submitNotification : null,
               icon: const Icon(Icons.send),
               label: const Text('Send Notification'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(50),
+                disabledBackgroundColor: Colors.grey.shade300,
+                disabledForegroundColor: Colors.grey.shade600,
               ),
             ),
+            if (!_isFormValid)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Please enter a message and select a date/time',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

@@ -119,7 +119,6 @@ InkWell(
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Colors.blueAccent,
-              decoration: TextDecoration.underline, // Looks like a link
             ),
           ),
         ),
