@@ -60,39 +60,52 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  
+
+
   Future<void> _fetchNotificationById(String id) async {
-    setState(() {
-      isLoading = true;
-    });
+  setState(() {
+    isLoading = true;
+  });
 
-    try {
-      final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/notifications/$id'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
+  try {
+    final response = await http.get(
+      Uri.parse('http://localhost:3100/api/v1/notifications/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          singleNotification = Map<String, dynamic>.from(data);
-          isLoading = false;
-        });
-        _showSingleNotificationDialog();
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      
+      // Extract the notification data from the 'result' field
+      Map<String, dynamic> notificationData;
+      if (data.containsKey('result') && data['result'] is Map<String, dynamic>) {
+        notificationData = Map<String, dynamic>.from(data['result']);
       } else {
-        setState(() {
-          isLoading = false;
-        });
-        _showErrorDialog('Failed to fetch notification: ${response.statusCode}');
+        // Fallback to direct data if 'result' field doesn't exist
+        notificationData = Map<String, dynamic>.from(data);
       }
-    } catch (e) {
+      
+      setState(() {
+        singleNotification = notificationData;
+        isLoading = false;
+      });
+      _showSingleNotificationDialog();
+    } else {
       setState(() {
         isLoading = false;
       });
-      _showErrorDialog('Error fetching notification: $e');
+      _showErrorDialog('Failed to fetch notification: ${response.statusCode}');
     }
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+    _showErrorDialog('Error fetching notification: $e');
   }
+}
 
   void _showSingleNotificationDialog() {
     if (singleNotification == null) return;
