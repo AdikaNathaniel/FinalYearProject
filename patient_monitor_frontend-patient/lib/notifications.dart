@@ -17,6 +17,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   List<Map<String, dynamic>> notifications = [];
   bool isLoading = false;
   Map<String, dynamic>? singleNotification;
+  Set<String> markingAsRead = {}; // Track which notifications are being marked as read
 
   String _formatDate(String? dateString) {
     if (dateString == null || dateString.isEmpty) {
@@ -60,52 +61,137 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  
+  Future<void> _markAsRead(String notificationId, int index) async {
+    setState(() {
+      markingAsRead.add(notificationId);
+    });
 
+    try {
+      final response = await http.put(
+        Uri.parse('http://localhost:3100/api/v1/notifications/$notificationId/mark-as-read'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Update the notification in the list
+        setState(() {
+          notifications[index]['isRead'] = true;
+          markingAsRead.remove(notificationId);
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Notification marked as read'),
+              duration: Duration(seconds: 2),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          markingAsRead.remove(notificationId);
+        });
+        _showErrorDialog('Failed to mark as read: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        markingAsRead.remove(notificationId);
+      });
+      _showErrorDialog('Error marking as read: $e');
+    }
+  }
+
+  Future<void> _markSingleNotificationAsRead(String notificationId) async {
+    setState(() {
+      markingAsRead.add(notificationId);
+    });
+
+    try {
+      final response = await http.put(
+        Uri.parse('http://localhost:3100/api/v1/notifications/$notificationId/mark-as-read'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Update the single notification
+        setState(() {
+          if (singleNotification != null) {
+            singleNotification!['isRead'] = true;
+          }
+          markingAsRead.remove(notificationId);
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Notification marked as read'),
+              duration: Duration(seconds: 2),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          markingAsRead.remove(notificationId);
+        });
+        _showErrorDialog('Failed to mark as read: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        markingAsRead.remove(notificationId);
+      });
+      _showErrorDialog('Error marking as read: $e');
+    }
+  }
 
   Future<void> _fetchNotificationById(String id) async {
-  setState(() {
-    isLoading = true;
-  });
-
-  try {
-    final response = await http.get(
-      Uri.parse('http://localhost:3100/api/v1/notifications/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      
-      // Extract the notification data from the 'result' field
-      Map<String, dynamic> notificationData;
-      if (data.containsKey('result') && data['result'] is Map<String, dynamic>) {
-        notificationData = Map<String, dynamic>.from(data['result']);
-      } else {
-        // Fallback to direct data if 'result' field doesn't exist
-        notificationData = Map<String, dynamic>.from(data);
-      }
-      
-      setState(() {
-        singleNotification = notificationData;
-        isLoading = false;
-      });
-      _showSingleNotificationDialog();
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      _showErrorDialog('Failed to fetch notification: ${response.statusCode}');
-    }
-  } catch (e) {
     setState(() {
-      isLoading = false;
+      isLoading = true;
     });
-    _showErrorDialog('Error fetching notification: $e');
+
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:3100/api/v1/notifications/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        // Extract the notification data from the 'result' field
+        Map<String, dynamic> notificationData;
+        if (data.containsKey('result') && data['result'] is Map<String, dynamic>) {
+          notificationData = Map<String, dynamic>.from(data['result']);
+        } else {
+          // Fallback to direct data if 'result' field doesn't exist
+          notificationData = Map<String, dynamic>.from(data);
+        }
+        
+        setState(() {
+          singleNotification = notificationData;
+          isLoading = false;
+        });
+        _showSingleNotificationDialog();
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        _showErrorDialog('Failed to fetch notification: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showErrorDialog('Error fetching notification: $e');
+    }
   }
-}
 
   void _showSingleNotificationDialog() {
     if (singleNotification == null) return;
@@ -113,31 +199,98 @@ class _NotificationsPageState extends State<NotificationsPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Notification Details'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailRow('Role', singleNotification!['role'] ?? 'N/A'),
-                _buildDetailRow('Message', singleNotification!['message'] ?? 'No message'),
-                _buildDetailRow('Scheduled At', _formatDate(singleNotification!['scheduledAt'])),
-                _buildDetailRow('Sent At', _formatDate(singleNotification!['sentAt'])),
-                _buildDetailRow('Status', 
-                  singleNotification!['isSent'] == true ? 'Sent' : 'Not Sent',
-                  isSent: singleNotification!['isSent']),
-                _buildDetailRow('Read Status', 
-                  singleNotification!['isRead'] == true ? 'Read' : 'Unread',
-                  isRead: singleNotification!['isRead']),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final notificationId = singleNotification!['_id'] ?? singleNotification!['id'] ?? '';
+            final isRead = singleNotification!['isRead'] == true;
+            final isMarkingAsRead = markingAsRead.contains(notificationId);
+
+// return AlertDialog(
+//               title: const Text('Notification Details'),
+//               content: SingleChildScrollView(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     _buildDetailRow('Role', singleNotification!['role'] ?? 'N/A'),
+//                     _buildDetailRow('Message', singleNotification!['message'] ?? 'No message'),
+//                     _buildDetailRow('Scheduled At', _formatDate(singleNotification!['scheduledAt'])),
+//                     _buildDetailRow('Sent At', _formatDate(singleNotification!['sentAt'])),
+//                     _buildDetailRow('Status', 
+//                       singleNotification!['isSent'] == true ? 'Sent' : 'Not Sent',
+//                       isSent: singleNotification!['isSent']),
+//                     Row(
+//                       children: [
+//                         Expanded(
+//                           child: _buildDetailRow('Read Status', 
+//                             isRead ? 'Read' : 'Unread',
+//                             isRead: isRead),
+//                         ),
+//                         if (!isRead) ...[
+//                           const SizedBox(width: 8),
+//                           ElevatedButton(
+//                             onPressed: isMarkingAsRead ? null : () async {
+//                               await _markSingleNotificationAsRead(notificationId);
+//                               setDialogState(() {}); // Refresh dialog
+//                             },
+//                             style: ElevatedButton.styleFrom(
+//                               backgroundColor: Colors.blue,
+//                               foregroundColor: Colors.white,
+//                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+//                             ),
+//                             child: isMarkingAsRead 
+//                               ? const SizedBox(
+//                                   width: 16,
+//                                   height: 16,
+//                                   child: CircularProgressIndicator(
+//                                     strokeWidth: 2,
+//                                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+//                                   ),
+//                                 )
+//                               : const Text('Mark as Read', style: TextStyle(fontSize: 12)),
+//                           ),
+//                         ],
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//               actions: [
+//                 TextButton(
+//                   onPressed: () => Navigator.of(context).pop(),
+//                   child: const Text('Close'),
+//                 ),
+//               ],
+//  );
+
+
+
+return AlertDialog(
+  title: const Text('Notification Details'),
+  content: SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailRow('Role', singleNotification!['role'] ?? 'N/A'),
+        _buildDetailRow('Message', singleNotification!['message'] ?? 'No message'),
+        _buildDetailRow('Scheduled At', _formatDate(singleNotification!['scheduledAt'])),
+        _buildDetailRow('Sent At', _formatDate(singleNotification!['sentAt'])),
+        _buildDetailRow('Status', 
+          singleNotification!['isSent'] == true ? 'Sent' : 'Not Sent',
+          isSent: singleNotification!['isSent']),
+        _buildDetailRow('Read Status', 
+          isRead ? 'Read' : 'Unread',
+          isRead: isRead),
+      ],
+    ),
+  ),
+  actions: [
+    TextButton(
+      onPressed: () => Navigator.of(context).pop(),
+      child: const Text('Close'),
+    ),
+  ],
+);
+          },
         );
       },
     );
@@ -253,197 +406,236 @@ class _NotificationsPageState extends State<NotificationsPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('All Notifications'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: notifications.isEmpty
-                ? const Center(child: Text('No notifications found'))
-                : ListView.builder(
-                    itemCount: notifications.length,
-                    itemBuilder: (context, index) {
-                      final notification = notifications[index];
-                      final notificationId = notification['_id'] ?? notification['id'] ?? 'N/A';
-                      
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('All Notifications'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: notifications.isEmpty
+                    ? const Center(child: Text('No notifications found'))
+                    : ListView.builder(
+                        itemCount: notifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = notifications[index];
+                          final notificationId = notification['_id'] ?? notification['id'] ?? 'N/A';
+                          final isRead = notification['isRead'] == true;
+                          final isMarkingAsRead = markingAsRead.contains(notificationId);
+                          
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            'ID: $notificationId',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                'ID: $notificationId',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                            overflow: TextOverflow.ellipsis,
+                                            const SizedBox(width: 4),
+                                            GestureDetector(
+                                              onTap: () => _copyToClipboard(notificationId, 'Notification ID'),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[200],
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.copy,
+                                                  size: 14,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: notification['role'] == 'Admin'
+                                              ? Colors.red.withOpacity(0.1)
+                                              : Colors.blue.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          notification['role'] ?? 'N/A',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: notification['role'] == 'Admin'
+                                                ? Colors.red
+                                                : Colors.blue,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    notification['message'] ?? 'No message',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.schedule,
+                                        size: 14,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'Scheduled: ${_formatDate(notification['scheduledAt'])}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (notification['sentAt'] != null) ...[
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.send,
+                                          size: 14,
+                                          color: Colors.grey[600],
+                                        ),
                                         const SizedBox(width: 4),
-                                        GestureDetector(
-                                          onTap: () => _copyToClipboard(notificationId, 'Notification ID'),
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[200],
-                                              borderRadius: BorderRadius.circular(4),
-                                            ),
-                                            child: const Icon(
-                                              Icons.copy,
-                                              size: 14,
-                                              color: Colors.grey,
+                                        Expanded(
+                                          child: Text(
+                                            'Sent: ${_formatDate(notification['sentAt'])}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: notification['role'] == 'Admin'
-                                          ? Colors.red.withOpacity(0.1)
-                                          : Colors.blue.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      notification['role'] ?? 'N/A',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: notification['role'] == 'Admin'
-                                            ? Colors.red
-                                            : Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                notification['message'] ?? 'No message',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.schedule,
-                                    size: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      'Scheduled: ${_formatDate(notification['scheduledAt'])}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (notification['sentAt'] != null) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.send,
-                                      size: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        'Sent: ${_formatDate(notification['sentAt'])}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ),
                                   ],
-                                ),
-                              ],
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
+                                  const SizedBox(height: 4),
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Icon(
-                                        notification['isSent'] == true
-                                            ? Icons.check_circle
-                                            : Icons.cancel,
-                                        size: 14,
-                                        color: notification['isSent'] == true
-                                            ? Colors.green
-                                            : Colors.red,
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            notification['isSent'] == true
+                                                ? Icons.check_circle
+                                                : Icons.cancel,
+                                            size: 14,
+                                            color: notification['isSent'] == true
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            notification['isSent'] == true ? 'Sent' : 'Not Sent',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: notification['isSent'] == true
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        notification['isSent'] == true ? 'Sent' : 'Not Sent',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: notification['isSent'] == true
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        notification['isRead'] == true
-                                            ? Icons.mark_email_read
-                                            : Icons.mark_email_unread,
-                                        size: 14,
-                                        color: notification['isRead'] == true
-                                            ? Colors.blue
-                                            : Colors.orange,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        notification['isRead'] == true ? 'Read' : 'Unread',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: notification['isRead'] == true
-                                              ? Colors.blue
-                                              : Colors.orange,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            isRead
+                                                ? Icons.mark_email_read
+                                                : Icons.mark_email_unread,
+                                            size: 14,
+                                            color: isRead
+                                                ? Colors.blue
+                                                : Colors.orange,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isRead ? 'Read' : 'Unread',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isRead
+                                                  ? Colors.blue
+                                                  : Colors.orange,
+                                            ),
+                                          ),
+                                          if (!isRead) ...[
+                                            const SizedBox(width: 8),
+                                            GestureDetector(
+                                              onTap: isMarkingAsRead ? null : () async {
+                                                await _markAsRead(notificationId, index);
+                                                setDialogState(() {}); // Refresh dialog
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: isMarkingAsRead
+                                                  ? const SizedBox(
+                                                      width: 12,
+                                                      height: 12,
+                                                      child: CircularProgressIndicator(
+                                                        strokeWidth: 1.5,
+                                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                      ),
+                                                    )
+                                                  : const Text(
+                                                      'Read',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
