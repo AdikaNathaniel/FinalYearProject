@@ -4,7 +4,7 @@ import axios, { AxiosInstance } from 'axios';
 @Injectable()
 export class HttpService {
   private readonly axiosInstance: AxiosInstance;
-  private readonly arkeselApiKey = 'a2NRTWZ3ZHpNREVtZ3ZtQ0NQWlk'; // Hardcoded API key
+  private readonly arkeselApiKey = 'RmhDSVpJTnRKYWVwbW9lRFRxcWs'; 
   private readonly arkeselSenderId = 'Awo)Pa'; // Hardcoded sender ID
 
   constructor() {

@@ -11,6 +11,7 @@ import 'pregnancy-chatbot.dart';
 import 'pregnant-woman-chat.dart';
 import 'create-emergency.dart';
 import 'emergency-contact.dart';
+import 'notifications.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HealthDashboard(userEmail: 'user@example.com'),
+      home: const HealthDashboard(userEmail: 'user@example.com'),
     );
   }
 }
@@ -65,7 +66,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
         body: json.encode({"message": message}),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final responseData = json.decode(response.body);
         if (responseData['success']) {
           _showSnackbar(context, "Emergency alert sent successfully!", Colors.green);
@@ -90,7 +91,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // const Text('Please describe your emergency:'),
             const SizedBox(height: 10),
             TextField(
               controller: _emergencyMessageController,
@@ -143,7 +143,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             icon: CircleAvatar(
               child: Text(
                 widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
-                style: TextStyle(color: Colors.blue),
+                style: const TextStyle(color: Colors.blue),
               ),
               backgroundColor: Colors.white,
             ),
@@ -173,8 +173,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.calendar_today),
-              title: Text('Create-Cancel Appointment'),
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Create-Cancel Appointment'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -185,8 +185,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.health_and_safety),
-              title: Text('Pregnancy Tips'),
+              leading: const Icon(Icons.health_and_safety),
+              title: const Text('Pregnancy Tips'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -197,8 +197,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.science),
-              title: Text('Protein In Urine'),
+              leading: const Icon(Icons.science),
+              title: const Text('Protein In Urine'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -209,8 +209,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.info),
-              title: Text('Pregnancy InfoDesk'),
+              leading: const Icon(Icons.info),
+              title: const Text('Pregnancy InfoDesk'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -250,7 +250,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Colors.blue,
@@ -264,7 +264,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             children: [
               MetricCard(
                 title: 'Body Temperature',
@@ -328,19 +328,19 @@ class _HealthDashboardState extends State<HealthDashboard> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Center(child: Text('Profile')),
+        title: const Center(child: Text('Profile')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.email),
-                SizedBox(width: 10),
+                const Icon(Icons.email),
+                const SizedBox(width: 10),
                 Text(widget.userEmail),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             InkWell(
               onTap: () {
                 Navigator.pop(context);
@@ -349,28 +349,52 @@ class _HealthDashboardState extends State<HealthDashboard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.warning, color: Colors.red),
-                  SizedBox(width: 10),
-                  Text(
+                  const Icon(Icons.warning, color: Colors.red),
+                  const SizedBox(width: 10),
+                  const Text(
                     'Send An Emergency Alert',
                     style: TextStyle(
                       color: Colors.blue,
-                      // decoration: TextDecoration.underline,
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.settings),
-                SizedBox(width: 10),
-                Text('Settings'),
+                const Icon(Icons.settings),
+                const SizedBox(width: 10),
+                const Text('Settings'),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationsPage(userEmail: widget.userEmail),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.notifications_active, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Notifications',
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
             TextButton(
               onPressed: () async {
                 final response = await http.put(
@@ -396,14 +420,14 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       context, "Logout failed: Server error", Colors.red);
                 }
               },
-              child: Text('Logout', style: TextStyle(color: Colors.red)),
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -416,11 +440,11 @@ class _HealthDashboardState extends State<HealthDashboard> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Enter Weight'),
+        title: const Text('Enter Weight'),
         content: TextField(
           controller: weightController,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Weight (kg)',
           ),
         ),
@@ -434,11 +458,11 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 Navigator.pop(context);
               }
             },
-            child: Text('Submit'),
+            child: const Text('Submit'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),
@@ -449,7 +473,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
     final snackBar = SnackBar(
       content: Text(message),
       backgroundColor: color,
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
