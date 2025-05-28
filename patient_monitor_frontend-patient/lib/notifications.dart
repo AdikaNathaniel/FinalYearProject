@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -15,6 +16,7 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   List<Map<String, dynamic>> notifications = [];
   bool isLoading = false;
+  Map<String, dynamic>? singleNotification;
 
   String _formatDate(String? dateString) {
     if (dateString == null || dateString.isEmpty) {
@@ -45,6 +47,127 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  Future<void> _copyToClipboard(String text, String label) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$label copied to clipboard'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  Future<void> _fetchNotificationById(String id) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:3100/api/v1/notifications/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          singleNotification = Map<String, dynamic>.from(data);
+          isLoading = false;
+        });
+        _showSingleNotificationDialog();
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        _showErrorDialog('Failed to fetch notification: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showErrorDialog('Error fetching notification: $e');
+    }
+  }
+
+  void _showSingleNotificationDialog() {
+    if (singleNotification == null) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Notification Details'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailRow('Role', singleNotification!['role'] ?? 'N/A'),
+                _buildDetailRow('Message', singleNotification!['message'] ?? 'No message'),
+                _buildDetailRow('Scheduled At', _formatDate(singleNotification!['scheduledAt'])),
+                _buildDetailRow('Sent At', _formatDate(singleNotification!['sentAt'])),
+                _buildDetailRow('Status', 
+                  singleNotification!['isSent'] == true ? 'Sent' : 'Not Sent',
+                  isSent: singleNotification!['isSent']),
+                _buildDetailRow('Read Status', 
+                  singleNotification!['isRead'] == true ? 'Read' : 'Unread',
+                  isRead: singleNotification!['isRead']),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool? isSent, bool? isRead}) {
+    Color? valueColor;
+    if (isSent != null) {
+      valueColor = isSent ? Colors.green : Colors.red;
+    } else if (isRead != null) {
+      valueColor = isRead ? Colors.blue : Colors.orange;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                color: valueColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _fetchNotifications() async {
     setState(() {
       isLoading = true;
@@ -61,17 +184,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
-        // Debug: Print the response to understand the structure
-        print('API Response: $data');
-        print('Response type: ${data.runtimeType}');
-        
         setState(() {
-          // Handle different possible response structures
           if (data is List) {
-            // Case 1: Direct array response
             notifications = List<Map<String, dynamic>>.from(data);
           } else if (data is Map<String, dynamic>) {
-            // Case 2: Object with notifications array
             if (data.containsKey('result') && data['result'] is List) {
               notifications = List<Map<String, dynamic>>.from(data['result']);
             } else if (data.containsKey('notifications') && data['notifications'] is List) {
@@ -81,7 +197,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
             } else if (data.containsKey('results') && data['results'] is List) {
               notifications = List<Map<String, dynamic>>.from(data['results']);
             } else {
-              // If it's a single notification object, wrap it in a list
               notifications = [Map<String, dynamic>.from(data)];
             }
           } else {
@@ -136,6 +251,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     itemCount: notifications.length,
                     itemBuilder: (context, index) {
                       final notification = notifications[index];
+                      final notificationId = notification['_id'] ?? notification['id'] ?? 'N/A';
+                      
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         child: Padding(
@@ -146,14 +263,40 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    'ID: ${notification['_id'] ?? notification['id'] ?? 'N/A'}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            'ID: $notificationId',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        GestureDetector(
+                                          onTap: () => _copyToClipboard(notificationId, 'Notification ID'),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[200],
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: const Icon(
+                                              Icons.copy,
+                                              size: 14,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 2),
@@ -193,26 +336,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   Expanded(
                                     child: Text(
                                       'Scheduled: ${_formatDate(notification['scheduledAt'])}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.access_time,
-                                    size: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      'Created: ${_formatDate(notification['createdAt'])}',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey[600],
@@ -473,7 +596,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 final notificationId = idController.text.trim();
                 if (notificationId.isNotEmpty) {
                   Navigator.of(context).pop();
-                  // TODO: Add navigation or action for viewing the notification
+                  _fetchNotificationById(notificationId);
                 }
               },
             ),
