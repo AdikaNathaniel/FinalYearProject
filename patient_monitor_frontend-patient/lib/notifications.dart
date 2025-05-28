@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class NotificationsPage extends StatefulWidget {
   final String userEmail;
@@ -14,6 +15,35 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   List<Map<String, dynamic>> notifications = [];
   bool isLoading = false;
+
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return 'N/A';
+    }
+    
+    try {
+      DateTime dateTime = DateTime.parse(dateString);
+      
+      // Format day with suffix (1st, 2nd, 3rd, etc.)
+      String day = dateTime.day.toString();
+      String suffix;
+      if (day.endsWith('1') && day != '11') {
+        suffix = 'st';
+      } else if (day.endsWith('2') && day != '12') {
+        suffix = 'nd';
+      } else if (day.endsWith('3') && day != '13') {
+        suffix = 'rd';
+      } else {
+        suffix = 'th';
+      }
+      
+      // Format the complete date
+      String formattedDate = DateFormat('d\'$suffix\' MMMM, yyyy \'at\' h:mm a').format(dateTime);
+      return formattedDate;
+    } catch (e) {
+      return dateString; // Return original if parsing fails
+    }
+  }
 
   Future<void> _fetchNotifications() async {
     setState(() {
@@ -160,15 +190,59 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     color: Colors.grey[600],
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    'Scheduled: ${notification['scheduledAt'] ?? 'N/A'}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
+                                  Expanded(
+                                    child: Text(
+                                      'Scheduled: ${_formatDate(notification['scheduledAt'])}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    size: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      'Created: ${_formatDate(notification['createdAt'])}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (notification['sentAt'] != null) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.send,
+                                      size: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        'Sent: ${_formatDate(notification['sentAt'])}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                               const SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
