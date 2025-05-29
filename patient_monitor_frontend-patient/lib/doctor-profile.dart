@@ -1,9 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
-
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+
+// Only import dart:io on non-web platforms
+import 'dart:io' as io show File;
 
 class DoctorProfilePage extends StatefulWidget {
   const DoctorProfilePage({Key? key}) : super(key: key);
@@ -14,7 +17,14 @@ class DoctorProfilePage extends StatefulWidget {
 
 class _DoctorProfilePageState extends State<DoctorProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  File? _image;
+  
+  // For mobile platforms
+  io.File? _imageFile;
+  
+  // For web platform
+  Uint8List? _webImage;
+  String? _imageName;
+  
   final picker = ImagePicker();
 
   // Controllers
@@ -37,92 +47,295 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
 
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    
     if (pickedFile != null) {
-      setState(() => _image = File(pickedFile.path));
+      if (kIsWeb) {
+        // For web platform
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _webImage = bytes;
+          _imageName = pickedFile.name;
+        });
+      } else {
+        // For mobile platforms
+        setState(() {
+          _imageFile = io.File(pickedFile.path);
+        });
+      }
     }
   }
 
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+//   Future<void> _submitForm() async {
+//     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      isSubmitting = true;
-      success = false;
+//     // Additional validation for consultation hours
+//     if (selectedDays.isEmpty) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Please select at least one available day')),
+//       );
+//       return;
+//     }
+
+//     if (startTime == null || endTime == null) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Please set both start time and end time')),
+//       );
+//       return;
+//     }
+
+//     setState(() {
+//       isSubmitting = true;
+//       success = false;
+//     });
+
+//     try {
+//       final uri = Uri.parse('http://localhost:3100/api/v1/medics');
+//       final request = http.MultipartRequest('POST', uri);
+
+//       // Handle image upload for both platforms
+//       if (kIsWeb && _webImage != null) {
+//         // Web platform
+//         request.files.add(
+//           http.MultipartFile.fromBytes(
+//             'profilePhoto',
+//             _webImage!,
+//             filename: _imageName ?? 'profile_image.jpg',
+//           ),
+//         );
+//       } else if (!kIsWeb && _imageFile != null) {
+//         // Mobile platform
+//         request.files.add(
+//           await http.MultipartFile.fromPath('profilePhoto', _imageFile!.path),
+//         );
+//       }
+
+//       // Prepare languages array (split by comma and trim whitespace)
+//       final languages = languagesController.text
+//           .split(',')
+//           .map((lang) => lang.trim())
+//           .where((lang) => lang.isNotEmpty)
+//           .toList();
+
+//       // Prepare consultation hours object
+//       final consultationHours = {
+//         "days": selectedDays,
+//         "startTime": startTime!.format(context),
+//         "endTime": endTime!.format(context),
+//       };
+
+//       // Add all form fields
+//       request.fields.addAll({
+//         'fullName': fullNameController.text.trim(),
+//         'specialization': specializationController.text.trim(),
+//         'email': emailController.text.trim(),
+//         'phoneNumber': phoneController.text.trim(),
+//         'address': addressController.text.trim(),
+//         'hospital': hospitalController.text.trim(),
+//         'yearsOfPractice': yearsController.text.trim(),
+//         'consultationFee': feeController.text.trim(),
+//         'languagesSpoken': jsonEncode(languages),
+//         'consultationHours': jsonEncode(consultationHours),
+//       });
+
+//       final response = await request.send();
+      
+//       setState(() {
+//         success = response.statusCode == 201;
+//       });
+
+//       if (success) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(
+//             content: Text('Doctor profile created successfully!'),
+//             backgroundColor: Colors.green,
+//           ),
+//         );
+//         _resetForm();
+//       } else {
+//         final responseBody = await response.stream.bytesToString();
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//             content: Text('Error: ${response.statusCode} - $responseBody'),
+//             backgroundColor: Colors.red,
+//           ),
+//         );
+//       }
+//     } catch (e) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text('Error: $e'),
+//           backgroundColor: Colors.red,
+//         ),
+//       );
+//     } finally {
+//       setState(() => isSubmitting = false);
+//     }
+//   }
+
+
+
+Future<void> _submitForm() async {
+  if (!_formKey.currentState!.validate()) return;
+
+  if (selectedDays.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select at least one available day')),
+    );
+    return;
+  }
+
+  if (startTime == null || endTime == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please set both start time and end time')),
+    );
+    return;
+  }
+
+  setState(() {
+    isSubmitting = true;
+    success = false;
+  });
+
+  try {
+    final uri = Uri.parse('http://localhost:3100/api/v1/medics');
+    final request = http.MultipartRequest('POST', uri);
+
+    // Handle image upload
+    if (kIsWeb && _webImage != null) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'profilePhoto',
+          _webImage!,
+          filename: _imageName ?? 'profile_image.jpg',
+        ),
+      );
+    } else if (!kIsWeb && _imageFile != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath('profilePhoto', _imageFile!.path),
+      );
+    }
+
+    // Prepare languages array
+    final languages = languagesController.text
+        .split(',')
+        .map((lang) => lang.trim())
+        .where((lang) => lang.isNotEmpty)
+        .toList();
+
+    // Add languages as separate fields
+    for (int i = 0; i < languages.length; i++) {
+      request.fields['languagesSpoken[$i]'] = languages[i];
+    }
+
+    // Add consultation hours as separate fields
+    request.fields['consultationHours[days][]'] = selectedDays.join(',');
+    request.fields['consultationHours[startTime]'] = startTime!.format(context);
+    request.fields['consultationHours[endTime]'] = endTime!.format(context);
+
+    // Add other form fields
+    request.fields.addAll({
+      'fullName': fullNameController.text.trim(),
+      'specialization': specializationController.text.trim(),
+      'email': emailController.text.trim(),
+      'phoneNumber': phoneController.text.trim(),
+      'address': addressController.text.trim(),
+      'hospital': hospitalController.text.trim(),
+      'yearsOfPractice': yearsController.text.trim(),
+      'consultationFee': feeController.text.trim(),
     });
 
-    try {
-      final uri = Uri.parse('http://localhost:3100/api/v1/medics');
-      final request = http.MultipartRequest('POST', uri);
+    final response = await request.send();
+    
+    setState(() {
+      success = response.statusCode == 201;
+    });
 
-      if (_image != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath('profilePhoto', _image!.path),
-        );
-      }
-
-      request.fields.addAll({
-        'fullName': fullNameController.text,
-        'specialization': specializationController.text,
-        'email': emailController.text,
-        'phoneNumber': phoneController.text,
-        'address': addressController.text,
-        'hospital': hospitalController.text,
-        'yearsOfPractice': yearsController.text,
-        'languagesSpoken': jsonEncode(languagesController.text.split(',')),
-        'consultationFee': feeController.text,
-        'consultationHours': jsonEncode({
-          "days": selectedDays,
-          "startTime": startTime?.format(context),
-          "endTime": endTime?.format(context),
-        }),
-      });
-
-      final response = await request.send();
-      
-      setState(() {
-        success = response.statusCode == 201;
-      });
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Doctor profile created successfully!')),
-        );
-        _resetForm();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        const SnackBar(
+          content: Text('Doctor profile created successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
-    } finally {
-      setState(() => isSubmitting = false);
+      _resetForm();
+    } else {
+      final responseBody = await response.stream.bytesToString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${response.statusCode} - $responseBody'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    setState(() => isSubmitting = false);
   }
+}
 
   void _resetForm() {
     _formKey.currentState?.reset();
+    fullNameController.clear();
+    specializationController.clear();
+    emailController.clear();
+    phoneController.clear();
+    addressController.clear();
+    hospitalController.clear();
+    yearsController.clear();
+    languagesController.clear();
+    feeController.clear();
+    
     setState(() {
-      _image = null;
+      _imageFile = null;
+      _webImage = null;
+      _imageName = null;
       selectedDays.clear();
       startTime = null;
       endTime = null;
     });
   }
 
+  Widget _buildImageWidget() {
+    if (kIsWeb && _webImage != null) {
+      return CircleAvatar(
+        radius: 60,
+        backgroundImage: MemoryImage(_webImage!),
+      );
+    } else if (!kIsWeb && _imageFile != null) {
+      return CircleAvatar(
+        radius: 60,
+        backgroundImage: FileImage(_imageFile!),
+      );
+    } else {
+      return CircleAvatar(
+        radius: 60,
+        backgroundColor: Colors.grey[300],
+        child: const Icon(Icons.person, size: 60, color: Colors.grey),
+      );
+    }
+  }
+
   Widget _buildTimePicker(String label, TimeOfDay? time, Function(TimeOfDay) onPicked) {
-    return ListTile(
-      leading: const Icon(Icons.access_time),
-      title: Text('$label: ${time?.format(context) ?? "--:--"}'),
-      onTap: () async {
-        final picked = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-        );
-        if (picked != null) onPicked(picked);
-      },
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        leading: const Icon(Icons.access_time),
+        title: Text('$label: ${time?.format(context) ?? "--:--"}'),
+        onTap: () async {
+          final picked = await showTimePicker(
+            context: context,
+            initialTime: time ?? TimeOfDay.now(),
+          );
+          if (picked != null) onPicked(picked);
+        },
+      ),
     );
   }
 
@@ -133,6 +346,8 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
         title: const Text('Create Doctor Profile'),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
       ),
       body: success
           ? Center(
@@ -163,13 +378,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                     Center(
                       child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundImage: _image != null ? FileImage(_image!) : null,
-                            child: _image == null
-                                ? const Icon(Icons.person, size: 60)
-                                : null,
-                          ),
+                          _buildImageWidget(),
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -190,35 +399,47 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                     const SizedBox(height: 20),
                     _buildTextField(fullNameController, "Full Name", Icons.person),
                     _buildTextField(specializationController, "Specialization", Icons.medical_services),
-                    _buildTextField(emailController, "Email", Icons.email),
-                    _buildTextField(phoneController, "Phone Number", Icons.phone),
+                    _buildTextField(emailController, "Email", Icons.email, keyboardType: TextInputType.emailAddress),
+                    _buildTextField(phoneController, "Phone Number", Icons.phone, keyboardType: TextInputType.phone),
                     _buildTextField(addressController, "Address", Icons.location_on),
                     _buildTextField(hospitalController, "Hospital", Icons.local_hospital),
-                    _buildTextField(yearsController, "Years of Practice", Icons.work_history),
+                    _buildTextField(yearsController, "Years of Practice", Icons.work_history, keyboardType: TextInputType.number),
                     _buildTextField(languagesController, "Languages (comma separated)", Icons.language),
-                    _buildTextField(feeController, "Consultation Fee", Icons.attach_money),
+                    _buildTextField(feeController, "Consultation Fee", Icons.attach_money, keyboardType: TextInputType.number),
                     
                     const SizedBox(height: 16),
-                    const Text(
-                      "Available Days:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-                          .map((day) => FilterChip(
-                                label: Text(day),
-                                selected: selectedDays.contains(day),
-                                onSelected: (val) {
-                                  setState(() {
-                                    val ? selectedDays.add(day) : selectedDays.remove(day);
-                                  });
-                                },
-                              ))
-                          .toList(),
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Available Days:",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                                  .map((day) => FilterChip(
+                                        label: Text(day),
+                                        selected: selectedDays.contains(day),
+                                        onSelected: (val) {
+                                          setState(() {
+                                            val ? selectedDays.add(day) : selectedDays.remove(day);
+                                          });
+                                        },
+                                      ))
+                                  .toList(),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     
+                    const SizedBox(height: 8),
                     _buildTimePicker("Start Time", startTime, (val) => setState(() => startTime = val)),
                     _buildTimePicker("End Time", endTime, (val) => setState(() => endTime = val)),
                     
@@ -226,6 +447,8 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -235,7 +458,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
                               "SUBMIT PROFILE",
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                     ),
                   ],
@@ -245,21 +468,31 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
+  Widget _buildTextField(
+    TextEditingController controller, 
+    String label, 
+    IconData icon, 
+    {TextInputType? keyboardType}
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           prefixIcon: Icon(icon),
           labelText: label,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue, width: 2),
+          ),
           filled: true,
           fillColor: Colors.grey[50],
         ),
-        validator: (value) => value == null || value.isEmpty ? 'Required field' : null,
+        validator: (value) => value == null || value.isEmpty ? 'This field is required' : null,
       ),
     );
   }

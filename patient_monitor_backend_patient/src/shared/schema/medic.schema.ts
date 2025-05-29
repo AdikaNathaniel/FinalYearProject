@@ -26,7 +26,7 @@ export class Medic extends Document {
   };
 
   @Prop([String])
-  languagesSpoken: string[];  // Fixed: Changed to array of strings
+  languagesSpoken: string[];  
 
   @Prop({ required: true })
   phoneNumber: string;
