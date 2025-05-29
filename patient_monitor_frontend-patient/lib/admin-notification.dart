@@ -4,6 +4,8 @@ import 'notification-list.dart';
 import 'delete-notification.dart';
 import 'notification-id.dart';
 import 'notification-role.dart';
+import 'notification-sent.dart';
+import 'notification-update.dart';
 
 
 class NotificationSettingsPage extends StatelessWidget {
@@ -98,12 +100,6 @@ class NotificationSettingsPage extends StatelessWidget {
 ),
 
             
-            // _buildNotificationCard(
-            //   icon: Icons.group,
-            //   title: 'Get Notifications by Role',
-            //   iconColor: Colors.teal,
-            //   onTap: () => _onOptionSelected(context, 'Get by Role'),
-            // ),
 
 
   _buildNotificationCard(
@@ -119,17 +115,17 @@ class NotificationSettingsPage extends StatelessWidget {
 ),
 
             
-            _buildNotificationCard(
-  icon: Icons.group,
-  title: 'Create Notifications By Role',
-  iconColor: Colors.green,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const   NotificationsByRolePage()),
-    );
-  },
-),
+//             _buildNotificationCard(
+//   icon: Icons.group,
+//   title: 'Create Notifications By Role',
+//   iconColor: Colors.green,
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//        MaterialPageRoute(builder: (context) => const   NotificationsByRolePage()),
+//     );
+//   },
+// ),
             
 
                 _buildNotificationCard(
@@ -144,21 +140,31 @@ class NotificationSettingsPage extends StatelessWidget {
   },
 ),
             
-            _buildNotificationCard(
-              icon: Icons.edit_notifications,
-              title: 'Update Notification',
-              iconColor: Colors.blue,
-              onTap: () => _onOptionSelected(context, 'Update Notification'),
-            ),
+
+            // NotificationUpdatePage
+            // _buildNotificationCard(
+            //   icon: Icons.edit_notifications,
+            //   title: 'Update Notification',
+            //   iconColor: Colors.blue,
+            //   onTap: () => _onOptionSelected(context, 'Update Notification'),
+            // ),
+
+
+
+             _buildNotificationCard(
+  icon: Icons.info_outline,
+  title: 'Update Notification ',
+  iconColor: Colors.blue,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationUpdatePage()),
+    );
+  },
+),
             
 
-            // NotificationByIdPage
-            // _buildNotificationCard(
-            //   icon: Icons.info_outline,
-            //   title: 'Get Notification by ID',
-            //   iconColor: Colors.purple,
-            //   onTap: () => _onOptionSelected(context, 'Get by ID'),
-            // ),
+            
 
 
                   _buildNotificationCard(
@@ -172,20 +178,20 @@ class NotificationSettingsPage extends StatelessWidget {
     );
   },
 ),
+      
             
-            _buildNotificationCard(
-              icon: Icons.check_circle_outline,
-              title: 'Mark Notification as Sent',
-              iconColor: Colors.indigo,
-              onTap: () => _onOptionSelected(context, 'Mark as Sent'),
-            ),
+                          _buildNotificationCard(
+  icon: Icons.check_circle_outline,
+  title: 'Mark Notification as Sent',
+  iconColor: Colors.indigo,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationSentPage()),
+    );
+  },
+),
             
-            // _buildNotificationCard(
-            //   icon: Icons.delete_forever,
-            //   title: 'Delete Notification ',
-            //   iconColor: Colors.red,
-            //   onTap: () => _onOptionSelected(context, 'Delete Notification'),
-            // ),
 
 
 
