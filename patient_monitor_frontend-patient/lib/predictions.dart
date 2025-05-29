@@ -9,7 +9,8 @@ import 'dart:convert';
 import 'view_prescription.dart';
 import 'create-prescription.dart';
 import 'doctor-chat.dart';
-import 'set_profile.dart'; // Add this import
+import 'set_profile.dart';
+import 'support-create.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -165,6 +166,17 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => DoctorChatPage()),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: Icon(Icons.help_outline),
+              title: Text('Support Desk'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SupportFormPage()),
                 );
               },
             ),

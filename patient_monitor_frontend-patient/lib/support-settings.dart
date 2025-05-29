@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // import 'support-name.dart';
 import 'support-request.dart';
 import 'support-get-id.dart';
+import 'support-get-name.dart';
 
 class SupportSettingsPage extends StatelessWidget {
   final String userEmail;
@@ -105,6 +106,18 @@ class SupportSettingsPage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SupportByIdPage()),
+    );
+  },
+),
+
+ _buildSupportCard(
+  icon: Icons.receipt_long, 
+  title: 'Get Support Request By Name',
+  iconColor: Colors.orange,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SupportByNamePage()),
     );
   },
 ),

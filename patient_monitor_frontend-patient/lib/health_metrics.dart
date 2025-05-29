@@ -233,23 +233,23 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
-              title: const Text('Emergency Contacts'), 
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail), 
-                  ),
-                );
-              },
-            ),
+          ListTile(
+  leading: const Icon(Icons.emergency, color: Colors.red), 
+  title: const Text('Emergency Contacts'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail),
+      ),
+    );
+  },
+),
 
 
              ListTile(
               leading: const Icon(Icons.help_outline, color: Colors.teal),
-              title: const Text('Need Help?'), 
+              title: const Text('Support Desk'), 
               onTap: () {
                 Navigator.push(
                   context,
