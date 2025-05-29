@@ -13,6 +13,7 @@ import 'create-emergency.dart';
 import 'emergency-contact.dart';
 import 'notifications.dart'; 
 import 'support-create.dart';
+import 'medic-list.dart';
 
 void main() {
   runApp(const MyApp());
@@ -253,6 +254,20 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => SupportFormPage(), 
+                  ),
+                );
+              },
+            ),
+
+
+             ListTile(
+              leading: const Icon(Icons.medical_services, color: Colors.blue),
+              title: const Text('View All Medics Profile'), 
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MedicsListPage(), 
                   ),
                 );
               },
