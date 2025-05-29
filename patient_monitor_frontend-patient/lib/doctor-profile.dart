@@ -43,7 +43,6 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
   TimeOfDay? endTime;
 
   bool isSubmitting = false;
-  bool success = false;
 
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -65,219 +64,130 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
     }
   }
 
-//   Future<void> _submitForm() async {
-//     if (!_formKey.currentState!.validate()) return;
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
 
-//     // Additional validation for consultation hours
-//     if (selectedDays.isEmpty) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Please select at least one available day')),
-//       );
-//       return;
-//     }
-
-//     if (startTime == null || endTime == null) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Please set both start time and end time')),
-//       );
-//       return;
-//     }
-
-//     setState(() {
-//       isSubmitting = true;
-//       success = false;
-//     });
-
-//     try {
-//       final uri = Uri.parse('http://localhost:3100/api/v1/medics');
-//       final request = http.MultipartRequest('POST', uri);
-
-//       // Handle image upload for both platforms
-//       if (kIsWeb && _webImage != null) {
-//         // Web platform
-//         request.files.add(
-//           http.MultipartFile.fromBytes(
-//             'profilePhoto',
-//             _webImage!,
-//             filename: _imageName ?? 'profile_image.jpg',
-//           ),
-//         );
-//       } else if (!kIsWeb && _imageFile != null) {
-//         // Mobile platform
-//         request.files.add(
-//           await http.MultipartFile.fromPath('profilePhoto', _imageFile!.path),
-//         );
-//       }
-
-//       // Prepare languages array (split by comma and trim whitespace)
-//       final languages = languagesController.text
-//           .split(',')
-//           .map((lang) => lang.trim())
-//           .where((lang) => lang.isNotEmpty)
-//           .toList();
-
-//       // Prepare consultation hours object
-//       final consultationHours = {
-//         "days": selectedDays,
-//         "startTime": startTime!.format(context),
-//         "endTime": endTime!.format(context),
-//       };
-
-//       // Add all form fields
-//       request.fields.addAll({
-//         'fullName': fullNameController.text.trim(),
-//         'specialization': specializationController.text.trim(),
-//         'email': emailController.text.trim(),
-//         'phoneNumber': phoneController.text.trim(),
-//         'address': addressController.text.trim(),
-//         'hospital': hospitalController.text.trim(),
-//         'yearsOfPractice': yearsController.text.trim(),
-//         'consultationFee': feeController.text.trim(),
-//         'languagesSpoken': jsonEncode(languages),
-//         'consultationHours': jsonEncode(consultationHours),
-//       });
-
-//       final response = await request.send();
-      
-//       setState(() {
-//         success = response.statusCode == 201;
-//       });
-
-//       if (success) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(
-//             content: Text('Doctor profile created successfully!'),
-//             backgroundColor: Colors.green,
-//           ),
-//         );
-//         _resetForm();
-//       } else {
-//         final responseBody = await response.stream.bytesToString();
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text('Error: ${response.statusCode} - $responseBody'),
-//             backgroundColor: Colors.red,
-//           ),
-//         );
-//       }
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text('Error: $e'),
-//           backgroundColor: Colors.red,
-//         ),
-//       );
-//     } finally {
-//       setState(() => isSubmitting = false);
-//     }
-//   }
-
-
-
-Future<void> _submitForm() async {
-  if (!_formKey.currentState!.validate()) return;
-
-  if (selectedDays.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please select at least one available day')),
-    );
-    return;
-  }
-
-  if (startTime == null || endTime == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please set both start time and end time')),
-    );
-    return;
-  }
-
-  setState(() {
-    isSubmitting = true;
-    success = false;
-  });
-
-  try {
-    final uri = Uri.parse('http://localhost:3100/api/v1/medics');
-    final request = http.MultipartRequest('POST', uri);
-
-    // Handle image upload
-    if (kIsWeb && _webImage != null) {
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'profilePhoto',
-          _webImage!,
-          filename: _imageName ?? 'profile_image.jpg',
-        ),
-      );
-    } else if (!kIsWeb && _imageFile != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath('profilePhoto', _imageFile!.path),
-      );
-    }
-
-    // Prepare languages array
-    final languages = languagesController.text
-        .split(',')
-        .map((lang) => lang.trim())
-        .where((lang) => lang.isNotEmpty)
-        .toList();
-
-    // Add languages as separate fields
-    for (int i = 0; i < languages.length; i++) {
-      request.fields['languagesSpoken[$i]'] = languages[i];
-    }
-
-    // Add consultation hours as separate fields
-    request.fields['consultationHours[days][]'] = selectedDays.join(',');
-    request.fields['consultationHours[startTime]'] = startTime!.format(context);
-    request.fields['consultationHours[endTime]'] = endTime!.format(context);
-
-    // Add other form fields
-    request.fields.addAll({
-      'fullName': fullNameController.text.trim(),
-      'specialization': specializationController.text.trim(),
-      'email': emailController.text.trim(),
-      'phoneNumber': phoneController.text.trim(),
-      'address': addressController.text.trim(),
-      'hospital': hospitalController.text.trim(),
-      'yearsOfPractice': yearsController.text.trim(),
-      'consultationFee': feeController.text.trim(),
-    });
-
-    final response = await request.send();
-    
-    setState(() {
-      success = response.statusCode == 201;
-    });
-
-    if (success) {
+    if (selectedDays.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Doctor profile created successfully!'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('Please select at least one available day')),
       );
-      _resetForm();
-    } else {
-      final responseBody = await response.stream.bytesToString();
+      return;
+    }
+
+    if (startTime == null || endTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please set both start time and end time')),
+      );
+      return;
+    }
+
+    setState(() {
+      isSubmitting = true;
+    });
+
+    try {
+      final uri = Uri.parse('http://localhost:3100/api/v1/medics');
+      final request = http.MultipartRequest('POST', uri);
+
+      // Handle image upload
+      if (kIsWeb && _webImage != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'profilePhoto',
+            _webImage!,
+            filename: _imageName ?? 'profile_image.jpg',
+          ),
+        );
+      } else if (!kIsWeb && _imageFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('profilePhoto', _imageFile!.path),
+        );
+      }
+
+      // Prepare languages array
+      final languages = languagesController.text
+          .split(',')
+          .map((lang) => lang.trim())
+          .where((lang) => lang.isNotEmpty)
+          .toList();
+
+      // Add languages as separate fields
+      for (int i = 0; i < languages.length; i++) {
+        request.fields['languagesSpoken[$i]'] = languages[i];
+      }
+
+      // Add consultation hours as separate fields
+      request.fields['consultationHours[days][]'] = selectedDays.join(',');
+      request.fields['consultationHours[startTime]'] = startTime!.format(context);
+      request.fields['consultationHours[endTime]'] = endTime!.format(context);
+
+      // Add other form fields
+      request.fields.addAll({
+        'fullName': fullNameController.text.trim(),
+        'specialization': specializationController.text.trim(),
+        'email': emailController.text.trim(),
+        'phoneNumber': phoneController.text.trim(),
+        'address': addressController.text.trim(),
+        'hospital': hospitalController.text.trim(),
+        'yearsOfPractice': yearsController.text.trim(),
+        'consultationFee': feeController.text.trim(),
+      });
+
+      final response = await request.send();
+      
+      if (response.statusCode == 201) {
+        // Show success dialog
+        await _showSuccessDialog();
+        _resetForm();
+      } else {
+        final responseBody = await response.stream.bytesToString();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${response.statusCode} - $responseBody'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${response.statusCode} - $responseBody'),
+          content: Text('Error: $e'),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() => isSubmitting = false);
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } finally {
-    setState(() => isSubmitting = false);
   }
-}
+
+  Future<void> _showSuccessDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button to close
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Icon(Icons.check_circle, color: Colors.green, size: 60),
+                SizedBox(height: 20),
+                Text('Doctor profile created successfully!'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _resetForm() {
     _formKey.currentState?.reset();
@@ -349,122 +259,103 @@ Future<void> _submitForm() async {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: success
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 100),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Profile Created Successfully!',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () => setState(() => success = false),
-                    child: const Text('Create Another Profile'),
-                  ),
-                ],
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Stack(
                   children: [
-                    Center(
-                      child: Stack(
-                        children: [
-                          _buildImageWidget(),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.camera_alt, color: Colors.white),
-                                onPressed: _pickImage,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(fullNameController, "Full Name", Icons.person),
-                    _buildTextField(specializationController, "Specialization", Icons.medical_services),
-                    _buildTextField(emailController, "Email", Icons.email, keyboardType: TextInputType.emailAddress),
-                    _buildTextField(phoneController, "Phone Number", Icons.phone, keyboardType: TextInputType.phone),
-                    _buildTextField(addressController, "Address", Icons.location_on),
-                    _buildTextField(hospitalController, "Hospital", Icons.local_hospital),
-                    _buildTextField(yearsController, "Years of Practice", Icons.work_history, keyboardType: TextInputType.number),
-                    _buildTextField(languagesController, "Languages (comma separated)", Icons.language),
-                    _buildTextField(feeController, "Consultation Fee", Icons.attach_money, keyboardType: TextInputType.number),
-                    
-                    const SizedBox(height: 16),
-                    Card(
-                      elevation: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Available Days:",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-                                  .map((day) => FilterChip(
-                                        label: Text(day),
-                                        selected: selectedDays.contains(day),
-                                        onSelected: (val) {
-                                          setState(() {
-                                            val ? selectedDays.add(day) : selectedDays.remove(day);
-                                          });
-                                        },
-                                      ))
-                                  .toList(),
-                            ),
-                          ],
+                    _buildImageWidget(),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.camera_alt, color: Colors.white),
+                          onPressed: _pickImage,
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    _buildTimePicker("Start Time", startTime, (val) => setState(() => startTime = val)),
-                    _buildTimePicker("End Time", endTime, (val) => setState(() => endTime = val)),
-                    
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: isSubmitting ? null : _submitForm,
-                      child: isSubmitting
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "SUBMIT PROFILE",
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
                     ),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+              _buildTextField(fullNameController, "Full Name", Icons.person),
+              _buildTextField(specializationController, "Specialization", Icons.medical_services),
+              _buildTextField(emailController, "Email", Icons.email, keyboardType: TextInputType.emailAddress),
+              _buildTextField(phoneController, "Phone Number", Icons.phone, keyboardType: TextInputType.phone),
+              _buildTextField(addressController, "Address", Icons.location_on),
+              _buildTextField(hospitalController, "Hospital", Icons.local_hospital),
+              _buildTextField(yearsController, "Years of Practice", Icons.work_history, keyboardType: TextInputType.number),
+              _buildTextField(languagesController, "Languages (comma separated)", Icons.language),
+              _buildTextField(feeController, "Consultation Fee", Icons.attach_money, keyboardType: TextInputType.number),
+              
+              const SizedBox(height: 16),
+              Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Available Days:",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                            .map((day) => FilterChip(
+                                  label: Text(day),
+                                  selected: selectedDays.contains(day),
+                                  onSelected: (val) {
+                                    setState(() {
+                                      val ? selectedDays.add(day) : selectedDays.remove(day);
+                                    });
+                                  },
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 8),
+              _buildTimePicker("Start Time", startTime, (val) => setState(() => startTime = val)),
+              _buildTimePicker("End Time", endTime, (val) => setState(() => endTime = val)),
+              
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: isSubmitting ? null : _submitForm,
+                child: isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "SUBMIT PROFILE",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
