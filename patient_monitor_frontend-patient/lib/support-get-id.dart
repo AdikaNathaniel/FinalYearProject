@@ -67,7 +67,7 @@ class _SupportByIdPageState extends State<SupportByIdPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Support Ticket Details'),
+      title: Center(child: const Text('Support Ticket Details')),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,8 +84,8 @@ class _SupportByIdPageState extends State<SupportByIdPage> {
               _buildDetailRow('Message:', supportTicket['message'] ?? 'No message'),
               const Divider(),
               _buildDetailRow('Created At:', _formatDate(supportTicket['createdAt'])),
-              const Divider(),
-              _buildDetailRow('Updated At:', _formatDate(supportTicket['updatedAt'])),
+            //   const Divider(),
+            //   _buildDetailRow('Updated At:', _formatDate(supportTicket['updatedAt'])),
             ],
           ),
         ),
