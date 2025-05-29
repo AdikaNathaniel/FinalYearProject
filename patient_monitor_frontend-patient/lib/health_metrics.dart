@@ -12,6 +12,7 @@ import 'pregnant-woman-chat.dart';
 import 'create-emergency.dart';
 import 'emergency-contact.dart';
 import 'notifications.dart'; 
+import 'support-create.dart';
 
 void main() {
   runApp(const MyApp());
@@ -240,6 +241,20 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail), 
+                  ),
+                );
+              },
+            ),
+
+
+             ListTile(
+              leading: const Icon(Icons.help_outline, color: Colors.teal),
+              title: const Text('Need Help?'), 
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SupportFormPage(), 
                   ),
                 );
               },

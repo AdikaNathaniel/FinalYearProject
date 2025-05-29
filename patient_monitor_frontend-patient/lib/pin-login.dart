@@ -6,6 +6,7 @@ import 'predictions.dart';
 import 'health_metrics.dart';
 import 'users_summary.dart'; 
 import 'pregnancy-calculator.dart';
+import 'admin-home.dart';
 
 class LoginPinPage extends StatefulWidget {
   final String userEmail; 
@@ -112,7 +113,8 @@ class _LoginPinPageState extends State<LoginPinPage> {
       Navigator.pushReplacement(
         context,
     MaterialPageRoute(
-  builder: (context) => UserListPage(userEmail: widget.userEmail),
+  // builder: (context) => UserListPage(userEmail: widget.userEmail),
+   builder: (context) => AdminHomePage(userEmail: widget.userEmail)
 ),
       );
     } else {
