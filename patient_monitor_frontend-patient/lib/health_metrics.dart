@@ -245,8 +245,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
     );
   },
 ),
-
-
              ListTile(
               leading: const Icon(Icons.help_outline, color: Colors.teal),
               title: const Text('Support Desk'), 

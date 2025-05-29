@@ -11,6 +11,7 @@ import 'create-prescription.dart';
 import 'doctor-chat.dart';
 import 'set_profile.dart';
 import 'support-create.dart';
+import 'doctor-profile.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -177,6 +178,17 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SupportFormPage()),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: Icon(Icons.medical_services),
+              title: Text('Create A Profile'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DoctorProfilePage()),
                 );
               },
             ),
