@@ -11,7 +11,7 @@ import 'pregnancy-chatbot.dart';
 import 'pregnant-woman-chat.dart';
 import 'create-emergency.dart';
 import 'emergency-contact.dart';
-import 'notifications.dart'; 
+import 'notification-list.dart'; 
 import 'support-create.dart';
 import 'medic-list.dart';
 
@@ -404,7 +404,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => NotificationsPage(userEmail: widget.userEmail),
+                    builder: (context) => NotificationListPage(),
                   ),
                 );
               },

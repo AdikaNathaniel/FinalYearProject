@@ -1,220 +1,276 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
-class NotificationsPage extends StatefulWidget {
-  final String userEmail;
-
-  const NotificationsPage({Key? key, required this.userEmail}) : super(key: key);
+class NotificationListPage extends StatefulWidget {
+  const NotificationListPage({super.key});
 
   @override
-  State<NotificationsPage> createState() => _NotificationsPageState();
+  State<NotificationListPage> createState() => _NotificationListPageState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage> {
-  List<Map<String, dynamic>> notifications = [];
-  bool isLoading = false;
-  Map<String, dynamic>? singleNotification;
-  Set<String> markingAsRead = {};
+class _NotificationListPageState extends State<NotificationListPage> {
+  List<dynamic> notifications = [];
+  bool isLoading = true;
 
-  String _formatDate(String? dateString) {
-    if (dateString == null || dateString.isEmpty) {
-      return 'N/A';
-    }
-    
-    try {
-      DateTime dateTime = DateTime.parse(dateString);
-      String day = dateTime.day.toString();
-      String suffix;
-
-      if (day.endsWith('1') && day != '11') {
-        suffix = 'st';
-      } else if (day.endsWith('2') && day != '12') {
-        suffix = 'nd';
-      } else if (day.endsWith('3') && day != '13') {
-        suffix = 'rd';
-      } else {
-        suffix = 'th';
-      }
-
-      String formattedDate = DateFormat('d\'$suffix\' MMMM, yyyy \'at\' h:mm a').format(dateTime);
-      return formattedDate;
-    } catch (e) {
-      return dateString;
-    }
+  @override
+  void initState() {
+    super.initState();
+    fetchNotifications();
   }
 
-  Future<void> _fetchNotifications() async {
-    setState(() {
-      isLoading = true;
-    });
-
+  Future<void> fetchNotifications() async {
     try {
-      final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/notifications'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/notifications'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        setState(() {
-          notifications = List<Map<String, dynamic>>.from(data);
-          isLoading = false;
-        });
+        
+        // Check if the response has the expected structure
+        if (data is Map<String, dynamic> && data.containsKey('result')) {
+          setState(() {
+            notifications = data['result'] ?? []; // Extract the result array
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Invalid response structure');
+        }
       } else {
-        setState(() {
-          isLoading = false;
-        });
-        _showErrorDialog('Failed to fetch notifications: ${response.statusCode}');
+        throw Exception('Failed to load notifications: ${response.statusCode}');
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      _showErrorDialog('Error fetching notifications: $e');
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+  String formatDate(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return 'N/A';
+    
+    try {
+      final date = DateTime.parse(isoString).toLocal();
+      return DateFormat("d'th' MMMM, y 'at' h:mm a").format(date);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
+  Future<void> _refreshNotifications() async {
+    setState(() {
+      isLoading = true;
+    });
+    await fetchNotifications();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications Management'),
+        title: const Text("All Notifications"),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
-        elevation: 2,
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildUserHeader(),
-                  const SizedBox(height: 16),
-                  _buildNotificationCard(),
-                  const SizedBox(height: 32),
-                  _buildInfoCard(),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _buildUserHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        border: const Border(bottom: BorderSide(color: Colors.grey)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.account_circle, size: 30, color: Colors.blueAccent),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Current User', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(widget.userEmail, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87)),
-            ],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshNotifications,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildNotificationCard() {
-    return GestureDetector(
-      onTap: () async {
-        await _fetchNotifications();
-        _showNotificationsDialog();
-      },
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              const Icon(Icons.notifications, color: Colors.blue),
-              const SizedBox(width: 16),
-              Expanded(child: const Text('View All Notifications')),
-              const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationsDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('All Notifications'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: notifications.isEmpty
-                ? const Center(child: Text('No notifications found'))
-                : ListView.builder(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : notifications.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.notifications_off, size: 64, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text("No notifications found."),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _refreshNotifications,
+                        child: const Text("Refresh"),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _refreshNotifications,
+                  child: ListView.builder(
                     itemCount: notifications.length,
                     itemBuilder: (context, index) {
-                      final notification = notifications[index];
-                      return ListTile(
-                        title: Text(notification['message'] ?? 'No message'),
-                        subtitle: Text(_formatDate(notification['scheduledAt'])),
+                      final notif = notifications[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Notification ID Row
+                              Row(
+                                children: [
+                                  const Icon(Icons.vpn_key_rounded, size: 20, color: Colors.grey),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      "ID: ${notif["_id"] ?? "N/A"}",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.copy, size: 18),
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(text: notif["_id"] ?? ""));
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Notification ID copied"),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              
+                              // Role Row
+                              Row(
+                                children: [
+                                  const Icon(Icons.verified_user, size: 20, color: Colors.blue),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "Role: ${notif["role"] ?? "N/A"}",
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              
+                              // Message Row
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.message_outlined, size: 20, color: Colors.green),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      "Message: ${notif["message"] ?? "No message"}",
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              
+                              // Scheduled At Row
+                              Row(
+                                children: [
+                                  const Icon(Icons.schedule_outlined, size: 20, color: Colors.orange),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      "Scheduled: ${formatDate(notif["scheduledAt"])}",
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              
+                              // Created At Row
+                              Row(
+                                children: [
+                                  const Icon(Icons.event_note, size: 20, color: Colors.purple),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      "Created: ${formatDate(notif["createdAt"])}",
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              
+                              // Status Row
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: (notif["isSent"] == true) ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.send,
+                                          size: 16,
+                                          color: (notif["isSent"] == true) ? Colors.green : Colors.grey,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          notif["isSent"] == true ? "Sent" : "Pending",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: (notif["isSent"] == true) ? Colors.green : Colors.grey,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: (notif["isRead"] == true) ? Colors.teal.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.mark_email_read,
+                                          size: 16,
+                                          color: (notif["isRead"] == true) ? Colors.teal : Colors.grey,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          notif["isRead"] == true ? "Read" : "Unread",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: (notif["isRead"] == true) ? Colors.teal : Colors.grey,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildInfoCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 1,
-        color: Colors.grey[50],
-        child: const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'View and manage all your system notifications here',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
+                ),
     );
   }
 }
