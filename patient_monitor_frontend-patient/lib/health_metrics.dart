@@ -14,6 +14,7 @@ import 'emergency-contact.dart';
 import 'notification-list.dart'; 
 import 'support-create.dart';
 import 'medic-list.dart';
+import 'doctor-by-name.dart';
 
 void main() {
   runApp(const MyApp());
@@ -272,6 +273,28 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
+     
+          ListTile(
+  leading: const Icon(Icons.search, color: Colors.blue),
+  title: const Text(
+    'Find Your Favorite Medic',
+    style: TextStyle(
+      fontWeight: FontWeight.w500,
+      fontSize: 16,
+    ),
+  ),
+  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  visualDensity: VisualDensity.comfortable,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const FindDoctorByNamePage(),
+      ),
+    );
+  },
+),
           ],
         ),
       ),
