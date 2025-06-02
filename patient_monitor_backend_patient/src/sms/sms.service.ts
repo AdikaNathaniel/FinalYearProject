@@ -74,7 +74,7 @@ async sendSms(phone: string, message: string): Promise<boolean> {
     const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
     try {
-      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'RmhDSVpJTnRKYWVwbW9lRFRxcWs';
+      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'SXZtb3lhRldmZVVCSEdXUW1EVGU';
       if (!apiKey) {
         throw new Error('SMS_API_KEY environment variable is not set');
       }
@@ -127,7 +127,8 @@ async scheduleAppointmentReminder(dto: AppointmentReminderDto): Promise<Appointm
   });
   await appointment.save();
   
-  const confirmationMessage = `Dear ${dto.patientName}, your appointment for ${dto.purpose || 'checkup'} with Dr. ${dto.doctor} has been scheduled on ${new Date(dto.date).toLocaleDateString()} at ${dto.location || 'our clinic'}. Reply Y to confirm or N to cancel.`.trim();
+ const confirmationMessage = `Dear ${dto.patientName}, Dr. ${dto.doctor} has scheduled an appointment to see you for ${dto.purpose || 'a checkup'} on ${new Date(dto.date).toLocaleDateString()} at ${dto.location || 'our clinic'}. Reply Y to confirm or N to reschedule.`.trim();
+
 
   await this.ensureSmsSent(
     dto.phone, 

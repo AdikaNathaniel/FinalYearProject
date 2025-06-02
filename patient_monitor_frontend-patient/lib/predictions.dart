@@ -14,6 +14,8 @@ import 'support-create.dart';
 import 'doctor-profile.dart';
 import 'symptom-list.dart';
 import 'symptom-by-name.dart';
+import 'appointment-schedule-by-medic.dart';
+import  'medic-appointment-details.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -131,17 +133,17 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.calendar_today),
-              title: Text('Create-Cancel Appointment'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CreateCancelAppointmentPage(userEmail: widget.userEmail)),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.calendar_today),
+            //   title: Text('Create-Cancel Appointment'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) => CreateCancelAppointmentPage(userEmail: widget.userEmail)),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: Icon(Icons.calendar_today),
               title: Text('Create Prescription'),
@@ -219,7 +221,30 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
               },
             ),
 
-            // FindSymptomByNamePage
+            ListTile(
+              leading: Icon(Icons.calendar_today),
+              title: Text('Schedule Appointment',),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AppointmentScheduleByMedicPage()),
+                );
+              },
+            ),
+
+
+ ListTile(
+              leading: Icon(Icons.calendar_today),
+              title: Text('Appointment Details',),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DoctorAppointmentsStatsPage()),
+                );
+              },
+            ),
+           
+            //DoctorAppointmentsStatsPage
           ],
         ),
       ),
