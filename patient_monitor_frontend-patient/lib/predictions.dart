@@ -122,17 +122,17 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 ),
               ),
             ),
-            ListTile(
-              leading: Icon(Icons.list),
-              title: Text('Medical Appointments'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ViewAppointmentsPage(userEmail: widget.userEmail)),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.list),
+            //   title: Text('Medical Appointments'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) => ViewAppointmentsPage(userEmail: widget.userEmail)),
+            //     );
+            //   },
+            // ),
             // ListTile(
             //   leading: Icon(Icons.calendar_today),
             //   title: Text('Create-Cancel Appointment'),
