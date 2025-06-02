@@ -13,6 +13,7 @@ import 'set_profile.dart';
 import 'support-create.dart';
 import 'doctor-profile.dart';
 import 'symptom-list.dart';
+import 'symptom-by-name.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -205,6 +206,20 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
+
+
+ ListTile(
+              leading: Icon(Icons.monitor_heart_outlined),
+              title: Text('Preeclampsia Vitals Monitor',),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FindSymptomByNamePage()),
+                );
+              },
+            ),
+
+            // FindSymptomByNamePage
           ],
         ),
       ),
