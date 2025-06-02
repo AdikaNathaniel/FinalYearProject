@@ -15,6 +15,7 @@ import 'notification-list.dart';
 import 'support-create.dart';
 import 'medic-list.dart';
 import 'doctor-by-name.dart';
+import 'symptom-checker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -269,6 +270,20 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => MedicsListPage(), 
+                  ),
+                );
+              },
+            ),
+
+
+             ListTile(
+              leading: const Icon(Icons.healing, color: Colors.pinkAccent),
+              title: const Text('How Are You Feeling?'), 
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SymptomForm(), 
                   ),
                 );
               },
