@@ -15,6 +15,7 @@ class _SymptomFormState extends State<SymptomForm> {
   String? _dizziness;
   String? _vomiting;
   String? _painTopOfTommy;
+  bool _isSubmitting = false;
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() &&
@@ -22,30 +23,40 @@ class _SymptomFormState extends State<SymptomForm> {
         _dizziness != null &&
         _vomiting != null &&
         _painTopOfTommy != null) {
-      final url = Uri.parse('http://localhost:3100/api/v1/symptoms');
+      setState(() => _isSubmitting = true);
+      
+      try {
+        final url = Uri.parse('http://localhost:3100/api/v1/symptoms');
 
-      final data = {
-        "username": _usernameController.text,
-        "feelingHeadache": _headache,
-        "feelingDizziness": _dizziness,
-        "vomitingAndNausea": _vomiting,
-        "painAtTopOfTommy": _painTopOfTommy,
-      };
+        final data = {
+          "username": _usernameController.text,
+          "feelingHeadache": _headache,
+          "feelingDizziness": _dizziness,
+          "vomitingAndNausea": _vomiting,
+          "painAtTopOfTommy": _painTopOfTommy,
+        };
 
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(data),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submitted successfully!')),
+        final response = await http.post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(data),
         );
-      } else {
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Submitted successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Submission failed: ${response.statusCode}')),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: ${response.statusCode}')),
+          SnackBar(content: Text('Error: ${e.toString()}')),
         );
+      } finally {
+        setState(() => _isSubmitting = false);
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +133,7 @@ class _SymptomFormState extends State<SymptomForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Symptom Checker'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -161,14 +172,14 @@ class _SymptomFormState extends State<SymptomForm> {
                 ),
               ),
               SizedBox(height: 24),
-              Text(
-                'Symptoms',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
+            //   Text(
+            //     'Symptoms',
+            //     style: TextStyle(
+            //       fontSize: 18,
+            //       fontWeight: FontWeight.bold,
+            //       color: Colors.grey[700],
+            //     ),
+            //   ),
               SizedBox(height: 16),
               _buildSymptomTile(
                 label: "Do you feel headache?",
@@ -198,9 +209,25 @@ class _SymptomFormState extends State<SymptomForm> {
                 onChanged: (value) => setState(() => _painTopOfTommy = value),
               ),
               SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: Text('SUBMIT SYMPTOMS'),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Submit Symptoms',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                ),
               ),
             ],
           ),
