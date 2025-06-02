@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'dart:convert';
@@ -49,23 +50,26 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
       context: context,
       builder: (context) => AlertDialog(
         title: Center(child: Text('Appointment Statistics for ${_nameController.text.trim()}')),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Stats Summary Cards
-              _buildStatsSummary(stats),
-              
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 10),
-              
-              // Detailed Sections
-              _buildAppointmentsSection('Pending Appointments (${pending['count']})', pending['appointments']),
-              _buildAppointmentsSection('Confirmed Appointments (${confirmed['count']})', confirmed['appointments']),
-              _buildAppointmentsSection('Canceled Appointments (${canceled['count']})', canceled['appointments']),
-              _buildAppointmentsSection('Upcoming Appointments (${upcoming['count']})', upcoming['appointments']),
-            ],
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Stats Summary Cards
+                _buildStatsSummary(stats),
+                
+                const SizedBox(height: 20),
+                const Divider(),
+                const SizedBox(height: 10),
+                
+                // Detailed Sections
+                _buildAppointmentsSection('Pending Appointments (${pending['count']})', pending['appointments']),
+                _buildAppointmentsSection('Confirmed Appointments (${confirmed['count']})', confirmed['appointments']),
+                _buildAppointmentsSection('Canceled Appointments (${canceled['count']})', canceled['appointments']),
+                _buildAppointmentsSection('Upcoming Appointments (${upcoming['count']})', upcoming['appointments']),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -173,6 +177,8 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
     final formattedDate = date != null 
         ? DateFormat('MMM dd, yyyy - hh:mm a').format(date.toLocal())
         : 'Date not specified';
+    
+    final appointmentId = appointment['_id']?.toString() ?? 'No ID';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -182,6 +188,53 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Appointment ID Row (Copiable)
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.tag, size: 16, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'ID: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      appointmentId,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 16),
+                    onPressed: () => _copyToClipboard(appointmentId),
+                    tooltip: 'Copy ID',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Patient Name Row
             Row(
               children: [
                 const Icon(Icons.person, size: 18, color: Colors.blue),
@@ -196,6 +249,8 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
               ],
             ),
             const SizedBox(height: 8),
+            
+            // Phone Row
             Row(
               children: [
                 const Icon(Icons.phone, size: 18, color: Colors.green),
@@ -204,6 +259,8 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
               ],
             ),
             const SizedBox(height: 8),
+            
+            // Date Row
             Row(
               children: [
                 const Icon(Icons.calendar_today, size: 18, color: Colors.purple),
@@ -212,6 +269,8 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
               ],
             ),
             const SizedBox(height: 8),
+            
+            // Location Row
             Row(
               children: [
                 const Icon(Icons.location_on, size: 18, color: Colors.red),
@@ -220,15 +279,67 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
               ],
             ),
             const SizedBox(height: 8),
+            
+            // Purpose Row
             Row(
               children: [
                 const Icon(Icons.medical_services, size: 18, color: Colors.orange),
                 const SizedBox(width: 8),
-                Text(appointment['purpose'] ?? 'No purpose specified'),
+                Expanded(
+                  child: Text(appointment['purpose'] ?? 'No purpose specified'),
+                ),
+              ],
+            ),
+            
+            // Status Badge
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.info, size: 18, color: Colors.blueGrey),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(appointment['status']),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    appointment['status']?.toString().toUpperCase() ?? 'UNKNOWN',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'confirmed':
+        return Colors.green;
+      case 'pending':
+        return Colors.orange;
+      case 'canceled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('ID copied to clipboard: ${text.substring(0, 8)}...'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
       ),
     );
   }
