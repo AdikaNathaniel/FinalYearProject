@@ -122,10 +122,11 @@ class _SymptomFormState extends State<SymptomForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Symptom Checker'),
+       appBar: AppBar(
+        title: const Text('Symptom Checker'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         centerTitle: true,
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
@@ -135,14 +136,29 @@ class _SymptomFormState extends State<SymptomForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: 16),
-              TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outline),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter your name' : null,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Full Name',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'e.g., John Doe',
+                        ),
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Please enter your full name' : null,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               SizedBox(height: 24),
               Text(
