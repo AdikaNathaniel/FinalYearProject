@@ -22,6 +22,14 @@ export class SymptomsService {
     return symptoms.map(this.mapToDto);
   }
 
+  async findByUsername(username: string): Promise<SymptomDto[]> {
+    const symptoms = await this.symptomModel
+      .find({ username: username })
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .exec();
+    return symptoms.map(this.mapToDto);
+  }
+
   private mapToDto(symptom: any): SymptomDto {
     return {
       id: symptom._id,
