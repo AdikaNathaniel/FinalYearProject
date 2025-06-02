@@ -70,31 +70,13 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
             appointments = responseData['result']['appointments'];
           });
           
-          if (appointments.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No appointments found for the selected criteria'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Found ${appointments.length} appointments'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
+          // Show results in dialog instead of snackbar
+          _showAppointmentsDialog();
         } else {
           setState(() {
             appointments = [];
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No appointments found in response'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          _showAppointmentsDialog();
         }
       } else {
         setState(() {
@@ -120,6 +102,262 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
     } finally {
       setState(() => isLoading = false);
     }
+  }
+
+  void _showAppointmentsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.7,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Dialog Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today, color: Colors.blue),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Appointment Results',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            Text(
+                              appointments.isEmpty 
+                                  ? 'No appointments found'
+                                  : 'Found ${appointments.length} appointment${appointments.length == 1 ? '' : 's'}',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                        color: Colors.grey[600],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Search Summary
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.search, size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Search Criteria:',
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Doctor: ${doctorNameController.text}'),
+                      Text('Status: ${selectedStatus.toUpperCase()}'),
+                      if (startDate != null && endDate != null)
+                        Text('Date Range: ${dateFormatter.format(startDate!)} to ${dateFormatter.format(endDate!)}'),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Appointments List
+                Expanded(
+                  child: appointments.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                size: 48,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No appointments found',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Try adjusting your search criteria',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: appointments.length,
+                          itemBuilder: (context, index) {
+                            final appointment = appointments[index];
+                            return _buildDialogAppointmentCard(appointment);
+                          },
+                        ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Dialog Actions
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _fetchAppointments(); // Refresh search
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Refresh'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogAppointmentCard(Map<String, dynamic> appointment) {
+    Color statusColor;
+    switch (appointment['status']) {
+      case 'confirmed':
+        statusColor = Colors.green;
+        break;
+      case 'canceled':
+        statusColor = Colors.red;
+        break;
+      case 'pending':
+      default:
+        statusColor = Colors.orange;
+    }
+
+    // Handle different date parsing scenarios
+    DateTime appointmentDate;
+    try {
+      appointmentDate = DateTime.parse(appointment['date']);
+    } catch (e) {
+      appointmentDate = DateTime.now(); // Fallback
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    appointment['patientName'] ?? 'No Name',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    appointment['status'].toString().toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  backgroundColor: statusColor,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _buildDialogInfoRow(Icons.medical_services, appointment['purpose'] ?? 'N/A'),
+            const SizedBox(height: 4),
+            _buildDialogInfoRow(
+              Icons.schedule,
+              DateFormat('MMM dd, yyyy – HH:mm').format(appointmentDate),
+            ),
+            const SizedBox(height: 4),
+            _buildDialogInfoRow(Icons.location_on, appointment['location'] ?? 'N/A'),
+            const SizedBox(height: 4),
+            _buildDialogInfoRow(Icons.phone, appointment['phone'] ?? 'N/A'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogInfoRow(IconData icon, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.grey[600]),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _selectStartDate(BuildContext context) async {
@@ -333,77 +571,36 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
             ),
           ),
           
-          // Appointments list
-          Expanded(
-            child: isLoading
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Loading appointments...'),
-                      ],
+                  // Empty space since results will show in dialog
+          const Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  // SizedBox(height: 16),
+                  // Text(
+                  //   'Enter search criteria and click "Search Appointments"',
+                  //   style: TextStyle(
+                  //     fontSize: 16,
+                  //     color: Colors.grey,
+                  //   ),
+                  //   textAlign: TextAlign.center,
+                  // ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Results will be displayed in a dialog box',
+                    style: TextStyle(
+                      color: Colors.grey,
                     ),
-                  )
-                : appointments.isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.calendar_today_outlined,
-                              size: 64,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'No appointments found',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Try adjusting your search criteria',
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.list_alt, color: Colors.blue),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Found ${appointments.length} appointment${appointments.length == 1 ? '' : 's'}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: appointments.length,
-                              itemBuilder: (context, index) {
-                                final appointment = appointments[index];
-                                return _buildAppointmentCard(appointment);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
