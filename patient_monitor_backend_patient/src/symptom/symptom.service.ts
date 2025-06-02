@@ -25,7 +25,7 @@ export class SymptomsService {
   async findByUsername(username: string): Promise<SymptomDto[]> {
     const symptoms = await this.symptomModel
       .find({ username: username })
-      .sort({ createdAt: -1 }) // Sort by newest first
+      .sort({ createdAt: -1 }) 
       .exec();
     return symptoms.map(this.mapToDto);
   }
