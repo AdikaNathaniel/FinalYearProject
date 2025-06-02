@@ -26,80 +26,124 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // Access the nested symptom data correctly
-        final symptom = data['result']['symptom'] ?? {};
+        
+        // Debug print to see the response
+        print('API Response: ${response.body}');
+        
+        if (data['result'] == null || data['result'] is! List || data['result'].isEmpty) {
+          _showErrorDialog('No symptom records found');
+          return;
+        }
+
+        // Get the first symptom record (assuming we want the most recent)
+        final symptom = data['result'][0] as Map<String, dynamic>;
         _showSymptomDialog(symptom);
       } else {
         _showErrorDialog('Symptom record not found (Status: ${response.statusCode})');
       }
+    } on http.ClientException catch (e) {
+      _showErrorDialog('Network error: ${e.message}');
+    } on FormatException catch (e) {
+      _showErrorDialog('Data format error: ${e.message}');
     } catch (e) {
-      _showErrorDialog('Error fetching symptom: $e');
+      _showErrorDialog('Unexpected error: ${e.toString()}');
     } finally {
       setState(() => isLoading = false);
     }
   }
 
   void _showSymptomDialog(Map<String, dynamic> symptom) {
+    // Helper function to display yes/no values more clearly
+    String formatYesNo(String? value) {
+      if (value == null) return 'Not specified';
+      return value.toLowerCase() == 'yes' ? 'Yes' : 'No';
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Center(
-          child: const Text('Symptom Details'),
-        ),
+        title: const Center(child: Text('Symptom Details')),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // User information
+              // Patient Information
               Row(
                 children: [
-                  const Icon(Icons.person, color: Colors.purple),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.person, color: Colors.purple, size: 24),
+                  const SizedBox(width: 10),
                   Text(
-                    symptom['username']?.toString() ?? 'N/A',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    symptom['username']?.toString() ?? 'Unknown',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
-              const Divider(),
+              const Divider(height: 20),
               
-              // Symptoms
-              Row(
-                children: [
-                  const Icon(Icons.headphones, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Text("Headache: ${symptom['feelingHeadache']?.toString() ?? 'N/A'}"),
-                ],
+              // Symptoms Section
+              const Text('Symptoms:', style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.blue,
+              )),
+              const SizedBox(height: 10),
+              
+              _buildSymptomRow(
+                Icons.headphones, 
+                Colors.red, 
+                'Headache:', 
+                formatYesNo(symptom['feelingHeadache']),
               ),
               const SizedBox(height: 8),
               
-              Row(
-                children: [
-                  const Icon(Icons.sick, color: Colors.green),
-                  const SizedBox(width: 8),
-                  Text("Vomiting/Nausea: ${symptom['vomitingAndNausea']?.toString() ?? 'N/A'}"),
-                ],
+              _buildSymptomRow(
+                Icons.air, 
+                Colors.orange, 
+                'Dizziness:', 
+                formatYesNo(symptom['feelingDizziness']),
               ),
               const SizedBox(height: 8),
               
-              Row(
-                children: [
-                  const Icon(Icons.pan_tool_alt, color: Colors.orange),
-                  const SizedBox(width: 8),
-                  Text("Pain at Top of Tummy: ${symptom['painAtTopOfTommy']?.toString() ?? 'N/A'}"),
-                ],
+              _buildSymptomRow(
+                Icons.sick, 
+                Colors.green, 
+                'Vomiting/Nausea:', 
+                formatYesNo(symptom['vomitingAndNausea']),
               ),
               const SizedBox(height: 8),
               
-              // Creation date
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Text("Created: ${_formatDateTime(symptom['createdAt']?.toString())}"),
-                ],
+              _buildSymptomRow(
+                Icons.pan_tool_alt, 
+                Colors.blue, 
+                'Pain at Top of Tummy:', 
+                formatYesNo(symptom['painAtTopOfTommy']),
               ),
+              const Divider(height: 20),
+              
+              // Dates Section
+              const Text('Record Date:', style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.blue,
+              )),
+              const SizedBox(height: 10),
+              
+              _buildDateRow(
+                Icons.calendar_today,
+                'Created:',
+                _formatDateTime(symptom['createdAt']),
+              ),
+              const SizedBox(height: 8),
+              
+            //   _buildDateRow(
+            //     Icons.update,
+            //     'Last Updated:',
+            //     _formatDateTime(symptom['updatedAt']),
+            //   ),
             ],
           ),
         ),
@@ -111,16 +155,39 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
         ],
       ),
     ).then((_) {
-      // Clear the field after dialog is closed
       _nameController.clear();
     });
+  }
+
+  Widget _buildSymptomRow(IconData icon, Color color, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 10),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(width: 5),
+        Text(value),
+      ],
+    );
+  }
+
+  Widget _buildDateRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey[700], size: 20),
+        const SizedBox(width: 10),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(width: 5),
+        Text(value),
+      ],
+    );
   }
 
   String _formatDateTime(String? dateString) {
     if (dateString == null) return 'N/A';
     try {
       final date = DateTime.parse(dateString).toLocal();
-      return date.toString().split('.')[0];
+      return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateString;
     }
@@ -146,7 +213,7 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find Symptom by Name'),
+        title: const Text('Find Patient Symptoms'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -208,7 +275,7 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
                           child: isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
                               : const Text(
-                                  'Find Symptom',
+                                  'Find Symptoms',
                                   style: TextStyle(fontSize: 16),
                                 ),
                         ),
