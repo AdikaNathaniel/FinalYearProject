@@ -65,7 +65,7 @@ class _SupportFormPageState extends State<SupportFormPage> {
     style: TextStyle(color: Colors.white),
   ),
         centerTitle: true,
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -108,7 +108,7 @@ class _SupportFormPageState extends State<SupportFormPage> {
                     ? CircularProgressIndicator(color: Colors.white)
                     : Text('Send Support Request'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
+                  backgroundColor: Colors.blueAccent,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   textStyle: TextStyle(fontSize: 16),
                 ),
