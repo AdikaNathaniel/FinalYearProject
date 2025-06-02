@@ -12,6 +12,7 @@ import 'doctor-chat.dart';
 import 'set_profile.dart';
 import 'support-create.dart';
 import 'doctor-profile.dart';
+import 'symptom-list.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -189,6 +190,18 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const DoctorProfilePage()),
+                );
+              },
+            ),
+
+
+              ListTile(
+              leading: Icon(Icons.local_hospital),
+              title: Text('Patient Symptoms',),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SymptomListPage()),
                 );
               },
             ),
