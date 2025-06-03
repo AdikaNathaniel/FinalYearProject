@@ -6,8 +6,8 @@ import 'create_cancel-appointment.dart';
 import 'login_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'view_prescription.dart';
-import 'create-prescription.dart';
+// import 'view_prescription.dart';
+// import 'create-prescription.dart';
 import 'doctor-chat.dart';
 import 'set_profile.dart';
 import 'support-create.dart';
@@ -18,6 +18,9 @@ import 'appointment-schedule-by-medic.dart';
 import  'medic-appointment-details.dart';
 import 'medic-appointment-status-details.dart';
 import  'appointment-status-update.dart';
+import  'prescriptions-home.dart';
+import  'appointments-home.dart';
+import 'preeclampsia-home.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -146,26 +149,39 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
             //     );
             //   },
             // ),
-            ListTile(
+
+
+            // PrescriptionHomePage
+             ListTile(
               leading: Icon(Icons.calendar_today),
-              title: Text('Create Prescription'),
+              title: Text('Prescriptions'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CreatePrescriptionPage()),
+                  MaterialPageRoute(builder: (context) => PrescriptionHomePage()),
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.medication),
-              title: Text('View Prescriptions'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PrescriptionPage()),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.calendar_today),
+            //   title: Text('Create Prescription'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => CreatePrescriptionPage()),
+            //     );
+            //   },
+            // ),
+            // ListTile(
+            //   leading: Icon(Icons.medication),
+            //   title: Text('View Prescriptions'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => PrescriptionPage()),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: Icon(Icons.medication),
               title: Text('Doctor Chat'),
@@ -201,74 +217,86 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 
 
               ListTile(
-              leading: Icon(Icons.local_hospital),
-              title: Text('Patient Symptoms',),
+              leading: Icon(Icons.monitor_heart),
+              title: Text('Preeclampsia Symptoms',),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SymptomListPage()),
+                  MaterialPageRoute(builder: (context) => const PreeclampsiaHomePage()),
                 );
               },
             ),
 
 
- ListTile(
-              leading: Icon(Icons.monitor_heart_outlined),
-              title: Text('Preeclampsia Vitals Monitor',),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const FindSymptomByNamePage()),
-                );
-              },
-            ),
+//  ListTile(
+//               leading: Icon(Icons.monitor_heart_outlined),
+//               title: Text('Preeclampsia Vitals Monitor',),
+//               onTap: () {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(builder: (context) => const FindSymptomByNamePage()),
+//                 );
+//               },
+//             ),
+
 
             ListTile(
               leading: Icon(Icons.calendar_today),
-              title: Text('Schedule Appointment',),
+              title: Text('Appointments',),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AppointmentScheduleByMedicPage()),
+                  MaterialPageRoute(builder: (context) => AppointmentHomePage()),
                 );
               },
             ),
 
+            // ListTile(
+            //   leading: Icon(Icons.calendar_today),
+            //   title: Text('Schedule Appointment',),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => const AppointmentScheduleByMedicPage()),
+            //     );
+            //   },
+            // ),
 
- ListTile(
-              leading: Icon(Icons.calendar_today),
-              title: Text('Appointment Details',),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DoctorAppointmentsStatsPage()),
-                );
-              },
-            ),
+
+//  ListTile(
+//               leading: Icon(Icons.calendar_today),
+//               title: Text('Appointment Details',),
+//               onTap: () {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(builder: (context) => const DoctorAppointmentsStatsPage()),
+//                 );
+//               },
+//             ),
 
 
-         ListTile(
-  leading: Icon(Icons.medical_services_outlined), 
-  title: Text('Doctor Appointment Stats'),        
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const DoctorAppointmentsPage()),
-    );
-  },
-),
+//          ListTile(
+//   leading: Icon(Icons.medical_services_outlined), 
+//   title: Text('Doctor Appointment Stats'),        
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (context) => const DoctorAppointmentsPage()),
+//     );
+//   },
+// ),
 
            
-             ListTile(
-  leading: Icon(Icons.medical_services_outlined), 
-  title: Text('Update Appointment Status'),        
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const UpdateAppointmentStatusPage()),
-    );
-  },
-),
+//              ListTile(
+//   leading: Icon(Icons.medical_services_outlined), 
+//   title: Text('Update Appointment Status'),        
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (context) => const UpdateAppointmentStatusPage()),
+//     );
+//   },
+// ),
           ],
         ),
       ),

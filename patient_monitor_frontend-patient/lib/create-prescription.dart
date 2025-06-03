@@ -37,7 +37,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue, Colors.red], // Gradient background
+            colors: [Colors.blue, Colors.red], 
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
           ),
