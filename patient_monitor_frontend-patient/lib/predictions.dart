@@ -17,6 +17,7 @@ import 'symptom-by-name.dart';
 import 'appointment-schedule-by-medic.dart';
 import  'medic-appointment-details.dart';
 import 'medic-appointment-status-details.dart';
+import  'appointment-status-update.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -246,7 +247,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
             ),
 
 
-           ListTile(
+         ListTile(
   leading: Icon(Icons.medical_services_outlined), 
   title: Text('Doctor Appointment Stats'),        
   onTap: () {
@@ -258,7 +259,16 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 ),
 
            
-            //DoctorAppointmentsStatsPage
+             ListTile(
+  leading: Icon(Icons.medical_services_outlined), 
+  title: Text('Update Appointment Status'),        
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const UpdateAppointmentStatusPage()),
+    );
+  },
+),
           ],
         ),
       ),
