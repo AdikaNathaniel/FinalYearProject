@@ -7,6 +7,7 @@ import {
   UsePipes,
   HttpStatus,
   HttpCode,
+  HttpException,
 } from '@nestjs/common';
 import { PatientHardwareService } from './patient-hardware.service';
 import { CreatePatientHardwareDto } from 'src/users/dto/create-patient-hardware.dto';
@@ -34,7 +35,7 @@ export class PatientHardwareController {
   @Get()
   async getLatest() {
     const patient = await this.patientHardwareService.getLatestPatient();
-    
+        
     if (!patient) {
       return {
         statusCode: HttpStatus.NOT_FOUND,
@@ -55,32 +56,53 @@ export class PatientHardwareController {
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
   async createPrediction(@Body() createPredictionHardwareDto: CreatePredictionHardwareDto) {
-    const prediction = await this.patientHardwareService.createPrediction(createPredictionHardwareDto);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Prediction hardware record created successfully',
-      data: prediction,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      const result = await this.patientHardwareService.createPrediction(createPredictionHardwareDto);
+      
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Prediction hardware record created successfully',
+        data: {
+          ...result.prediction, // Use the prediction object directly
+          patient_name: result.patient_name,
+        },
+        patient_name: result.patient_name, // Also include at root level for easy access
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: error.message || 'Failed to create prediction',
+          timestamp: new Date().toISOString(),
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   // GET /patients-hardware/predictions - Get the latest prediction hardware record
   @Get('predictions')
   async getLatestPrediction() {
-    const prediction = await this.patientHardwareService.getLatestPrediction();
-    
-    if (!prediction) {
+    const result = await this.patientHardwareService.getLatestPrediction();
+        
+    if (!result) {
       return {
         statusCode: HttpStatus.NOT_FOUND,
         message: 'No prediction hardware records found',
         data: null,
+        patient_name: null,
       };
     }
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Latest prediction hardware record retrieved successfully',
-      data: prediction,
+      data: {
+        ...result.prediction, // Spread the prediction object directly
+        patient_name: result.patient_name,
+      },
+      patient_name: result.patient_name, // Also include at root level for easy access
     };
   }
 }

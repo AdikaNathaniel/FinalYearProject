@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 export type PredictionHardwareDocument = PredictionHardware & Document;
 
@@ -13,6 +14,9 @@ export class PredictionHardware {
 
   @Prop({ required: true })
   gdm_risk: string;
+
+@Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'PatientHardware' })
+patient_id?: string;
 
   // Auto-generated timestamps
   createdAt?: Date;
