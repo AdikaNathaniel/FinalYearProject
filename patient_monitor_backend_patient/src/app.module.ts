@@ -51,6 +51,7 @@ import { FaceAuthModule } from './face-auth/face-auth.module';
 import { AuthModule } from './auth/auth.module';
 import { SupportModule } from './support/support.module';
 import {  SymptomsModule } from './symptom/symptom.module';
+import { PatientHardwareModule } from './hardware-data/patient-hardware.module';
 
 // Schemas - ONLY FOR SCHEMAS USED DIRECTLY IN APP MODULE
 import { Chat, ChatSchema } from 'src/shared/schema/chat.schema';
@@ -120,6 +121,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     AppointmentsModule,
     StripeModule,
     SupportModule,
+    PatientHardwareModule,
     PrescriptionsModule,
     HealthModule,
     DoctorsModule,
