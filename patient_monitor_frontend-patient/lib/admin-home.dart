@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'admin-notification.dart';
 import 'login_page.dart'; 
-import  'support-settings.dart';
+import 'support-settings.dart';
+import 'users_summary.dart';
+import 'set_profile.dart'; // Make sure to import the SetProfilePage
 
 class AdminHomePage extends StatefulWidget {
   final String userEmail;
@@ -27,7 +29,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['success']) {
-          // Navigate to LoginPage after successful logout
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => LoginPage()),
             (Route<dynamic> route) => false
@@ -82,50 +83,39 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 Expanded(child: Text(widget.userEmail)),
               ],
             ),
-//             const SizedBox(height: 10),
-// InkWell(
-//               onTap: () {
-//                 Navigator.pop(context); // Close dialog first
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => NotificationSettingsPage(userEmail: widget.userEmail),
-//                   ),
-//                 );
-//               },
-//               child: Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-//                 child: Row(
-//                   children: [
-//                     const SizedBox(
-//                       width: 40,
-//                       child: Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
-//                     )
-//                     // const SizedBox(width: 10),
-//                     // const Expanded(
-//                     //   child: Text(
-//                     //     'Admin Panel',
-//                     //     style: TextStyle(
-//                     //       fontSize: 16,
-//                     //       fontWeight: FontWeight.w500,
-//                     //       color: Colors.blueAccent,
-//                     //     ),
-//                     //   ),
-//                     // ),
-//                   ],
-//                 ),
-//               ),
-//             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                const SizedBox(
-                  width: 40,
-                  child: Icon(Icons.settings),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context); // Close dialog first
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 40,
+                      child: Icon(Icons.settings, color: Colors.blue),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Settings',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                const Expanded(child: Text('Settings')),
-              ],
+              ),
             ),
             const SizedBox(height: 10),
             TextButton(
@@ -147,43 +137,37 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   @override
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('Admin Panel'),
-      centerTitle: true,
-      backgroundColor: Colors.blueAccent,
-      foregroundColor: Colors.white,
-    //   leading: IconButton(
-    //     icon: const Icon(Icons.arrow_back),
-    //     onPressed: () => Navigator.pop(context),
-    //   ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: GestureDetector(
-            onTap: () => _showUserInfoDialog(context),
-            child: CircleAvatar(
-              child: Text(
-                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
-                style: const TextStyle(color: Colors.blue),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Admin Panel'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: () => _showUserInfoDialog(context),
+              child: CircleAvatar(
+                child: Text(
+                  widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
+                  style: const TextStyle(color: Colors.blue),
+                ),
+                backgroundColor: Colors.white,
               ),
-              backgroundColor: Colors.white,
             ),
           ),
-        ),
-      ],
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: _selectedPage == 'Dashboard'
-          ? _buildDashboard(context)
-          : _buildContent(_selectedPage),
-    ),
-  );
-}
-
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _selectedPage == 'Dashboard'
+            ? _buildDashboard(context)
+            : _buildContent(_selectedPage),
+      ),
+    );
+  }
 
   Widget _buildDashboard(BuildContext context) {
     return Column(
@@ -202,12 +186,7 @@ Widget build(BuildContext context) {
             );
           },
         ),
-
-
-        // SupportSettingsPage
-
-
-         _buildNotificationCard(
+        _buildNotificationCard(
           context: context,
           icon: Icons.support_agent,
           title: 'Support',
@@ -221,17 +200,20 @@ Widget build(BuildContext context) {
             );
           },
         ),
-        // _buildNotificationCard(
-        //   context: context,
-        //   icon: Icons.support_agent,
-        //   title: 'Support',
-        //   iconColor: Colors.green,
-        //   onTap: () {
-        //     setState(() {
-        //       _selectedPage = 'Support';
-        //     });
-        //   },
-        // ),
+        _buildNotificationCard(
+          context: context,
+          icon: Icons.supervised_user_circle,
+          title: 'View All Awopa Users',
+          iconColor: Colors.blueAccent,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UserListPage(userEmail: widget.userEmail),
+              ),
+            );
+          },
+        ),
       ],
     );
   }

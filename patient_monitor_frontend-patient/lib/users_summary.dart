@@ -93,39 +93,39 @@ class _UserListPageState extends State<UserListPage> {
             ],
           ),
         
-        const SizedBox(height: 10),
-InkWell(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => NotificationSettingsPage(userEmail: widget.userEmail),
-      ),
-    );
-  },
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-    child: Row(
-      children: [
-        const SizedBox(
-          width: 40, // Same fixed width for icon column
-          child: Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
-        ),
-        const SizedBox(width: 10),
-        const Expanded(
-          child: Text(
-            'Admin Panel',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.blueAccent,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+        // const SizedBox(height: 10),
+// InkWell(
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => NotificationSettingsPage(userEmail: widget.userEmail),
+//       ),
+//     );
+//   },
+//   child: Padding(
+//     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+//     child: Row(
+//       children: [
+//         const SizedBox(
+//           width: 40, // Same fixed width for icon column
+//           child: Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
+//         ),
+//         const SizedBox(width: 10),
+//         const Expanded(
+//           child: Text(
+//             'Admin Panel',
+//             style: TextStyle(
+//               fontSize: 16,
+//               fontWeight: FontWeight.w500,
+//               color: Colors.blueAccent,
+//             ),
+//           ),
+//         ),
+//       ],
+//     ),
+//   ),
+// ),
           const SizedBox(height: 10),
           Row(
             children: [
