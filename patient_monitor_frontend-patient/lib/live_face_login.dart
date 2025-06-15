@@ -2,23 +2,23 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:html' as html;
 import 'dart:convert';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'face_login.dart';
 import 'login_page.dart';
+import 'pregnancy-calculator.dart';
+import 'predictions.dart';
+import 'face_register.dart';
 
-class FaceRegisterPage extends StatefulWidget {
-  const FaceRegisterPage({Key? key}) : super(key: key);
+class LiveFaceLoginPage extends StatefulWidget {
+  const LiveFaceLoginPage({Key? key}) : super(key: key);
 
   @override
-  State<FaceRegisterPage> createState() => _FaceRegisterPageState();
+  State<LiveFaceLoginPage> createState() => _LiveFaceLoginPageState();
 }
 
-class _FaceRegisterPageState extends State<FaceRegisterPage> {
-  final TextEditingController _userIdController = TextEditingController();
+class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
   File? _selectedImage;
   Uint8List? _webImage;
   bool _isLoading = false;
@@ -39,54 +39,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
         });
       }
     }
-  }
-
-  Future<void> _takePhotoWeb() async {
-    if (!kIsWeb) {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.camera);
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-      }
-      return;
-    }
-
-    final html.FileUploadInputElement uploadInput = html.FileUploadInputElement()
-      ..accept = 'image/*'
-      ..setAttribute('capture', 'environment');
-    
-    html.document.body?.append(uploadInput);
-    uploadInput.click();
-    
-    uploadInput.onChange.listen((e) {
-      final files = uploadInput.files;
-      if (files != null && files.isNotEmpty) {
-        final file = files[0];
-        final reader = html.FileReader();
-        
-        reader.onLoadEnd.listen((e) {
-          final dataUrl = reader.result as String;
-          final base64 = dataUrl.split(',')[1];
-          final bytes = base64Decode(base64);
-          
-          setState(() {
-            _webImage = bytes;
-          });
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Photo captured successfully!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-        });
-        
-        reader.readAsDataUrl(file);
-      }
-      uploadInput.remove();
-    });
   }
 
   Future<void> _openWebCamera() async {
@@ -180,7 +132,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
     
     stream.getTracks().forEach((track) => track.stop());
     
-    // Convert canvas to data URL directly
     final dataUrl = canvas.toDataUrl('image/jpeg', 0.8);
     final base64 = dataUrl.split(',')[1];
     final bytes = base64Decode(base64);
@@ -196,75 +147,12 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
           backgroundColor: Colors.green,
         ),
       );
-    }
-  }
-
-  void _capturePhoto(html.VideoElement video, html.CanvasElement canvas, html.MediaStream stream) {
-    final canvasContext = canvas.getContext('2d') as html.CanvasRenderingContext2D;
-    canvasContext.drawImage(video, 0, 0);
-    
-    stream.getTracks().forEach((track) => track.stop());
-    
-    // Convert canvas to data URL directly
-    final dataUrl = canvas.toDataUrl('image/jpeg', 0.8);
-    final base64 = dataUrl.split(',')[1];
-    final bytes = base64Decode(base64);
-    
-    setState(() {
-      _webImage = bytes;
-    });
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Photo captured successfully!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-  }
-
-  Future<void> _takePhotoFallback() async {
-    if (kIsWeb) {
-      final html.FileUploadInputElement uploadInput = html.FileUploadInputElement()
-        ..accept = 'image/*'
-        ..setAttribute('capture', 'user');
-      
-      uploadInput.click();
-      
-      uploadInput.onChange.listen((e) {
-        final files = uploadInput.files;
-        if (files!.isNotEmpty) {
-          final file = files[0];
-          final reader = html.FileReader();
-          
-          reader.onLoadEnd.listen((e) {
-            final bytes = reader.result as Uint8List;
-            setState(() {
-              _webImage = bytes;
-            });
-          });
-          
-          reader.readAsArrayBuffer(file);
-        }
-      });
-    } else {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.camera);
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-      }
     }
   }
 
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (BuildContext context) {
         return Container(
           padding: const EdgeInsets.all(20),
@@ -282,92 +170,196 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildSourceOption(
-                    icon: Icons.camera_alt,
-                    label: 'Camera',
+                  GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
                       _openWebCamera();
                     },
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.camera_alt, size: 40, color: Colors.blue),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Camera',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  _buildSourceOption(
-                    icon: Icons.photo_library,
-                    label: 'Gallery',
+                  GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
                       _pickImageFromGallery();
                     },
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.photo_library, size: 40, color: Colors.blue),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Gallery',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              if (kIsWeb)
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _takePhotoFallback();
-                  },
-                  child: const Text('Alternative Camera Access'),
-                ),
               const SizedBox(height: 10),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSourceOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.blue.withOpacity(0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: Colors.blue,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
     );
   }
 
-  Future<void> _submitData() async {
-    final userId = _userIdController.text.trim();
+  Future<void> _showConfirmationDialog(String userId, String faceGender) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Identity Confirmation'),
+          content: Text('Are you $userId?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showErrorNotification('Kindly upload a new Image for Access');
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _handleSuccessfulLogin(userId, faceGender);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    if (userId.isEmpty || (_selectedImage == null && _webImage == null)) {
+  void _handleSuccessfulLogin(String userId, String faceGender) {
+    if (userId == 'Einsteina Owoh') {
+      _showSuccessNotification('Logging In As Pregnant Woman');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PregnancyCalculatorScreen(userEmail: userId),
+        ),
+        (route) => false, 
+      );
+    } 
+    else if (userId == 'Dr.George Anane') {
+      _showSuccessNotification('Logging In As Medic');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PregnancyComplicationsPage(userEmail: userId),
+        ),
+        (route) => false,
+      );
+    }
+    else {
+      _showErrorNotification('Invalid user');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+  }
+
+  void _showSuccessNotification(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showErrorNotification(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  Future<void> _showLowConfidenceDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 30),
+              SizedBox(width: 10),
+              Text('Low Confidence', style: TextStyle(fontSize: 20)),
+            ],
+          ),
+          content: const Text('Kindly use email and password to log in',
+              style: TextStyle(fontSize: 16)),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK', style: TextStyle(fontSize: 16)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _loginWithFaceAuth() async {
+    if (_selectedImage == null && _webImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User ID and image are required")),
+        const SnackBar(content: Text("Please capture or select an image")),
       );
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final uri = Uri.parse('http://localhost:3100/api/v1/face/register');
-    final request = http.MultipartRequest('POST', uri)
-      ..fields['userId'] = userId;
+    final uri = Uri.parse('http://localhost:3100/api/v1/face/detect');
+    final request = http.MultipartRequest('POST', uri);
 
     try {
       if (kIsWeb) {
@@ -385,109 +377,88 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
 
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
+      final jsonResponse = json.decode(responseBody);
 
       setState(() => _isLoading = false);
 
-      if (response.statusCode == 201) {
-        _showSuccessDialog();
+      if (response.statusCode == 201 && jsonResponse['success'] == true) {
+        final result = jsonResponse['result'];
+        
+        if (result['faces'] == null || 
+            result['faces'].isEmpty || 
+            result['match'] == null) {
+          _showErrorNotification('Invalid user');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+          return;
+        }
+
+        final match = result['match'];
+        final confidence = match['confidence']?.toDouble() ?? 0.0;
+        
+        if (confidence > 0.40) {
+          await _showLowConfidenceDialog();
+          return;
+        }
+
+        final face = result['faces'][0];
+        final faceGender = face['gender'] ?? '';
+        final userId = match['userId'] ?? '';
+
+        if (userId.isNotEmpty) {
+          await _showConfirmationDialog(userId, faceGender);
+        } else {
+          _showErrorNotification('Unable to verify identity');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to register: $responseBody")),
+        final errorMessage = jsonResponse['error'] ?? 
+                           jsonResponse['message'] ?? 
+                           'Authentication failed';
+        _showErrorNotification(errorMessage.toString());
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+      _showErrorNotification("Error: ${e.toString()}");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
       );
     }
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        contentPadding: const EdgeInsets.all(20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 80),
-            const SizedBox(height: 20),
-            const Text(
-              "Registration Successful",
-              style: TextStyle(fontSize: 18, color: Colors.green),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "You can now login with your face",
-              style: TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const FaceLoginPage(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Continue to Face Login'),
-                ),
-                const SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
-                      ),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.blueAccent,
-                  ),
-                  child: const Text('Return to Login Page'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _userIdController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: AppBar(
-  title: const Text(
-    'Register My Face for Authentication',
-    style: TextStyle(color: Colors.white), 
-  ),
-  centerTitle: true,
-  backgroundColor: Colors.blueAccent, 
-  iconTheme: const IconThemeData(color: Colors.white), 
-),
+      appBar: AppBar(
+        title: const Text('Live Face Login'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        actions: [
+        //   TextButton(
+        //     onPressed: () {
+        //       Navigator.pushReplacement(
+        //         context,
+        //         MaterialPageRoute(builder: (context) => const LoginPage()),
+        //       );
+        //     },
+        //     // child: const Text(
+        //     //   'Use Email/Password',
+        //     //   style: TextStyle(color: Colors.white),
+        //     // ),
+        //   ),
+        ],
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -500,7 +471,6 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              _inputField("UserName", _userIdController),
               const SizedBox(height: 20),
               Container(
                 height: 180,
@@ -550,7 +520,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.person_outline,
+                                  Icons.face_retouching_natural,
                                   size: 60,
                                   color: Colors.white.withOpacity(0.5),
                                 ),
@@ -560,7 +530,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                                   style: TextStyle(color: Colors.white70),
                                 ),
                                 const Text(
-                                  "Take a photo or select from gallery",
+                                  "Take a live photo for authentication",
                                   style: TextStyle(
                                     color: Colors.white54,
                                     fontSize: 12,
@@ -573,8 +543,8 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _showImageSourceDialog,
-                icon: const Icon(Icons.add_a_photo, color: Colors.white),
-                label: const Text('Add Photo'),
+                icon: const Icon(Icons.camera_alt, color: Colors.white),
+                label: const Text('Capture Live Photo'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurpleAccent,
                   foregroundColor: Colors.white,
@@ -585,26 +555,13 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                   elevation: 4,
                 ),
               ),
-              const SizedBox(height: 10),
-              if (_webImage == null && _selectedImage == null)
-                TextButton.icon(
-                  onPressed: _openWebCamera,
-                  icon: const Icon(Icons.camera_front, color: Colors.white70),
-                  label: const Text(
-                    'Quick Camera Capture',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  ),
-                ),
               const SizedBox(height: 20),
               _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : ElevatedButton.icon(
-                      onPressed: _submitData,
-                      icon: const Icon(Icons.upload_rounded, color: Colors.white),
-                      label: const Text('Register'),
+                      onPressed: _loginWithFaceAuth,
+                      icon: const Icon(Icons.login, color: Colors.white),
+                      label: const Text('Login with Face'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.greenAccent.shade700,
                         foregroundColor: Colors.white,
@@ -615,30 +572,41 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
                         elevation: 4,
                       ),
                     ),
+              const SizedBox(height: 20),
+              Column(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Login with Email/Password instead',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const FaceRegisterPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Click Me To Register Your Face On Awo)Pa',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontStyle: FontStyle.italic
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _inputField(String labelText, TextEditingController controller) {
-    return TextField(
-      style: const TextStyle(color: Colors.white),
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Colors.white),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Colors.white, width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
       ),
     );
   }

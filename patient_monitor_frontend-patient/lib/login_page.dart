@@ -9,6 +9,7 @@ import 'pregnancy-calculator.dart';
 import 'face_register.dart'; // Import FaceRegisterPage
 import 'face_login.dart'; // Import FaceLoginPage
 import 'pin-login.dart'; // Import LoginPinPage
+import 'live_face_login.dart'; // Import LiveFaceLoginPage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -227,7 +228,8 @@ class _LoginPageState extends State<LoginPage> {
     onTap: () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const FaceLoginPage()),
+        // MaterialPageRoute(builder: (context) => const FaceLoginPage()),
+        MaterialPageRoute(builder: (context) => const LiveFaceLoginPage()),
       );
     },
     child: const Text(
