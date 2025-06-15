@@ -16,6 +16,7 @@ import 'support-create.dart';
 import 'medic-list.dart';
 import 'doctor-by-name.dart';
 import 'symptom-checker.dart';
+import 'set_profile.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -57,9 +58,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
   String weightValue = '68.5 kg';
   final TextEditingController _emergencyMessageController = TextEditingController();
 
- 
-
- Future<void> _sendEmergencyAlert(String message) async {
+  Future<void> _sendEmergencyAlert(String message) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:3100/api/v1/emergency/contacts/send'),
@@ -82,76 +81,74 @@ class _HealthDashboardState extends State<HealthDashboard> {
     }
   }
 
+  void _showEmergencyAlertDialog(BuildContext context) {
+    final List<String> emergencyMessages = [
+      "I'm pregnant and need help now.",
+      "I feel dizzy",
+      "I need to go to the hospital urgently.",
+      "I'm bleeding",
+      "My water just broke,I need assistance.",
+    ];
 
-void _showEmergencyAlertDialog(BuildContext context) {
-  final List<String> emergencyMessages = [
-  "I'm pregnant and need help now.",
-  "I feel dizzy",
-  "I need to go to the hospital urgently.",
-  "I'm bleeding",
-  "My water just broke,I need assistance.",
-  ];
+    String? selectedMessage;
 
-  String? selectedMessage;
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Emergency Alert'),
-        content: StatefulBuilder(
-          builder: (context, setState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Select an emergency message:'),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: selectedMessage,
-                onChanged: (value) => setState(() => selectedMessage = value),
-                items: emergencyMessages.map((message) {
-                  return DropdownMenuItem<String>(
-                    value: message,
-                    child: Text(
-                      message,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true,
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Emergency Alert'),
+          content: StatefulBuilder(
+            builder: (context, setState) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Select an emergency message:'),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedMessage,
+                  onChanged: (value) => setState(() => selectedMessage = value),
+                  items: emergencyMessages.map((message) {
+                    return DropdownMenuItem<String>(
+                      value: message,
+                      child: Text(
+                        message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  isExpanded: true,
+                  validator: (value) =>
+                      value == null ? 'Please select a message' : null,
                 ),
-                isExpanded: true,
-                validator: (value) =>
-                    value == null ? 'Please select a message' : null,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (selectedMessage != null && selectedMessage!.isNotEmpty) {
-                Navigator.pop(context);
-                _sendEmergencyAlert(selectedMessage!);
-              } else {
-                _showSnackbar(context, "Please select an emergency message", Colors.red);
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Send Alert'),
-          ),
-        ],
-      );
-    },
-  );
-}
- 
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (selectedMessage != null && selectedMessage!.isNotEmpty) {
+                  Navigator.pop(context);
+                  _sendEmergencyAlert(selectedMessage!);
+                } else {
+                  _showSnackbar(context, "Please select an emergency message", Colors.red);
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Send Alert'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -260,19 +257,19 @@ void _showEmergencyAlertDialog(BuildContext context) {
                 );
               },
             ),
-          ListTile(
-  leading: const Icon(Icons.emergency, color: Colors.red), 
-  title: const Text('Emergency Contacts'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail),
-      ),
-    );
-  },
-),
-             ListTile(
+            ListTile(
+              leading: const Icon(Icons.emergency, color: Colors.red), 
+              title: const Text('Emergency Contacts'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmergencyContactsPage(userEmail: widget.userEmail),
+                  ),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.help_outline, color: Colors.teal),
               title: const Text('Support Desk'), 
               onTap: () {
@@ -284,9 +281,7 @@ void _showEmergencyAlertDialog(BuildContext context) {
                 );
               },
             ),
-
-
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.medical_services, color: Colors.blue),
               title: const Text('View All Medics Profile'), 
               onTap: () {
@@ -298,9 +293,7 @@ void _showEmergencyAlertDialog(BuildContext context) {
                 );
               },
             ),
-
-
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.healing, color: Colors.pinkAccent),
               title: const Text('How Are You Feeling?'), 
               onTap: () {
@@ -312,28 +305,27 @@ void _showEmergencyAlertDialog(BuildContext context) {
                 );
               },
             ),
-     
-          ListTile(
-  leading: const Icon(Icons.search, color: Colors.blue),
-  title: const Text(
-    'Find Your Favorite Medic',
-    style: TextStyle(
-      fontWeight: FontWeight.w500,
-      fontSize: 16,
-    ),
-  ),
-  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-  visualDensity: VisualDensity.comfortable,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const FindDoctorByNamePage(),
-      ),
-    );
-  },
-),
+            ListTile(
+              leading: const Icon(Icons.search, color: Colors.blue),
+              title: const Text(
+                'Find Your Favorite Medic',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+              ),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              visualDensity: VisualDensity.comfortable,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FindDoctorByNamePage(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -451,13 +443,29 @@ void _showEmergencyAlertDialog(BuildContext context) {
               ),
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.settings),
-                const SizedBox(width: 10),
-                const Text('Settings'),
-              ],
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.settings, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Settings',
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
             InkWell(
