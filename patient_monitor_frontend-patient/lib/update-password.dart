@@ -135,7 +135,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
       appBar: AppBar(
         title: const Text('Update Password'),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -157,7 +157,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _updatePassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: Colors.blueAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
