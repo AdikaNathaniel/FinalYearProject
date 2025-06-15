@@ -24,7 +24,7 @@ import { AgoraService } from './agora.service';
 // Modules
 import { VideoModule } from './video-call/video.module';
 import { DoctorsModule } from './doctors/doctors.module';
-import { SearchModule } from './search/search.module';
+// import { SearchModule } from './search/search.module';
 import { SharedModule } from './doctors/shared.module';
 import { TasksModule } from './doctors/task.module';
 import { PatientModule } from './patient/patient.module';
@@ -138,7 +138,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     SharedModule,
     TasksModule,
     PinModule,
-    SearchModule,
+    // SearchModule,
     
     // Schemas - Only register schemas that are used directly in THIS module's services
     // DO NOT register schemas that are already registered in their respective feature modules

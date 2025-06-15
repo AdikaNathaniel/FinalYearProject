@@ -74,7 +74,7 @@ async sendSms(phone: string, message: string): Promise<boolean> {
     const smsRecord = await this.createSmsRecord(formattedPhone, message);
 
     try {
-      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'SXZtb3lhRldmZVVCSEdXUW1EVGU';
+      const apiKey = this.configService.get<string>('SMS_API_KEY') || 'R0lBd2RtanJrd3lsdmhjV1lrR2s';
       if (!apiKey) {
         throw new Error('SMS_API_KEY environment variable is not set');
       }

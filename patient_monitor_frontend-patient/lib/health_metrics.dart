@@ -57,12 +57,9 @@ class _HealthDashboardState extends State<HealthDashboard> {
   String weightValue = '68.5 kg';
   final TextEditingController _emergencyMessageController = TextEditingController();
 
-  Future<void> _sendEmergencyAlert(String message) async {
-    if (message.isEmpty) {
-      _showSnackbar(context, "Please enter an emergency message", Colors.red);
-      return;
-    }
+ 
 
+ Future<void> _sendEmergencyAlert(String message) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:3100/api/v1/emergency/contacts/send'),
@@ -85,27 +82,52 @@ class _HealthDashboardState extends State<HealthDashboard> {
     }
   }
 
-  void _showEmergencyAlertDialog(BuildContext context) {
-    _emergencyMessageController.clear();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+
+void _showEmergencyAlertDialog(BuildContext context) {
+  final List<String> emergencyMessages = [
+  "I'm pregnant and need help now.",
+  "I feel dizzy",
+  "I need to go to the hospital urgently.",
+  "I'm bleeding",
+  "My water just broke,I need assistance.",
+  ];
+
+  String? selectedMessage;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
         title: const Text('Emergency Alert'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 10),
-            TextField(
-              controller: _emergencyMessageController,
-              decoration: const InputDecoration(
-                hintText: 'Enter Emergency Message!',
-                border: OutlineInputBorder(),
+        content: StatefulBuilder(
+          builder: (context, setState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Select an emergency message:'),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: selectedMessage,
+                onChanged: (value) => setState(() => selectedMessage = value),
+                items: emergencyMessages.map((message) {
+                  return DropdownMenuItem<String>(
+                    value: message,
+                    child: Text(
+                      message,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                isExpanded: true,
+                validator: (value) =>
+                    value == null ? 'Please select a message' : null,
               ),
-              maxLines: 3,
-              autofocus: true,
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -114,20 +136,22 @@ class _HealthDashboardState extends State<HealthDashboard> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (_emergencyMessageController.text.trim().isNotEmpty) {
+              if (selectedMessage != null && selectedMessage!.isNotEmpty) {
                 Navigator.pop(context);
-                _sendEmergencyAlert(_emergencyMessageController.text.trim());
+                _sendEmergencyAlert(selectedMessage!);
               } else {
-                _showSnackbar(context, "Please enter an emergency message", Colors.red);
+                _showSnackbar(context, "Please select an emergency message", Colors.red);
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Send Alert'),
           ),
         ],
-      ),
-    );
-  }
+      );
+    },
+  );
+}
+ 
 
   @override
   Widget build(BuildContext context) {

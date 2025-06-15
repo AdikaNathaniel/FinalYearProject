@@ -10,7 +10,7 @@ export class MessageService {
   
   constructor(private configService: ConfigService) {
     // Get API key from environment variables via ConfigService
-    this.smsApiKey = this.configService.get<string>('ARKESLE_SMS_API_KEY') || 'SXZtb3lhRldmZVVCSEdXUW1EVGU';
+    this.smsApiKey = this.configService.get<string>('ARKESLE_SMS_API_KEY') || 'R0lBd2RtanJrd3lsdmhjV1lrR2s';
     
     if (!this.smsApiKey) {
       this.logger.warn('ARKESLE_SMS_API_KEY not found in environment variables');
