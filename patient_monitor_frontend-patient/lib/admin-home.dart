@@ -5,7 +5,8 @@ import 'admin-notification.dart';
 import 'login_page.dart'; 
 import 'support-settings.dart';
 import 'users_summary.dart';
-import 'set_profile.dart'; // Make sure to import the SetProfilePage
+import 'set_profile.dart';
+import 'map.dart'; // Import the MapPage
 
 class AdminHomePage extends StatefulWidget {
   final String userEmail;
@@ -110,6 +111,40 @@ class _AdminHomePageState extends State<AdminHomePage> {
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.blueAccent,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context); // Close dialog first
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MapPage(),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 40,
+                      child: Icon(Icons.map, color: Colors.green),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'View Location Of PregMama',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.green,
                         ),
                       ),
                     ),

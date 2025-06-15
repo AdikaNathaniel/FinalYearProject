@@ -6,8 +6,6 @@ import 'create_cancel-appointment.dart';
 import 'login_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-// import 'view_prescription.dart';
-// import 'create-prescription.dart';
 import 'doctor-chat.dart';
 import 'set_profile.dart';
 import 'support-create.dart';
@@ -15,12 +13,13 @@ import 'doctor-profile.dart';
 import 'symptom-list.dart';
 import 'symptom-by-name.dart';
 import 'appointment-schedule-by-medic.dart';
-import  'medic-appointment-details.dart';
+import 'medic-appointment-details.dart';
 import 'medic-appointment-status-details.dart';
-import  'appointment-status-update.dart';
-import  'prescriptions-home.dart';
-import  'appointments-home.dart';
+import 'appointment-status-update.dart';
+import 'prescriptions-home.dart';
+import 'appointments-home.dart';
 import 'preeclampsia-home.dart';
+import 'map.dart'; 
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -127,32 +126,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 ),
               ),
             ),
-            // ListTile(
-            //   leading: Icon(Icons.list),
-            //   title: Text('Medical Appointments'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) => ViewAppointmentsPage(userEmail: widget.userEmail)),
-            //     );
-            //   },
-            // ),
-            // ListTile(
-            //   leading: Icon(Icons.calendar_today),
-            //   title: Text('Create-Cancel Appointment'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) => CreateCancelAppointmentPage(userEmail: widget.userEmail)),
-            //     );
-            //   },
-            // ),
-
-
-            // PrescriptionHomePage
-             ListTile(
+            ListTile(
               leading: Icon(Icons.calendar_today),
               title: Text('Prescriptions'),
               onTap: () {
@@ -162,26 +136,6 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-            // ListTile(
-            //   leading: Icon(Icons.calendar_today),
-            //   title: Text('Create Prescription'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => CreatePrescriptionPage()),
-            //     );
-            //   },
-            // ),
-            // ListTile(
-            //   leading: Icon(Icons.medication),
-            //   title: Text('View Prescriptions'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => PrescriptionPage()),
-            //     );
-            //   },
-            // ),
             ListTile(
               leading: Icon(Icons.medication),
               title: Text('Doctor Chat'),
@@ -192,7 +146,6 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-
             ListTile(
               leading: Icon(Icons.help_outline),
               title: Text('Support Desk'),
@@ -203,7 +156,6 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-
             ListTile(
               leading: Icon(Icons.medical_services),
               title: Text('Create A Profile'),
@@ -214,11 +166,9 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-
-
-              ListTile(
+            ListTile(
               leading: Icon(Icons.monitor_heart),
-              title: Text('Preeclampsia Symptoms',),
+              title: Text('Preeclampsia Symptoms'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -226,23 +176,9 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-
-
-//  ListTile(
-//               leading: Icon(Icons.monitor_heart_outlined),
-//               title: Text('Preeclampsia Vitals Monitor',),
-//               onTap: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder: (context) => const FindSymptomByNamePage()),
-//                 );
-//               },
-//             ),
-
-
             ListTile(
               leading: Icon(Icons.calendar_today),
-              title: Text('Appointments',),
+              title: Text('Appointments'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -250,53 +186,6 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-
-            // ListTile(
-            //   leading: Icon(Icons.calendar_today),
-            //   title: Text('Schedule Appointment',),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => const AppointmentScheduleByMedicPage()),
-            //     );
-            //   },
-            // ),
-
-
-//  ListTile(
-//               leading: Icon(Icons.calendar_today),
-//               title: Text('Appointment Details',),
-//               onTap: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder: (context) => const DoctorAppointmentsStatsPage()),
-//                 );
-//               },
-//             ),
-
-
-//          ListTile(
-//   leading: Icon(Icons.medical_services_outlined), 
-//   title: Text('Doctor Appointment Stats'),        
-//   onTap: () {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(builder: (context) => const DoctorAppointmentsPage()),
-//     );
-//   },
-// ),
-
-           
-//              ListTile(
-//   leading: Icon(Icons.medical_services_outlined), 
-//   title: Text('Update Appointment Status'),        
-//   onTap: () {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(builder: (context) => const UpdateAppointmentStatusPage()),
-//     );
-//   },
-// ),
           ],
         ),
       ),
@@ -403,71 +292,88 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
     );
   }
 
-void _showUserInfoDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Center(child: Text('Profile')),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Column for Icons
-              Column(
-                children: const [
-                  Icon(Icons.email),
-                  SizedBox(height: 20),
-                  Icon(Icons.settings, color: Colors.blue),
-                ],
-              ),
-              const SizedBox(width: 10),
-              // Column for Text
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.userEmail),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+  void _showUserInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Center(child: Text('Profile')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  children: const [
+                    Icon(Icons.email),
+                    SizedBox(height: 20),
+                    Icon(Icons.settings, color: Colors.blue),
+                    SizedBox(height: 20),
+                    Icon(Icons.map, color: Colors.green),
+                  ],
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.userEmail),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.blue,
                         ),
-                      );
-                    },
-                    child: const Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.blue,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MapPage(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'View Location Of PregMama',
+                        style: TextStyle(
+                          color: Colors.green,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: _logout,
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
           TextButton(
-            onPressed: _logout,
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Close'),
-        ),
-      ],
-    ),
-  );
-}
-
+    );
+  }
 
   void _showSnackbar(String message) {
     final snackBar = SnackBar(

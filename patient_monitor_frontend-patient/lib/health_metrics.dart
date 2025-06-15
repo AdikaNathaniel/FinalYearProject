@@ -17,6 +17,7 @@ import 'medic-list.dart';
 import 'doctor-by-name.dart';
 import 'symptom-checker.dart';
 import 'set_profile.dart'; 
+import 'map.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -487,6 +488,31 @@ class _HealthDashboardState extends State<HealthDashboard> {
                     'Notifications',
                     style: TextStyle(
                       color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MapPage(),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.map, color: Colors.green),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'View Location Of PregMama',
+                    style: TextStyle(
+                      color: Colors.green,
                     ),
                   ),
                 ],
