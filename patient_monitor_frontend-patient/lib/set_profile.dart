@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'create-pin.dart'; 
 import 'update-pin.dart';
 import 'delete-pin.dart';
+import 'update-password.dart';
+import 'dart:convert';
 
 class SetProfilePage extends StatelessWidget {
   final String userEmail;
@@ -90,8 +92,6 @@ _buildSettingTile(
 ),
            
 
-
-
               _buildSettingTile(
   icon: Icons.delete_outline,
   title: 'Delete PIN',
@@ -103,12 +103,19 @@ _buildSettingTile(
     );
   },
 ),
-            _buildSettingTile(
-              icon: Icons.lock_reset,
-              title: 'Update Password',
-              iconColor: Colors.blue,
-              onTap: () => _onOptionSelected(context, 'Update Password'),
-            ),
+            
+
+               _buildSettingTile(
+  icon: Icons.lock_reset,
+  title: 'Update Password',
+  iconColor: Colors.orange,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => UpdatePasswordPage()),
+    );
+  },
+),
           ],
         ),
       ),
