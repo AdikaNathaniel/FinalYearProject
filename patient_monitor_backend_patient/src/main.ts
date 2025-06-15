@@ -4,7 +4,6 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
-// import { NotificationModule } from './notification/notification.module';
 import { EmailModule } from './email/email.module';
 import { TransformationInterceptor } from './responseInterceptor';
 import cookieParser from 'cookie-parser';
@@ -18,9 +17,6 @@ import * as crypto from 'crypto';
 // @ts-ignore
 global.crypto = crypto;
 
-// Add TensorFlow.js Node.js bindings
-// import '@tensorflow/tfjs-node';
-
 const logger = new Logger('Bootstrap');
 
 // Configuration constants
@@ -33,8 +29,9 @@ const CONFIG = {
     timeout: 10000,
   },
   server: {
-    port: parseInt(process.env.PORT, 10) || 3000,
-    notificationPort: 3001,
+    port: parseInt(process.env.PORT, 10) || 3100,
+    notificationPort: 3100,
+    searchServicePort: 3100,
     apiPrefix: process.env.API_PREFIX || 'api/v1',
   },
   cors: {
@@ -45,14 +42,6 @@ const CONFIG = {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN'],
   },
-//   cors: {
-//   allowedOrigins: process.env.NODE_ENV === 'production'
-//     ? '*'  // Allow all origins in production
-//     : '*',  // Allow all origins in development (you can modify this if you want to restrict it during development)
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN'],
-// },
   fallback: {
     maxQueueSize: 1000,
     retryInterval: 60000, // 1 minute
@@ -62,11 +51,20 @@ const CONFIG = {
     profilePhotosPath: join(__dirname, '..', 'uploads', 'profile-photos'),
     profilePhotosRoute: '/profile-photos',
   }
+  // microservices: {
+  //   search: {
+  //     transport: Transport.TCP,
+  //     options: {
+  //       host: '0.0.0.0',
+  //       port: 3100,
+  //     },
+  //   },
+  // }
 };
 
 class ApplicationManager {
   public mainApp: any;
-  private notificationApp: any;
+  private searchMicroservice: any;
   private emailMicroservice: any;
   private reconnectAttempts = 0;
   private isShuttingDown = false;
@@ -81,9 +79,7 @@ class ApplicationManager {
     try {
       await this.setupErrorHandlers();
       await this.initializeMainApplication();
-      // await this.initializeNotificationService();
-      // await this.initializeEmailMicroservice();
-      // await this.setupHealthChecks();
+      // await this.initializeSearchMicroservice();
       await this.setupEmailFallbackMechanism();
       this.logStartupComplete();
     } catch (error) {
@@ -121,21 +117,12 @@ class ApplicationManager {
   private configureMainApplication() {
     const configService = this.mainApp.get(ConfigService);
     
-    // Apply CORS settings using the ConfigService for frontend URL
-    // this.mainApp.enableCors({
-    //   origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
-    //   credentials: CONFIG.cors.credentials,
-    //   methods: CONFIG.cors.methods,
-    //   allowedHeaders: CONFIG.cors.allowedHeaders,
-    // });
-
     this.mainApp.enableCors({
-  origin: '*', // This allows all origins
-  credentials: CONFIG.cors.credentials,
-  methods: CONFIG.cors.methods,
-  allowedHeaders: CONFIG.cors.allowedHeaders,
-});
-
+      origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
+      credentials: CONFIG.cors.credentials,
+      methods: CONFIG.cors.methods,
+      allowedHeaders: CONFIG.cors.allowedHeaders,
+    });
     
     // Configure WebSocket adapter
     this.mainApp.useWebSocketAdapter(new IoAdapter(this.mainApp));
@@ -160,6 +147,30 @@ class ApplicationManager {
     this.logApplicationRoutes();
   }
 
+  // private async initializeSearchMicroservice() {
+  //   try {
+  //     logger.log('Initializing Search Microservice...');
+      
+  //     // Create the microservice
+  //     this.searchMicroservice = await NestFactory.createMicroservice<MicroserviceOptions>(
+  //       AppModule,
+  //       {
+  //         transport: Transport.TCP,
+  //         options: {
+  //           host: '0.0.0.0',
+  //           port: 3100,
+  //         },
+  //       }
+  //     );
+      
+  //     await this.searchMicroservice.listen();
+  //     logger.log(`Search Microservice is running on TCP port ${CONFIG.microservices.search.options.port}`);
+  //   } catch (error) {
+  //     logger.error('Failed to initialize Search Microservice:', error);
+  //     throw error;
+  //   }
+  // }
+
   private logApplicationRoutes() {
     const server = this.mainApp.getHttpAdapter().getInstance();
     const routes = server._router.stack
@@ -172,12 +183,6 @@ class ApplicationManager {
     logger.log('Registered Routes:');
     routes.forEach(route => logger.log(`${route.method} ${route.path}`));
   }
-
-  // private async initializeNotificationService() {
-  //   this.notificationApp = await NestFactory.create(NotificationModule);
-  //   await this.notificationApp.listen(CONFIG.server.notificationPort);
-  //   logger.log(`Notification service running on port ${CONFIG.server.notificationPort}`);
-  // }
 
   private async setupEmailFallbackMechanism() {
     try {
@@ -233,11 +238,7 @@ class ApplicationManager {
 
     for (const item of this.inMemoryEmailQueue) {
       try {
-        // Here you would normally send the email via your email microservice
-        // For demonstration, we'll just log it
         logger.log(`Processing email from fallback queue: ${JSON.stringify(item.data)}`);
-        
-        // Simulate successful processing
         processedItems.push(item);
       } catch (error) {
         item.retryCount++;
@@ -245,13 +246,11 @@ class ApplicationManager {
           logger.error(`Max retries reached for email: ${JSON.stringify(item.data)}`);
           failedItems.push(item);
         } else {
-          // Keep the item in the queue for next retry
           logger.warn(`Retry ${item.retryCount} failed for email: ${JSON.stringify(item.data)}`);
         }
       }
     }
 
-    // Remove processed and failed items from the queue
     this.inMemoryEmailQueue = this.inMemoryEmailQueue.filter(
       item => !processedItems.includes(item) && !failedItems.includes(item)
     );
@@ -269,7 +268,7 @@ class ApplicationManager {
     logger.log('🚀 Application startup complete!');
     logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
-    logger.log(`Notification Service: http://localhost:${CONFIG.server.notificationPort}`);
+    // logger.log(`Search Microservice: TCP port ${CONFIG.microservices.search.options.port}`);
     logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
     logger.log('=================================');
   }
@@ -282,7 +281,7 @@ class ApplicationManager {
 
     const shutdownPromises = [];
     if (this.mainApp) shutdownPromises.push(this.mainApp.close());
-    if (this.notificationApp) shutdownPromises.push(this.notificationApp.close());
+    if (this.searchMicroservice) shutdownPromises.push(this.searchMicroservice.close());
     if (this.emailMicroservice) shutdownPromises.push(this.emailMicroservice.close());
     
     // Clean up intervals

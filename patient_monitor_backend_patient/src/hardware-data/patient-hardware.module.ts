@@ -1,19 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PatientHardwareService } from './patient-hardware.service';
-import { PatientHardwareController } from './patient-hardware.controller';
-import { PatientHardware, PatientHardwareSchema } from 'src/shared/schema/patient-hardware.schema';
-import { PredictionHardware, PredictionHardwareSchema } from 'src/shared/schema/prediction-hardware.schema';
+import { HealthDataController } from './patient-hardware.controller';
+import { HealthDataService } from './patient-hardware.service';
+import { HealthData, HealthDataSchema } from 'src/shared/schema/health-data.schema';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: PatientHardware.name, schema: PatientHardwareSchema },
-      { name: PredictionHardware.name, schema: PredictionHardwareSchema }
-    ])
+      { name: HealthData.name, schema: HealthDataSchema }
+    ]),
+     HttpModule
   ],
-  controllers: [PatientHardwareController],
-  providers: [PatientHardwareService],
-  exports: [PatientHardwareService],
+  controllers: [HealthDataController],
+  providers: [HealthDataService],
 })
-export class PatientHardwareModule {}
+export class HealthDataModule {}

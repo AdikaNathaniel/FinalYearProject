@@ -1,108 +1,53 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  ValidationPipe,
-  UsePipes,
-  HttpStatus,
-  HttpCode,
-  HttpException,
-} from '@nestjs/common';
-import { PatientHardwareService } from './patient-hardware.service';
-import { CreatePatientHardwareDto } from 'src/users/dto/create-patient-hardware.dto';
-import { CreatePredictionHardwareDto } from 'src/users/dto/create-prediction-hardware.dto';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { HealthDataService } from './patient-hardware.service';
+import { CreateHealthDataDto } from 'src/users/dto/create-health-data.dto';
 
-@Controller('patients-hardware')
-export class PatientHardwareController {
-  constructor(private readonly patientHardwareService: PatientHardwareService) {}
+@Controller('health-data')
+export class HealthDataController {
+  constructor(private readonly healthDataService: HealthDataService) {}
 
-  // POST /patients-hardware - Create patient hardware record
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ValidationPipe())
-  async create(@Body() createPatientHardwareDto: CreatePatientHardwareDto) {
-    const patient = await this.patientHardwareService.create(createPatientHardwareDto);
+  async create(@Body() createHealthDataDto: CreateHealthDataDto) {
+    console.log('📊 Received health data:', createHealthDataDto);
+    
+    const savedData = await this.healthDataService.create(createHealthDataDto);
+    
+    console.log('✅ Data saved to MongoDB with ID:', (savedData as any)._id);
+    
     return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Patient hardware record created successfully',
-      data: patient,
-      timestamp: new Date().toISOString(),
+      message: 'Health data received and saved successfully',
+      data: savedData,
+      timestamp: new Date().toISOString()
     };
   }
 
-  // GET /patients-hardware - Get the latest patient hardware record
   @Get()
-  async getLatest() {
-    const patient = await this.patientHardwareService.getLatestPatient();
-        
-    if (!patient) {
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'No patient hardware records found',
-        data: null,
-      };
-    }
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Latest patient hardware record retrieved successfully',
-      data: patient,
-    };
+  async findAll(
+    @Query('patient') patient?: string,
+    @Query('limit') limit: number = 50,
+  ) {
+    return this.healthDataService.findAll(patient, limit);
   }
 
-  // POST /patients-hardware/predictions - Create prediction hardware record
-  @Post('predictions')
-  @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ValidationPipe())
-  async createPrediction(@Body() createPredictionHardwareDto: CreatePredictionHardwareDto) {
-    try {
-      const result = await this.patientHardwareService.createPrediction(createPredictionHardwareDto);
-      
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Prediction hardware record created successfully',
-        data: {
-          ...result.prediction, // Use the prediction object directly
-          patient_name: result.patient_name,
-        },
-        patient_name: result.patient_name, // Also include at root level for easy access
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: error.message || 'Failed to create prediction',
-          timestamp: new Date().toISOString(),
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  @Get('latest')
+  async findLatest(@Query('patient') patient?: string) {
+    return this.healthDataService.findLatest(patient);
   }
 
-  // GET /patients-hardware/predictions - Get the latest prediction hardware record
-  @Get('predictions')
-  async getLatestPrediction() {
-    const result = await this.patientHardwareService.getLatestPrediction();
-        
-    if (!result) {
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'No prediction hardware records found',
-        data: null,
-        patient_name: null,
-      };
-    }
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Latest prediction hardware record retrieved successfully',
-      data: {
-        ...result.prediction, // Spread the prediction object directly
-        patient_name: result.patient_name,
-      },
-      patient_name: result.patient_name, // Also include at root level for easy access
-    };
+  @Get('stats')
+  async getStats(@Query('patient') patient?: string) {
+    return this.healthDataService.getStats(patient);
   }
+
+
+
+  @Get('fetch-save')
+async fetchAndSaveFromExternal() {
+  const result = await this.healthDataService.fetchFromBeeceptorAndSave();
+  return {
+    ...result,
+    timestamp: new Date().toISOString(),
+  };
+}
+
 }

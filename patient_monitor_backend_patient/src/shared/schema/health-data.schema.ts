@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type PatientHardwareDocument = PatientHardware & Document;
+export type HealthDataDocument = HealthData & Document;
 
 @Schema({ timestamps: true })
-export class PatientHardware {
-  @Prop({ required: true, trim: true })
+export class HealthData {
+  @Prop({ required: true })
   patient_name: string;
 
-  @Prop({ required: true, min: 1, max: 42 })
+  @Prop({ required: true })
   gestational_week: number;
 
   @Prop({ required: true })
@@ -23,7 +23,7 @@ export class PatientHardware {
   @Prop({ required: true })
   glucose: number;
 
-  @Prop({ required: true, min: 0, max: 100 })
+  @Prop({ required: true })
   spo2: number;
 
   @Prop({ required: true })
@@ -32,8 +32,17 @@ export class PatientHardware {
   @Prop({ required: true })
   bmi: number;
 
-  createdAt?: Date;
-  updatedAt?: Date;
+  @Prop({ required: true })
+  preeclampsia_risk: boolean;
+
+  @Prop({ required: true })
+  anemia_risk: boolean;
+
+  @Prop({ required: true })
+  gdm_risk: boolean;
+
+  @Prop({ default: Date.now })
+  received_at: Date;
 }
 
-export const PatientHardwareSchema = SchemaFactory.createForClass(PatientHardware);
+export const HealthDataSchema = SchemaFactory.createForClass(HealthData);

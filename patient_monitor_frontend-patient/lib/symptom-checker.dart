@@ -159,13 +159,13 @@ class _SymptomFormState extends State<SymptomForm> {
                       TextFormField(
                         controller: _usernameController,
                         decoration: InputDecoration(
-                          labelText: 'Full Name',
+                          labelText: 'Patient ID',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.person),
-                          hintText: 'e.g., John Doe',
+                          hintText: 'e.g. KBTH-2023-001245',
                         ),
                         validator: (value) =>
-                            value == null || value.isEmpty ? 'Please enter your full name' : null,
+                            value == null || value.isEmpty ? 'Please enter your Patient ID' : null,
                       ),
                     ],
                   ),

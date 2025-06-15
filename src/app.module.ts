@@ -11,7 +11,7 @@ import { StripeModule } from './payments/stripe.module';
 import { TopChartsModule } from 'src/topchart/top-chart.module';
 import { FavoriteModule } from 'src/favorite/favorite.module';
 import { TrackingModule } from 'src/tracking/tracking.module';
-import { PatientHardwareModule } from 'src/hardware-data/patient-hardware.module'; // Adjust the path as necessary
+import { HealthDataModule } from 'src/hardware-data/patient-hardware.module'; // Adjust the path as necessary
 
 import { MQService } from 'src/delivery/mq.service';
 // Import ChatModule and Chat schema
@@ -33,7 +33,7 @@ import { EmailModule } from 'src/email/email.module'; // Adjust the path as nece
     OrderModule,
     PaymentsModule,
     StripeModule,
-    PatientHardwareModule,
+   HealthDataModule,
     TopChartsModule,
     FavoriteModule,
     TrackingModule,
