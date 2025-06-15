@@ -22,15 +22,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
   static const String _baseUrl = 'http://localhost:3100';
 
-  // Input validation methods
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   bool _isValidCard(String card) {
-    return RegExp(r'^\d+$').hasMatch(card) && 
-           card.length >= 6 && 
-           card.length <= 15;
+    return RegExp(r'^\d+$').hasMatch(card) && card.length >= 6 && card.length <= 15;
   }
 
   String _sanitizeInput(String input) {
@@ -38,14 +35,12 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register(String name, String email, String card, String password, String type) async {
-    // Sanitize inputs
     name = _sanitizeInput(name);
     email = _sanitizeInput(email.toLowerCase());
     card = _sanitizeInput(card);
     password = _sanitizeInput(password);
     type = _sanitizeInput(type.toLowerCase());
 
-    // Validation
     if (name.isEmpty || email.isEmpty || password.isEmpty || type.isEmpty || card.isEmpty) {
       _showError("All fields are required!");
       return;
@@ -95,7 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (response.statusCode == 201) {
         if (responseData['success'] == true) {
-          _showSuccess("Registration successful", email);
+          _showSuccess("Registration Successful", email);
         } else {
           _showError(responseData['message'] ?? "Registration failed");
         }
@@ -117,6 +112,88 @@ class _RegisterPageState extends State<RegisterPage> {
         });
       }
     }
+  }
+
+  void _showSuccess(String message, String email) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 80,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Your account has been created successfully!",
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OTPVerificationPage(email: email),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Continue",
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showRelativeRegistrationDialog(String userCard) async {
@@ -173,44 +250,6 @@ class _RegisterPageState extends State<RegisterPage> {
               Navigator.pop(context);
             },
             child: const Text("Register"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showError(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Error"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSuccess(String message, String email) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Success"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => OTPVerificationPage(email: email)),
-              );
-            },
-            child: const Text("Continue"),
           ),
         ],
       ),
