@@ -28,7 +28,7 @@ export class PinService {
       return;
     }
 
-    const message = `Your PIN has been ${action}. New PIN: ${pin}. Do not share this with anyone.`;
+    const message = `Your PIN has been ${action}. Please do not share it with anyone.`;
     
     try {
       await this.smsService.sendSms(phone, message);
