@@ -36,6 +36,11 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
       setState(() => _isLoading = false);
 
       if (response.statusCode == 200) {
+        // Clear all text fields
+        _emailController.clear();
+        _oldPasswordController.clear();
+        _newPasswordController.clear();
+        
         _showSuccessDialog();
       } else {
         _showErrorSnackbar("Update failed: ${json.decode(response.body)['message'] ?? 'Server error'}");
@@ -187,5 +192,13 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
   }
 }
