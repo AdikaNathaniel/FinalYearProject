@@ -3,7 +3,10 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Symptom extends Document {
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
+  patientId: string;
+
+  @Prop({ required: true, index: true })
   username: string;
 
   @Prop({ required: true })

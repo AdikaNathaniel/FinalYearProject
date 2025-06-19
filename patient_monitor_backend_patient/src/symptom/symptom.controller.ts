@@ -4,12 +4,14 @@ import {
   Post,
   Body,
   Param,
+  Query,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { SymptomsService } from './symptom.service';
 import { CreateSymptomDto } from 'src/users/dto/create-symptom.dto';
 import { SymptomDto } from 'src/users/dto/symptom.dto';
+import { SearchSymptomDto } from 'src/users/dto/search-symptom.dto';
 
 @Controller('symptoms')
 export class SymptomsController {
@@ -39,13 +41,13 @@ export class SymptomsController {
     }
   }
 
-  @Get(':username')
-  async findByUsername(@Param('username') username: string): Promise<SymptomDto[]> {
+  @Get('search')
+  async search(@Query() searchSymptomDto: SearchSymptomDto): Promise<SymptomDto[]> {
     try {
-      const symptoms = await this.symptomsService.findByUsername(username);
+      const symptoms = await this.symptomsService.searchSymptoms(searchSymptomDto);
       if (!symptoms || symptoms.length === 0) {
         throw new HttpException(
-          `No symptoms found for user: ${username}`,
+          'No symptoms found matching the search criteria',
           HttpStatus.NOT_FOUND,
         );
       }
@@ -55,7 +57,7 @@ export class SymptomsController {
         throw error;
       }
       throw new HttpException(
-        'Failed to fetch symptoms for user',
+        'Failed to search symptoms',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

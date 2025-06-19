@@ -1,6 +1,8 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import * as Redis from 'ioredis';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import {
   SearchResponse,
   IndexDocumentPayload,
@@ -9,6 +11,7 @@ import {
 } from './search.interface';
 import { ELASTIC_SEARCH_CLIENT, REDIS_CLIENT } from './constants';
 import { SearchResponseDto } from 'src/users/dto/search-result.dto';
+import { SearchQuery } from 'src/shared/schema/search-query.schema';
 
 @Injectable()
 export class SearchService {
@@ -18,6 +21,7 @@ export class SearchService {
   constructor(
     @Inject(ELASTIC_SEARCH_CLIENT) private readonly esClient: Client,
     @Inject(REDIS_CLIENT) private readonly redisClient: Redis.Redis,
+    @InjectModel(SearchQuery.name) private readonly searchQueryModel: Model<SearchQuery>,
   ) {}
 
   async indexDocument(payload: IndexDocumentPayload): Promise<boolean> {
@@ -66,7 +70,7 @@ export class SearchService {
           query: {
             multi_match: {
               query,
-              fields: fields.length ? fields : ['*'],
+              fields: fields.length ? fields : [''],
               fuzziness: 'AUTO',
             },
           },
@@ -95,6 +99,9 @@ export class SearchService {
       // Cache the result
       await this.redisClient.set(cacheKey, JSON.stringify(response), 'EX', this.CACHE_TTL);
 
+      // Store search query in MongoDB
+      await this.storeSearchQuery(params, response);
+
       return response;
     } catch (error) {
       this.logger.error(`Error searching documents: ${error.message}`);
@@ -102,8 +109,25 @@ export class SearchService {
     }
   }
 
+  private async storeSearchQuery(params: SearchParams, response: SearchResponseDto): Promise<void> {
+    try {
+      const searchQuery = new this.searchQueryModel({
+        index: params.index,
+        query: params.query,
+        fields: params.fields,
+        limit: params.limit,
+        offset: params.offset,
+        resultsCount: response.total,
+        timestamp: new Date(),
+      });
+      await searchQuery.save();
+    } catch (error) {
+      this.logger.error(`Error storing search query in MongoDB: ${error.message}`);
+    }
+  }
+
   private getCacheKey(params: SearchParams): string {
-    return `search:${params.index}:${params.query}:${params.fields?.join(',') || '*'}:${params.limit}:${params.offset}`;
+    return `search:${params.index}:${params.query}:${params.fields?.join(',') || ''}:${params.limit}:${params.offset}`;
   }
 
   async clearIndex(index: string): Promise<boolean> {

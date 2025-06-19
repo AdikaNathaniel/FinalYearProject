@@ -3,6 +3,10 @@ import { IsString, IsNotEmpty } from 'class-validator';
 export class CreateSymptomDto {
   @IsString()
   @IsNotEmpty()
+  patientId: string;
+
+  @IsString()
+  @IsNotEmpty()
   username: string;
 
   @IsString()
