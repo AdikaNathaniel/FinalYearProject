@@ -1,0 +1,36 @@
+{
+    "port": "3100",
+    "mongoDbUrl": "mongodb+srv://adikanathaniel0:7myo9l7s9Nwtodo1@cluster0.rn0fm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    "adminSecretToken": "admin@123",
+    "jwtSecret": "secretTest@123456",
+    "loginLink": "http://localhost:3000/auth",
+    "appPrefix": "/api/v1",
+    "fileStoragePath": "../uploads/",
+    "emailService": {
+      "testDomain": "sandbox44a635ffb0ac46cb82f149618060aec6.mailgun.org",
+      "privateApiKey": "a3e45e08c5f3a17554c01bfed2739a57-2e68d0fb-d41c2751",
+      "publicApiKey": "pubkey-9a1650e7bef00d512ce8e2e4f3e27173",   
+      "emailTemplates": {
+        "forgotPassword": "forgot-password-template",
+        "verifyEmail": "verify-email-template",
+        "orderSuccess": "order-success"
+      }
+    },
+    "cloudinary": {
+      "cloud_name": "dal1zfqdj",
+      "api_key": "944838819721285",
+      "api_secret": "2ekbd6Sl9dwq8KMfzsYvmMzR9RM",
+      "folderPath": "digizone/products/",
+      "publicId_prefix": "digi_prods_",
+      "bigSize": "400X400"
+    },
+    "stripe": {
+      "publishable_key": "pk_test_51QbdrkJPRcu1eGRzI1htI9IwY3RGYWMAY0krRzAtV9hsaW7VdckCGpR6hEJapZ4QlzkIOizirfF9UVJ4TfAkWKmF00In09Rtlm",
+      "secret_key": "sk_test_51QbdrkJPRcu1eGRzMt9kz0x8amSP9BtSjJuK1qw545EVYBsWNm5UuAN8gxnm2GvJIxobSHQGZFY4caDKqPjdtyrb00LHVIAxbp",
+      "successUrl": "http://localhost:3000/order-success",
+      "cancelUrl": "http://localhost:3000/order-cancel",
+      "webhookSecret": "whsec_62088695f14026bf21d0c8dfd2f43a3ae88f25c8bf5f0b4b36f8c848145e44d1"
+    }
+    
+  }
+  
