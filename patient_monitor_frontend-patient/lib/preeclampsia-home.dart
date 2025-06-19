@@ -46,7 +46,7 @@ class PreeclampsiaHomePage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const FindSymptomByNamePage()),
+                MaterialPageRoute(builder: (_) => const FindSymptomPage()),
               );
             },
           ),

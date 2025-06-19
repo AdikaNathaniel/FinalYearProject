@@ -2,44 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class FindSymptomByNamePage extends StatefulWidget {
-  const FindSymptomByNamePage({super.key});
+class FindSymptomPage extends StatefulWidget {
+  const FindSymptomPage({super.key});
 
   @override
-  State<FindSymptomByNamePage> createState() => _FindSymptomByNamePageState();
+  State<FindSymptomPage> createState() => _FindSymptomPageState();
 }
 
-class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
-  final TextEditingController _nameController = TextEditingController();
+class _FindSymptomPageState extends State<FindSymptomPage> {
+  final TextEditingController _searchController = TextEditingController();
   bool isLoading = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  Future<void> _fetchAndShowSymptom() async {
+  Future<void> _fetchAndShowSymptoms() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => isLoading = true);
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/symptoms/${_nameController.text.trim()}'),
+        Uri.parse('http://localhost:3100/api/v1/symptoms/search?query=${_searchController.text.trim()}'),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
-        // Debug print to see the response
-        print('API Response: ${response.body}');
         
         if (data['result'] == null || data['result'] is! List || data['result'].isEmpty) {
           _showErrorDialog('No symptom records found');
           return;
         }
 
-        // Get the first symptom record (assuming we want the most recent)
-        final symptom = data['result'][0] as Map<String, dynamic>;
-        _showSymptomDialog(symptom);
+        _showAllSymptomsDialog(data['result']);
       } else {
-        _showErrorDialog('Symptom record not found (Status: ${response.statusCode})');
+        _showErrorDialog('Error fetching records (Status: ${response.statusCode})');
       }
     } on http.ClientException catch (e) {
       _showErrorDialog('Network error: ${e.message}');
@@ -52,27 +47,102 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
     }
   }
 
-  void _showSymptomDialog(Map<String, dynamic> symptom) {
-    // Helper function to display yes/no values more clearly
+  void _showAllSymptomsDialog(List<dynamic> symptoms) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Patient Symptoms',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Found ${symptoms.length} records',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: symptoms.length,
+                  separatorBuilder: (context, index) => const Divider(height: 30),
+                  itemBuilder: (context, index) {
+                    final symptom = symptoms[index] as Map<String, dynamic>;
+                    return _buildSymptomCard(symptom);
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).then((_) {
+      _searchController.clear();
+    });
+  }
+
+  Widget _buildSymptomCard(Map<String, dynamic> symptom) {
     String formatYesNo(String? value) {
       if (value == null) return 'Not specified';
       return value.toLowerCase() == 'yes' ? 'Yes' : 'No';
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Center(child: Text('Symptom Details')),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Patient Info
+          Row(
             children: [
-              // Patient Information
-              Row(
+              const CircleAvatar(
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.person, color: Colors.purple, size: 24),
-                  const SizedBox(width: 10),
                   Text(
                     symptom['username']?.toString() ?? 'Unknown',
                     style: const TextStyle(
@@ -80,106 +150,110 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'ID: ${symptom['patientId']?.toString() ?? 'N/A'}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
                 ],
               ),
-              const Divider(height: 20),
-              
-              // Symptoms Section
-              const Text('Symptoms:', style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.blue,
-              )),
-              const SizedBox(height: 10),
-              
-              _buildSymptomRow(
-                Icons.headphones, 
-                Colors.red, 
-                'Headache:', 
-                formatYesNo(symptom['feelingHeadache']),
-              ),
-              const SizedBox(height: 8),
-              
-              _buildSymptomRow(
-                Icons.air, 
-                Colors.orange, 
-                'Dizziness:', 
-                formatYesNo(symptom['feelingDizziness']),
-              ),
-              const SizedBox(height: 8),
-              
-              _buildSymptomRow(
-                Icons.sick, 
-                Colors.green, 
-                'Vomiting/Nausea:', 
-                formatYesNo(symptom['vomitingAndNausea']),
-              ),
-              const SizedBox(height: 8),
-              
-              _buildSymptomRow(
-                Icons.pan_tool_alt, 
-                Colors.blue, 
-                'Pain at Top of Tummy:', 
-                formatYesNo(symptom['painAtTopOfTommy']),
-              ),
-              const Divider(height: 20),
-              
-              // Dates Section
-              const Text('Record Date:', style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.blue,
-              )),
-              const SizedBox(height: 10),
-              
-              _buildDateRow(
-                Icons.calendar_today,
-                'Created:',
-                _formatDateTime(symptom['createdAt']),
-              ),
-              const SizedBox(height: 8),
-              
-            //   _buildDateRow(
-            //     Icons.update,
-            //     'Last Updated:',
-            //     _formatDateTime(symptom['updatedAt']),
-            //   ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+          const SizedBox(height: 16),
+          
+          // Symptoms Grid
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 3,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            children: [
+              _buildSymptomChip(
+                Icons.headset, 
+                Colors.red, 
+                'Headache', 
+                formatYesNo(symptom['feelingHeadache']),
+              ),
+              _buildSymptomChip(
+                Icons.air, 
+                Colors.orange, 
+                'Dizziness', 
+                formatYesNo(symptom['feelingDizziness']),
+              ),
+              _buildSymptomChip(
+                Icons.sick, 
+                Colors.green, 
+                'Nausea', 
+                formatYesNo(symptom['vomitingAndNausea']),
+              ),
+              _buildSymptomChip(
+                Icons.medical_services, 
+                Colors.blue, 
+                'Tummy Pain', 
+                formatYesNo(symptom['painAtTopOfTommy']),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Date
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 18, color: Colors.grey[600]),
+              const SizedBox(width: 8),
+              Text(
+                'Recorded: ${_formatDateTime(symptom['createdAt'])}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    ).then((_) {
-      _nameController.clear();
-    });
-  }
-
-  Widget _buildSymptomRow(IconData icon, Color color, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(width: 10),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(width: 5),
-        Text(value),
-      ],
     );
   }
 
-  Widget _buildDateRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey[700], size: 20),
-        const SizedBox(width: 10),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(width: 5),
-        Text(value),
-      ],
+  Widget _buildSymptomChip(IconData icon, Color color, String label, String value) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -228,54 +302,59 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
                       const Icon(
-                        Icons.medical_services,
+                        Icons.search,
                         size: 48,
                         color: Colors.blue,
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'Enter Patient Name',
+                        'Search Patient Records',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Enter patient name or ID to search',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
                       TextFormField(
-                        controller: _nameController,
+                        controller: _searchController,
                         decoration: const InputDecoration(
-                          labelText: 'Patient Name',
+                          labelText: 'Name or ID',
                           border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.person),
-                          hintText: 'e.g., Michelle Owusu',
+                          prefixIcon: Icon(Icons.search),
+                          hintText: 'e.g., Michelle or 001',
                         ),
                         validator: (value) =>
-                            value?.isEmpty ?? true ? 'Please enter a name' : null,
+                            value?.isEmpty ?? true ? 'Please enter a name or ID' : null,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: isLoading ? null : _fetchAndShowSymptom,
+                          onPressed: isLoading ? null : _fetchAndShowSymptoms,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           child: isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
                               : const Text(
-                                  'Find Symptoms',
+                                  'Search Records',
                                   style: TextStyle(fontSize: 16),
                                 ),
                         ),
@@ -293,7 +372,7 @@ class _FindSymptomByNamePageState extends State<FindSymptomByNamePage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 }

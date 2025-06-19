@@ -49,32 +49,52 @@ class _SymptomListPageState extends State<SymptomListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Patient ID and Name Row
             Row(
               children: [
-                const Icon(Icons.person, color: Colors.purple),
+                const Icon(Icons.badge, color: Colors.purple),
+                const SizedBox(width: 8),
+                Text(
+                  "ID: ${symptom['patientId'] ?? 'N/A'}",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(Icons.person, color: Colors.blue),
                 const SizedBox(width: 8),
                 Text(
                   symptom['username'],
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const Divider(),
+            
+            // Symptoms Information
             Row(children: [
               const Icon(Icons.headphones, color: Colors.red),
               const SizedBox(width: 8),
               Text("Headache: ${symptom['feelingHeadache']}"),
             ]),
+            const SizedBox(height: 8),
             Row(children: [
               const Icon(Icons.sick, color: Colors.green),
               const SizedBox(width: 8),
               Text("Vomiting/Nausea: ${symptom['vomitingAndNausea']}"),
             ]),
+            const SizedBox(height: 8),
             Row(children: [
               const Icon(Icons.pan_tool_alt, color: Colors.orange),
               const SizedBox(width: 8),
               Text("Pain at Top of Tummy: ${symptom['painAtTopOfTommy']}"),
             ]),
+            const SizedBox(height: 8),
             Row(children: [
               const Icon(Icons.calendar_today, color: Colors.blue),
               const SizedBox(width: 8),
@@ -89,7 +109,7 @@ class _SymptomListPageState extends State<SymptomListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Patient Symptom Checker'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,

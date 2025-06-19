@@ -8,6 +8,7 @@ class SymptomForm extends StatefulWidget {
 }
 
 class _SymptomFormState extends State<SymptomForm> {
+  final TextEditingController _patientIdController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -29,6 +30,7 @@ class _SymptomFormState extends State<SymptomForm> {
         final url = Uri.parse('http://localhost:3100/api/v1/symptoms');
 
         final data = {
+          "patientId": _patientIdController.text,
           "username": _usernameController.text,
           "feelingHeadache": _headache,
           "feelingDizziness": _dizziness,
@@ -46,6 +48,14 @@ class _SymptomFormState extends State<SymptomForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Submitted successfully!')),
           );
+          // Clear form after successful submission
+          _formKey.currentState?.reset();
+          setState(() {
+            _headache = null;
+            _dizziness = null;
+            _vomiting = null;
+            _painTopOfTommy = null;
+          });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Submission failed: ${response.statusCode}')),
@@ -156,31 +166,36 @@ class _SymptomFormState extends State<SymptomForm> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
+                      // Patient ID Field
                       TextFormField(
-                        controller: _usernameController,
+                        controller: _patientIdController,
                         decoration: InputDecoration(
                           labelText: 'Patient ID',
                           border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.person),
-                          hintText: 'e.g. KBTH-2023-001245',
+                          prefixIcon: Icon(Icons.numbers),
+                          hintText: 'e.g. 001',
                         ),
                         validator: (value) =>
-                            value == null || value.isEmpty ? 'Please enter your Patient ID' : null,
+                            value == null || value.isEmpty ? 'Please enter Patient ID' : null,
+                      ),
+                      SizedBox(height: 16),
+                      // Patient Name Field
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Patient Name',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'e.g. Owusu Kwame',
+                        ),
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Please enter Patient Name' : null,
                       ),
                     ],
                   ),
                 ),
               ),
               SizedBox(height: 24),
-            //   Text(
-            //     'Symptoms',
-            //     style: TextStyle(
-            //       fontSize: 18,
-            //       fontWeight: FontWeight.bold,
-            //       color: Colors.grey[700],
-            //     ),
-            //   ),
-              SizedBox(height: 16),
               _buildSymptomTile(
                 label: "Do you feel headache?",
                 icon: Icons.headset,
