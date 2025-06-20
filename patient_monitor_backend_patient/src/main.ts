@@ -48,7 +48,7 @@ interface ISearchService {
 
 const logger = new Logger('Bootstrap');
 
-// Enhanced configuration with Elasticsearch and Redis settings
+// Enhanced configuration with Elasticsearch, Redis, and Kafka settings
 const CONFIG = {
   elasticsearch: {
     node: process.env.ELASTICSEARCH_HOST || 'http://localhost:9200',
@@ -69,6 +69,20 @@ const CONFIG = {
     reconnectDelay: 5000,
     maxAttempts: 10,
     timeout: 10000,
+  },
+  kafka: {
+    brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'],
+    consumer: {
+      groupId: process.env.KAFKA_CONSUMER_GROUP_ID || 'pregnancy-monitor-consumer',
+    },
+    producer: {
+      maxInFlightRequests: 1,
+      idempotent: true,
+      transactionTimeout: 30000,
+    },
+    connectionTimeout: 3000,
+    authenticationTimeout: 10000,
+    reauthenticationThreshold: 10000,
   },
   server: {
     port: parseInt(process.env.PORT, 10) || 3000,
@@ -98,6 +112,7 @@ class ApplicationManager {
   public mainApp: any;
   private notificationApp: any;
   private emailMicroservice: any;
+  private kafkaMicroservice: any;
   private reconnectAttempts = 0;
   private isShuttingDown = false;
   private inMemoryEmailQueue: Array<{
@@ -111,8 +126,10 @@ class ApplicationManager {
     try {
       await this.setupErrorHandlers();
       await this.initializeMainApplication();
+      await this.initializeKafkaMicroservice();
       await this.setupEmailFallbackMechanism();
       await this.checkSearchServicesConnection();
+      await this.checkKafkaConnection();
       this.logStartupComplete();
     } catch (error) {
       logger.error('Initialization failed', error.stack);
@@ -146,78 +163,228 @@ class ApplicationManager {
     logger.log(`Application is running on: ${await this.mainApp.getUrl()}`);
   }
 
- 
-
-  private async checkSearchServicesConnection() {
-  try {
-    let searchService: SearchService;
-    
+  private async initializeKafkaMicroservice() {
     try {
-      searchService = this.mainApp.select(AppModule).get(SearchService, { strict: false });
-      logger.log('✅ SearchService resolved successfully using class import');
-    } catch (classError) {
-      logger.warn('Class-based service resolution failed, trying fallback approaches...');
+      logger.log('🔄 Initializing Kafka microservice...');
+      
+      // Connect Kafka microservice to the main application
+      this.kafkaMicroservice = this.mainApp.connectMicroservice({
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: process.env.KAFKA_CLIENT_ID || 'pregnancy-monitor-client',
+            brokers: CONFIG.kafka.brokers,
+            connectionTimeout: CONFIG.kafka.connectionTimeout,
+            authenticationTimeout: CONFIG.kafka.authenticationTimeout,
+            reauthenticationThreshold: CONFIG.kafka.reauthenticationThreshold,
+            // Add SSL configuration if needed
+            ssl: process.env.KAFKA_SSL === 'true' ? {
+              rejectUnauthorized: false,
+            } : false,
+            // Add SASL configuration if needed
+            sasl: process.env.KAFKA_USERNAME ? {
+              mechanism: 'plain',
+              username: process.env.KAFKA_USERNAME,
+              password: process.env.KAFKA_PASSWORD,
+            } : undefined,
+          },
+          consumer: {
+            groupId: CONFIG.kafka.consumer.groupId,
+            allowAutoTopicCreation: true,
+            // Configure consumer for pregnancy monitoring
+            sessionTimeout: 30000,
+            rebalanceTimeout: 60000,
+            heartbeatInterval: 3000,
+            maxWaitTimeInMs: 5000,
+            retry: {
+              retries: 8,
+            },
+          },
+          producer: {
+            maxInFlightRequests: CONFIG.kafka.producer.maxInFlightRequests,
+            idempotent: CONFIG.kafka.producer.idempotent,
+            transactionTimeout: CONFIG.kafka.producer.transactionTimeout,
+            retry: {
+              retries: 5,
+            },
+          },
+          subscribe: {
+            fromBeginning: false,
+          },
+        },
+      });
+
+      // Start all microservices
+      await this.mainApp.startAllMicroservices();
+      logger.log('✅ Kafka microservice initialized and started successfully');
+      
+    } catch (error) {
+      logger.error('❌ Failed to initialize Kafka microservice:', error.message);
+      throw new Error(`Kafka microservice initialization failed: ${error.message}`);
+    }
+  }
+
+  private async checkKafkaConnection() {
+    try {
+      logger.log('🔍 Checking Kafka connection...');
+      
+      // Create a test producer to verify connection
+      const { Kafka } = require('kafkajs');
+      const kafka = new Kafka({
+        clientId: 'pregnancy-monitor-health-check',
+        brokers: CONFIG.kafka.brokers,
+        connectionTimeout: CONFIG.kafka.connectionTimeout,
+        // Add SSL configuration if needed
+        ssl: process.env.KAFKA_SSL === 'true' ? {
+          rejectUnauthorized: false,
+        } : false,
+        // Add SASL configuration if needed
+        sasl: process.env.KAFKA_USERNAME ? {
+          mechanism: 'plain',
+          username: process.env.KAFKA_USERNAME,
+          password: process.env.KAFKA_PASSWORD,
+        } : undefined,
+      });
+
+      const admin = kafka.admin();
       
       try {
-        searchService = this.mainApp.get(SearchService, { strict: false });
-        logger.log('✅ SearchService resolved using fallback method');
-      } catch (fallbackError) {
+        await admin.connect();
+        
+        // List topics to verify connection
+        const topics = await admin.listTopics();
+        logger.log(`✅ Kafka connection established successfully. Available topics: ${topics.length}`);
+        
+        // Create pregnancy monitoring topics if they don't exist
+        const requiredTopics = [
+          'pregnancy-vitals',
+          'pregnancy-alerts',
+          'pregnancy-notifications',
+          'pregnancy-analytics'
+        ];
+        
+        const existingTopics = new Set(topics);
+        const topicsToCreate = requiredTopics.filter(topic => !existingTopics.has(topic));
+        
+        if (topicsToCreate.length > 0) {
+          logger.log(`📝 Creating missing topics: ${topicsToCreate.join(', ')}`);
+          await admin.createTopics({
+            topics: topicsToCreate.map(topic => ({
+              topic,
+              numPartitions: 3,
+              replicationFactor: 1,
+            })),
+            timeout: 30000,
+          });
+          logger.log('✅ Required topics created successfully');
+        } else {
+          logger.log('✅ All required topics already exist');
+        }
+        
+      } finally {
+        await admin.disconnect();
+      }
+      
+    } catch (error) {
+      logger.error('❌ Kafka connection check failed:', error.message);
+      
+      // Decide whether to fail startup or continue with degraded functionality
+      if (process.env.KAFKA_REQUIRED === 'true') {
+        throw new Error(`Kafka connection failed and is required: ${error.message}`);
+      } else {
+        logger.warn('⚠️  Kafka connection failed but continuing with degraded functionality');
+      }
+    }
+  }
+
+  private async checkSearchServicesConnection() {
+    try {
+      let searchService: SearchService;
+      
+      try {
+        searchService = this.mainApp.select(AppModule).get(SearchService, { strict: false });
+        logger.log('✅ SearchService resolved successfully using class import');
+      } catch (classError) {
+        logger.warn('Class-based service resolution failed, trying fallback approaches...');
+        
         try {
-          searchService = this.mainApp.get('SearchService', { strict: false }) as SearchService;
-          logger.log('✅ SearchService resolved using string token');
-        } catch (stringError) {
-          const errorMessage = 'All SearchService resolution methods failed. Cannot start application without search services.';
-          logger.error(errorMessage);
-          throw new Error(errorMessage);
+          searchService = this.mainApp.get(SearchService, { strict: false });
+          logger.log('✅ SearchService resolved using fallback method');
+        } catch (fallbackError) {
+          try {
+            searchService = this.mainApp.get('SearchService', { strict: false }) as SearchService;
+            logger.log('✅ SearchService resolved using string token');
+          } catch (stringError) {
+            const errorMessage = 'All SearchService resolution methods failed. Cannot start application without search services.';
+            logger.error(errorMessage);
+            throw new Error(errorMessage);
+          }
         }
       }
-    }
 
-    if (!searchService) {
-      throw new Error('SearchService resolved to null/undefined. Cannot start application.');
-    }
-
-    logger.log('🔍 Starting search services connection validation...');
-
-    // Check Redis connection - make it mandatory
-    const redisClient = (searchService as any).redisClient;
-    if (redisClient) {
-      try {
-        await redisClient.ping();
-        logger.log('✅ Redis connection established successfully');
-      } catch (redisError) {
-        logger.error('❌ Redis connection failed:', redisError.message);
-        throw new Error(`Redis connection failed: ${redisError.message}`);
+      if (!searchService) {
+        throw new Error('SearchService resolved to null/undefined. Cannot start application.');
       }
-    } else {
-      throw new Error('Redis client not found in SearchService');
-    }
-    
-    // Check Elasticsearch connection - make it mandatory
-    const esClient = (searchService as any).esClient;
-    if (esClient) {
-      try {
-        const esResponse = await esClient.cluster.health();
-        const clusterStatus = esResponse.body?.status || esResponse.status || 'unknown';
-        logger.log(`✅ Elasticsearch connection established successfully - Cluster status: ${clusterStatus}`);
-        
-        // Ensure default index exists
-        const indexExists = await esClient.indices.exists({ 
-          index: CONFIG.elasticsearch.indices.default 
-        });
-        
-        const indexExistsResult = indexExists.body !== undefined ? indexExists.body : indexExists;
-        
-        if (!indexExistsResult) {
-          logger.log(`📝 Creating default index: ${CONFIG.elasticsearch.indices.default}`);
+
+      logger.log('🔍 Starting search services connection validation...');
+
+      // Check Redis connection - make it mandatory
+      const redisClient = (searchService as any).redisClient;
+      if (redisClient) {
+        try {
+          await redisClient.ping();
+          logger.log('✅ Redis connection established successfully');
+        } catch (redisError) {
+          logger.error('❌ Redis connection failed:', redisError.message);
+          throw new Error(`Redis connection failed: ${redisError.message}`);
+        }
+      } else {
+        throw new Error('Redis client not found in SearchService');
+      }
+      
+      // Check Elasticsearch connection - make it mandatory
+      const esClient = (searchService as any).esClient;
+      if (esClient) {
+        try {
+          const esResponse = await esClient.cluster.health();
+          const clusterStatus = esResponse.body?.status || esResponse.status || 'unknown';
+          logger.log(`✅ Elasticsearch connection established successfully - Cluster status: ${clusterStatus}`);
           
-          if (typeof (searchService as any).createIndex === 'function') {
-            try {
-              await (searchService as any).createIndex(CONFIG.elasticsearch.indices.default);
-              logger.log(`✅ Default index created successfully: ${CONFIG.elasticsearch.indices.default}`);
-            } catch (createError) {
-              logger.error(`❌ Failed to create index using service method: ${createError.message}`);
-              // Try direct client approach
+          // Ensure default index exists
+          const indexExists = await esClient.indices.exists({ 
+            index: CONFIG.elasticsearch.indices.default 
+          });
+          
+          const indexExistsResult = indexExists.body !== undefined ? indexExists.body : indexExists;
+          
+          if (!indexExistsResult) {
+            logger.log(`📝 Creating default index: ${CONFIG.elasticsearch.indices.default}`);
+            
+            if (typeof (searchService as any).createIndex === 'function') {
+              try {
+                await (searchService as any).createIndex(CONFIG.elasticsearch.indices.default);
+                logger.log(`✅ Default index created successfully: ${CONFIG.elasticsearch.indices.default}`);
+              } catch (createError) {
+                logger.error(`❌ Failed to create index using service method: ${createError.message}`);
+                // Try direct client approach
+                try {
+                  await esClient.indices.create({
+                    index: CONFIG.elasticsearch.indices.default,
+                    body: {
+                      settings: {
+                        number_of_shards: 1,
+                        number_of_replicas: 0
+                      }
+                    }
+                  });
+                  logger.log(`✅ Default index created successfully using direct client: ${CONFIG.elasticsearch.indices.default}`);
+                } catch (directCreateError) {
+                  logger.error(`❌ Failed to create index using direct client: ${directCreateError.message}`);
+                  throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
+                }
+              }
+            } else {
+              logger.warn('⚠️  createIndex method not available on SearchService, trying direct client approach');
               try {
                 await esClient.indices.create({
                   index: CONFIG.elasticsearch.indices.default,
@@ -228,50 +395,31 @@ class ApplicationManager {
                     }
                   }
                 });
-                logger.log(`✅ Default index created successfully using direct client: ${CONFIG.elasticsearch.indices.default}`);
+                logger.log(`✅ Default index created successfully: ${CONFIG.elasticsearch.indices.default}`);
               } catch (directCreateError) {
-                logger.error(`❌ Failed to create index using direct client: ${directCreateError.message}`);
+                logger.error(`❌ Failed to create index: ${directCreateError.message}`);
                 throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
               }
             }
           } else {
-            logger.warn('⚠️  createIndex method not available on SearchService, trying direct client approach');
-            try {
-              await esClient.indices.create({
-                index: CONFIG.elasticsearch.indices.default,
-                body: {
-                  settings: {
-                    number_of_shards: 1,
-                    number_of_replicas: 0
-                  }
-                }
-              });
-              logger.log(`✅ Default index created successfully: ${CONFIG.elasticsearch.indices.default}`);
-            } catch (directCreateError) {
-              logger.error(`❌ Failed to create index: ${directCreateError.message}`);
-              throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
-            }
+            logger.log(`✅ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
           }
-        } else {
-          logger.log(`✅ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
+        } catch (esError) {
+          logger.error('❌ Elasticsearch connection failed:', esError.message);
+          throw new Error(`Elasticsearch connection failed: ${esError.message}`);
         }
-      } catch (esError) {
-        logger.error('❌ Elasticsearch connection failed:', esError.message);
-        throw new Error(`Elasticsearch connection failed: ${esError.message}`);
+      } else {
+        throw new Error('Elasticsearch client not found in SearchService');
       }
-    } else {
-      throw new Error('Elasticsearch client not found in SearchService');
+
+      logger.log('🏁 Search services connection validation completed');
+      
+    } catch (error) {
+      logger.error('❌ Search services connection check failed:', error.message);
+      logger.error('Application cannot start without search services');
+      throw error; // Re-throw to stop application startup
     }
-
-    logger.log('🏁 Search services connection validation completed');
-    
-  } catch (error) {
-    logger.error('❌ Search services connection check failed:', error.message);
-    logger.error('Application cannot start without search services');
-    throw error; // Re-throw to stop application startup
   }
-}
-
 
   private configureMainApplication() {
     const configService = this.mainApp.get(ConfigService);
@@ -408,14 +556,16 @@ class ApplicationManager {
   }
 
   private logStartupComplete() {
-    logger.log('=================================');
+    logger.log('==========================================');
     logger.log('🚀 Application startup complete!');
     logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
     logger.log(`Elasticsearch: ${CONFIG.elasticsearch.node}`);
     logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port}`);
+    logger.log(`Kafka Brokers: ${CONFIG.kafka.brokers.join(', ')}`);
+    logger.log(`Kafka Consumer Group: ${CONFIG.kafka.consumer.groupId}`);
     logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
-    logger.log('=================================');
+    logger.log('==========================================');
   }
 
   private async gracefulShutdown(exitCode: number) {
@@ -428,6 +578,10 @@ class ApplicationManager {
     if (this.mainApp) shutdownPromises.push(this.mainApp.close());
     if (this.notificationApp) shutdownPromises.push(this.notificationApp.close());
     if (this.emailMicroservice) shutdownPromises.push(this.emailMicroservice.close());
+    if (this.kafkaMicroservice) {
+      logger.log('Shutting down Kafka microservice...');
+      shutdownPromises.push(this.kafkaMicroservice.close());
+    }
     
     if (this.fallbackInterval) {
       clearInterval(this.fallbackInterval);

@@ -12,7 +12,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Expose the port (matches docker-compose mapping)
-EXPOSE 3200
+EXPOSE 3800
 
-# Start the search service
-CMD ["npm", "run", "search-service"]
+# Start the application
+CMD ["npm", "run", "dev"]

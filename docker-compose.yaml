@@ -1,6 +1,35 @@
-version: '3.8'
-
 services:
+  # Kafka Services
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka_network
+      - shared_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka_network
+      - shared_network
+
+  # Search Services
   redis:
     image: redis:alpine
     ports:
@@ -9,6 +38,7 @@ services:
       - redis_data:/data
     networks:
       - search_network
+      - shared_network
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -22,6 +52,7 @@ services:
       - es_data:/usr/share/elasticsearch/data
     networks:
       - search_network
+      - shared_network
 
   search-service:
     build:
@@ -37,11 +68,31 @@ services:
       - ELASTICSEARCH_HOST=http://elasticsearch:9200
     networks:
       - search_network
+      - shared_network
+
+  # Main Application
+  pregnancy-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.pregnancy-monitor
+    ports:
+      - "3700:3000"
+    environment:
+      MONGODB_URI: "mongodb+srv://adikanathaniel0:7myo9l7s9Nwtodo1@cluster0.rn0fm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+      KAFKA_BROKER: "kafka:29092"
+    depends_on:
+      - kafka
+    networks:
+      - shared_network
 
 volumes:
   redis_data:
   es_data:
 
 networks:
+  kafka_network:
+    driver: bridge
   search_network:
+    driver: bridge
+  shared_network:
     driver: bridge

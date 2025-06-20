@@ -81,6 +81,7 @@
     "ioredis": "^5.6.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "lodash": "^4.17.21",
     "mailgun.js": "^11.1.0",
     "mongoose": "^8.15.0",

@@ -52,6 +52,8 @@ import { FaceAuthModule } from './face-auth/face-auth.module';
 import { AuthModule } from './auth/auth.module';
 import { SupportModule } from './support/support.module';
 import {  SymptomsModule } from './symptom/symptom.module';
+import { VitalsModule } from './vitals/vital.module';
+import { KafkaModule } from './kafka/kafka.module';
 // import { HealthDataModule } from './hardware-data/patient-hardware.module';
 
 // Schemas - ONLY FOR SCHEMAS USED DIRECTLY IN APP MODULE
@@ -121,6 +123,8 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     AuthModule,
     AppointmentsModule,
     StripeModule,
+    VitalsModule,
+    KafkaModule,
     SupportModule,
     // HealthDataModule,
     PrescriptionsModule,
