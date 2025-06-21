@@ -20,6 +20,7 @@ import 'prescriptions-home.dart';
 import 'appointments-home.dart';
 import 'preeclampsia-home.dart';
 import 'map.dart'; 
+import  'preeclampsia-live.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -183,6 +184,17 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AppointmentHomePage()),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: Icon(Icons.monitor_heart),
+              title: Text('Live Preeclampsia Predictions'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PreeclampsiaVitals()),
                 );
               },
             ),
