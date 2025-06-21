@@ -35,7 +35,7 @@ class _PreeclampsiaVitalsState extends State<PreeclampsiaVitals> {
   Future<void> fetchVitals() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/api/v1/vitals'),
+        Uri.parse('http://localhost:3100/api/v1/vitals'),
         headers: {'Content-Type': 'application/json'},
       );
 
