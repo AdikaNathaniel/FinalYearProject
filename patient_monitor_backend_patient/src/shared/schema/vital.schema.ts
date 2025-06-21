@@ -1,10 +1,20 @@
-// vital.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({ timestamps: true })
+@Schema({
+  collection: 'vitals',
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: (doc, ret) => {
+      ret.id = ret._id;
+      delete ret._id;
+    }
+  }
+})
 export class Vital extends Document {
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   patientId: string;
 
   @Prop({ required: true })
@@ -34,14 +44,14 @@ export class Vital extends Document {
   @Prop({ required: true })
   rationale: string;
 
-  @Prop({ type: Object })
+  @Prop({ type: String })
   mlSeverity?: string;
 
   @Prop({ type: Object })
   mlProbability?: Record<string, number>;
 
-  @Prop()
-  createdAt?: Date;
+  @Prop({ default: Date.now })
+  createdAt: Date;
 }
 
 export const VitalSchema = SchemaFactory.createForClass(Vital);

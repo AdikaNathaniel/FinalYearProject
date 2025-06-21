@@ -3,7 +3,7 @@ import { VitalsService } from './vitals.service';
 import { CreateVitalDto } from 'src/users/dto/create-vital.dto';
 import { VitalDto } from 'src/users/dto/vital.dto';
 
-@Controller('vitals')
+@Controller('api/v1/vitals')
 export class VitalsController {
   constructor(private readonly vitalsService: VitalsService) {}
 

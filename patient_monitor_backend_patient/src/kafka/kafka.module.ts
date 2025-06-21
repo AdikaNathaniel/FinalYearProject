@@ -2,21 +2,21 @@ import { Module, forwardRef } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KafkaService } from './kafka.service';
 import { KafkaConsumer } from './kafka.consumer';
-import { VitalsModule } from 'src/vitals/vital.module'; // Adjust path as needed
+import { VitalsModule } from  'src/vitals/vital.module';
 
 @Module({
   imports: [
-    forwardRef(() => VitalsModule), // Import the module that provides VitalsService
+    forwardRef(() => VitalsModule),
     ClientsModule.register([
       {
         name: 'KAFKA_SERVICE',
         transport: Transport.KAFKA,
         options: {
           client: {
-            brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+            brokers: ['localhost:9092'], // Use 'pm-kafka:9092' if in Docker network
           },
           consumer: {
-            groupId: 'pregnancy-monitor-consumer',
+            groupId: 'vitals-consumer-' + Math.random().toString(36).substring(2),
           },
         },
       },
