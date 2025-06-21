@@ -11,4 +11,6 @@ export class VitalDto {
   severity: string;
   rationale?: string;
   createdAt: Date;
+  mlSeverity?: string;
+  mlProbability?: Record<string, number>;
 }

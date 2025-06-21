@@ -1,3 +1,4 @@
+// vital.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
@@ -30,11 +31,17 @@ export class Vital extends Document {
   @Prop({ required: true })
   severity: string;
 
-  @Prop()
-  rationale?: string;
+  @Prop({ required: true })
+  rationale: string;
 
-  // ✅ Explicitly define createdAt for access in TypeScript
-  readonly createdAt: Date;
+  @Prop({ type: Object })
+  mlSeverity?: string;
+
+  @Prop({ type: Object })
+  mlProbability?: Record<string, number>;
+
+  @Prop()
+  createdAt?: Date;
 }
 
 export const VitalSchema = SchemaFactory.createForClass(Vital);
