@@ -1,18 +1,12 @@
-# Use official Node.js image
 FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# Copy the rest of the application
 COPY . .
 
-# Expose the port (matches docker-compose mapping)
 EXPOSE 3200
 
-# Start the search service
-CMD ["npm", "run", "search-service"]
+CMD ["npm", "run", "dev"]

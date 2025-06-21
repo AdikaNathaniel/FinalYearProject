@@ -56,7 +56,7 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
 
   void connectToServer() {
     socket = IO.io(
-      'http://localhost:3002', // Replace with your server IP
+      'http://localhost:3009', // Replace with your server IP
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()

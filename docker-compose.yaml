@@ -1,98 +1,99 @@
 services:
-  # Kafka Services
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
+    container_name: pm-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
     networks:
-      - kafka_network
-      - shared_network
+      - pregnancy_monitor_network
 
   kafka:
     image: confluentinc/cp-kafka:7.3.0
+    container_name: pm-kafka
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     networks:
-      - kafka_network
-      - shared_network
+      - pregnancy_monitor_network
 
-  # Search Services
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
+    container_name: pm-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - search_network
-      - shared_network
+      - pregnancy_monitor_network
+    command: redis-server --appendonly yes
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: pm-elasticsearch
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - cluster.name=pregnancy-monitor-cluster
+      - node.name=pregnancy-monitor-node
     ports:
       - "9200:9200"
+      - "9300:9300"
     volumes:
       - es_data:/usr/share/elasticsearch/data
     networks:
-      - search_network
-      - shared_network
+      - pregnancy_monitor_network
 
   search-service:
     build:
       context: .
       dockerfile: Dockerfile.search
+    container_name: pm-search-service
     ports:
-      - "3200:3100"
+      - "3300:3100"
     depends_on:
       - redis
       - elasticsearch
     environment:
+      - PORT=3100
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - NODE_ENV=production
     networks:
-      - search_network
-      - shared_network
-
-  # Main Application
-  pregnancy-monitor:
-    build:
-      context: .
-      dockerfile: Dockerfile.pregnancy-monitor
-    ports:
-      - "3700:3000"
-    environment:
-      MONGODB_URI: "mongodb+srv://adikanathaniel0:7myo9l7s9Nwtodo1@cluster0.rn0fm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-      KAFKA_BROKER: "kafka:29092"
-    depends_on:
-      - kafka
-    networks:
-      - shared_network
+      - pregnancy_monitor_network
 
 volumes:
   redis_data:
   es_data:
+  kafka_data:
+  zookeeper_data:
+  zookeeper_logs:
 
 networks:
-  kafka_network:
-    driver: bridge
-  search_network:
-    driver: bridge
-  shared_network:
+  pregnancy_monitor_network:
     driver: bridge

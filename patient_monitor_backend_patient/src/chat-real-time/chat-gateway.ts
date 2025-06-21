@@ -28,7 +28,7 @@ interface ChatRoom {
 }
 
 @Injectable()
-@WebSocketGateway(3002, { cors: { origin: '*' } })
+@WebSocketGateway(3009, { cors: { origin: '*' } })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 

@@ -24,7 +24,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void connectToServer() {
     socket = IO.io(
-      'http://localhost:3002', // Replace with your server IP if not localhost
+      'http://localhost:3009', // Replace with your server IP if not localhost
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
