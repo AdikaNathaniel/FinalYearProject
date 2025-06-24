@@ -5,6 +5,7 @@ export class CreateVitalDto {
   diastolic: number;
   map?: number;
   proteinuria: number;
+  glucose: number;
   temperature: number;
   heartRate: number;
   spo2: number;

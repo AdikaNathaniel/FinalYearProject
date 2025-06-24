@@ -68,6 +68,7 @@ class _PreeclampsiaVitalsState extends State<PreeclampsiaVitals> {
 
   Color getSeverityColor(String severity) {
     switch (severity.toLowerCase()) {
+      case 'no preeclampsia':
       case 'normal':
         return Colors.green;
       case 'mild':
@@ -215,6 +216,7 @@ class VitalCard extends StatelessWidget {
 
   Color getSeverityColor(String severity) {
     switch (severity.toLowerCase()) {
+      case 'no preeclampsia':
       case 'normal':
         return Colors.green;
       case 'mild':
@@ -264,17 +266,78 @@ class VitalCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Vitals Grid
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+            // Vitals Grid - Two rows of three items each
+            Column(
               children: [
-                VitalItem(icon: Icons.favorite, label: 'BP', value: '${vital.systolic}/${vital.diastolic}', unit: 'mmHg', color: Colors.red),
-                VitalItem(icon: Icons.thermostat, label: 'Temp', value: vital.temperature.toStringAsFixed(1), unit: '°C', color: Colors.orange),
-                VitalItem(icon: Icons.monitor_heart, label: 'HR', value: '${vital.heartRate}', unit: 'bpm', color: Colors.pink),
-                VitalItem(icon: Icons.air, label: 'SpO2', value: '${vital.spo2}', unit: '%', color: Colors.blue),
-                VitalItem(icon: Icons.science, label: 'MAP', value: vital.map.toStringAsFixed(1), unit: 'mmHg', color: Colors.purple),
-                VitalItem(icon: Icons.water_drop, label: 'Protein', value: '${vital.proteinuria}', unit: '+', color: Colors.teal),
+                // Top Row: BP, Temp, HR
+                Row(
+                  children: [
+                    Expanded(
+                      child: VitalItem(
+                        icon: Icons.favorite,
+                        label: 'BP',
+                        value: '${vital.systolic}/${vital.diastolic}',
+                        unit: 'mmHg',
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: VitalItem(
+                        icon: Icons.thermostat,
+                        label: 'Temp',
+                        value: vital.temperature.toStringAsFixed(1),
+                        unit: '°C',
+                        color: Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: VitalItem(
+                        icon: Icons.monitor_heart,
+                        label: 'HR',
+                        value: '${vital.heartRate}',
+                        unit: 'bpm',
+                        color: Colors.pink,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Bottom Row: SpO2, MAP, Protein
+                Row(
+                  children: [
+                    Expanded(
+                      child: VitalItem(
+                        icon: Icons.air,
+                        label: 'SpO2',
+                        value: '${vital.spo2}',
+                        unit: '%',
+                        color: Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: VitalItem(
+                        icon: Icons.science,
+                        label: 'MAP',
+                        value: vital.map.toStringAsFixed(1),
+                        unit: 'mmHg',
+                        color: Colors.purple,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: VitalItem(
+                        icon: Icons.water_drop,
+                        label: 'Protein',
+                        value: '${vital.proteinuria}',
+                        unit: '+',
+                        color: Colors.teal,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -356,43 +419,42 @@ class VitalItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 150,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Row(
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 4),
+              Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              text: value,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.black,
+              ),
               children: [
-                Icon(icon, size: 16, color: color),
-                const SizedBox(width: 4),
-                Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                TextSpan(
+                  text: ' $unit',
+                  style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 11, color: Colors.grey),
+                ),
               ],
             ),
-            const SizedBox(height: 6),
-            RichText(
-              text: TextSpan(
-                text: value,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.black,
-                ),
-                children: [
-                  TextSpan(
-                    text: ' $unit',
-                    style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 11, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

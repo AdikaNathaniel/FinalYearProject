@@ -1,8 +1,17 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { VitalsService } from './vitals.service';
 import { CreateVitalDto } from 'src/users/dto/create-vital.dto';
 import { VitalDto } from 'src/users/dto/vital.dto';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('vitals')
 export class VitalsController {
   constructor(private readonly vitalsService: VitalsService) {}

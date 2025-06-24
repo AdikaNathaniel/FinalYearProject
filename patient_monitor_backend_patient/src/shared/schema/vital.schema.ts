@@ -38,6 +38,9 @@ export class Vital extends Document {
   @Prop({ required: true })
   spo2: number;
 
+   @Prop({ required: true })
+   glucose: number;
+
   @Prop({ required: true })
   severity: string;
 
