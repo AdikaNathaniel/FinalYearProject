@@ -343,17 +343,20 @@ class VitalCard extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ML Prediction
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'ML Prediction: ${vital.mlSeverity}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: getSeverityColor(vital.mlSeverity),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
+            // Align(
+            //   alignment: Alignment.centerLeft,
+            //   child: Text(
+            //     'ML Prediction: ${vital.mlSeverity}',
+            //     style: TextStyle(
+            //       fontWeight: FontWeight.bold,
+            //       color: getSeverityColor(vital.mlSeverity),
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 8),
+            
+            // Commented out the probabilities section
+            /*
             ...vital.mlProbability.entries.map((entry) => Row(
                   children: [
                     SizedBox(width: 80, child: Text('${entry.key}:', style: const TextStyle(fontSize: 12))),
@@ -368,6 +371,7 @@ class VitalCard extends StatelessWidget {
                     Text('${(entry.value * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 12)),
                   ],
                 )),
+            */
 
             const SizedBox(height: 16),
 

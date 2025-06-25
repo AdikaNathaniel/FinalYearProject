@@ -21,6 +21,7 @@ import 'appointments-home.dart';
 import 'preeclampsia-home.dart';
 import 'map.dart'; 
 import  'preeclampsia-live.dart';
+import 'glucose-monitor.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -198,9 +199,23 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
+
+
+             ListTile(
+              leading: Icon(Icons.bloodtype),
+              title: Text('Glucose Monitoring'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GlucoseMonitoringPage()),
+                );
+              },
+            ),
           ],
         ),
       ),
+
+
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
