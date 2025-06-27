@@ -22,6 +22,7 @@ import 'preeclampsia-home.dart';
 import 'map.dart'; 
 import  'preeclampsia-live.dart';
 import 'glucose-monitor.dart';
+import 'vitals-input.dart';
 
 class PregnancyComplicationsPage extends StatefulWidget {
   final String userEmail;
@@ -211,6 +212,18 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
+
+
+            ListTile(
+  leading: Icon(Icons.health_and_safety),
+  title: Text('Preeclampsia Risk Assessment'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => VitalsInputPage()),
+    );
+  },
+)
           ],
         ),
       ),

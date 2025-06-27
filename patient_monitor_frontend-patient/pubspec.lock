@@ -374,6 +374,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.2.1"
+  flutter_kafka:
+    dependency: "direct main"
+    description:
+      name: flutter_kafka
+      sha256: cdd3b4bb57b200e18320081ee9fb953b985c787a1d44f2d249de39ba963f653f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
