@@ -18,6 +18,7 @@ import 'doctor-by-name.dart';
 import 'symptom-checker.dart';
 import 'set_profile.dart'; 
 import 'map.dart';
+import  'hardware_vitals.dart';
 
 void main() {
   runApp(const MyApp());
@@ -222,6 +223,20 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
+
+            // HardwareVitals
+            ListTile(
+              leading: const Icon(Icons.monitor_heart),
+              title: const Text('Hardware Vitals'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HardwareVitals(),
+                  ),
+                );
+              },
+            ),  
             ListTile(
               leading: const Icon(Icons.science),
               title: const Text('Protein In Urine'),

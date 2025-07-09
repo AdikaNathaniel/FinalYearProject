@@ -6,6 +6,7 @@ export enum userTypes {
   PREGNANT = 'pregnant-woman',
   DOCTOR = 'doctor',
   RELATIVE = 'relative',
+  GENERALUSER = 'wellness-user',
 }
 
 @Schema({
@@ -31,6 +32,7 @@ export class Users extends Document {
       userTypes.PREGNANT,
       userTypes.DOCTOR,
       userTypes.RELATIVE,
+      userTypes.GENERALUSER,
     ],
   })
   type: string;
