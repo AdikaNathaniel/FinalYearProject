@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
-  final List<String> userTypes = ['Doctor', 'Pregnant Woman', 'Family Relative', 'Admin'];
+  final List<String> userTypes = ['Doctor', 'Pregnant Woman', 'Family Relative', 'Admin','Wellness User'];
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +289,27 @@ if (selectedUserType.toLowerCase() == 'doctor') {
       ),
     );
   }
-} else if (selectedUserType.toLowerCase() == 'pregnant woman') {
+} else if (selectedUserType.toLowerCase() == 'wellness user') {
+  if (mounted) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPinPage(
+          userEmail: email,
+          userType: selectedUserType.toLowerCase(),
+          // onSuccess: () {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => PregnancyCalculatorScreen(userEmail: email),
+          //     ),
+          //   );
+          // },
+        ),
+      ),
+    );
+  }
+}else if (selectedUserType.toLowerCase() == 'pregnant woman') {
   if (mounted) {
     Navigator.pushReplacement(
       context,

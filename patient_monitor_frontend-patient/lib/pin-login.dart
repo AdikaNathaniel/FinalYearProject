@@ -102,7 +102,15 @@ class _LoginPinPageState extends State<LoginPinPage> {
           builder: (context) => PregnancyCalculatorScreen(userEmail: widget.userEmail),
         ),
       );
-    } else if (userType == 'family relative') {
+    } else if (userType == 'wellness user') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>  HealthDashboard(userEmail: widget.userEmail),
+        ),
+      );
+    }
+    else if (userType == 'family relative') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
