@@ -33,6 +33,7 @@ import { UsersModule } from './users/users.module';
 import { OrderModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { StripeModule } from './payments/stripe.module';
+import { PaystackModule } from './paystack/paystack.module';
 import { TrackingModule } from 'src/tracking/tracking.module';
 import { FaceRecognitionModule } from 'src/facial-recognition/facial-recognition.module';
 import { AppointmentsModule } from 'src/appointments/appointment.module';
@@ -119,6 +120,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     FaceRecognitionModule,
     PaymentsModule,
     MedicsModule,
+    PaystackModule,
     FaceAuthModule,
     AuthModule,
     AppointmentsModule,
