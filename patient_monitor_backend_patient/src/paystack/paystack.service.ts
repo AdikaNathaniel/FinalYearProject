@@ -55,7 +55,7 @@ export class PaystackService {
   }
 
 
-async listTransactions(page = 1, perPage = 10, status = 'success') {
+async listTransactions(page = 1000, perPage = 1000000, status = 'success') {
     try {
       const response = await axios.get(`${this.BASE_URL}/transaction`, {
         headers: {

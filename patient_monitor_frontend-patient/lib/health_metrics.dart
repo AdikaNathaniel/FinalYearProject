@@ -19,6 +19,7 @@ import 'symptom-checker.dart';
 import 'set_profile.dart'; 
 import 'map.dart';
 import  'hardware_vitals.dart';
+import  'paystack-home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -285,18 +286,34 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.help_outline, color: Colors.teal),
-              title: const Text('Support Desk'), 
+            // ListTile(
+            //   leading: const Icon(Icons.help_outline, color: Colors.teal),
+            //   title: const Text('Support Desk'), 
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => SupportFormPage(), 
+            //       ),
+            //     );
+            //   },
+            // ),
+
+            // PaystackInitiatePage
+
+             ListTile(
+              leading: const Icon(Icons.attach_money, color: Colors.teal),
+              title: const Text('Make Payment'), 
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SupportFormPage(), 
+                    builder: (context) => PaystackInitiatePage(), 
                   ),
                 );
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.medical_services, color: Colors.blue),
               title: const Text('View All Medics Profile'), 
@@ -501,6 +518,32 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   const SizedBox(width: 10),
                   const Text(
                     'Notifications',
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SupportFormPage(),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.chat_bubble_outline, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Need Help?',
                     style: TextStyle(
                       color: Colors.blue,
                     ),
