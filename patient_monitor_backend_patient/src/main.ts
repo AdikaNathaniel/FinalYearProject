@@ -23,9 +23,14 @@ import { SearchService } from './search/search.service'; // Adjust path as neede
 // Fix for crypto is not defined error
 // @ts-ignore
 // global.crypto = crypto;
-if (!global.crypto) {
-  // only assign if undefined (older Node versions)
-  global.crypto = require('crypto').webcrypto;
+// if (!global.crypto) {
+//   // only assign if undefined (older Node versions)
+//   global.crypto = require('crypto').webcrypto;
+// }
+
+if (typeof global.crypto === 'undefined') {
+  // @ts-ignore
+  global.crypto = crypto;
 }
 
 
