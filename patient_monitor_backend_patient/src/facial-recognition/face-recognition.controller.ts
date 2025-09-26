@@ -9,6 +9,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FaceService } from './face-recognition.service';
 import { FaceDetectionResponse } from 'src/users/dto/create-face.dto';
+import * as Express from 'express';
+
 
 @Controller('face')
 export class FaceController {

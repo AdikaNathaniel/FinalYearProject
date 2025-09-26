@@ -21,6 +21,8 @@ import { UpdateMedicDto } from 'src/users/dto/update-medic.dto';
 import { Medic } from 'src/shared/schema/medic.schema';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import * as Express from 'express';
+
 
 @Controller('medics')
 export class MedicsController {

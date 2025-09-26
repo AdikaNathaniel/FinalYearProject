@@ -8,6 +8,8 @@ import { join } from 'path';
 // Remove this line - it's not used in your code
 // import * as tf from '@tensorflow/tfjs-node';
 import { Canvas, Image, ImageData } from 'canvas';
+import * as Express from 'express';
+
 
 // Patch nodejs environment to use canvas for face-api.js
 const nodeCanvas = { Canvas, Image, ImageData };

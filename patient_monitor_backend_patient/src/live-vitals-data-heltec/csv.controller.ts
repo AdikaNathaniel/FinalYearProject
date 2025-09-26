@@ -4,6 +4,8 @@ import { CsvService } from './csv.service';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { Response } from 'express';
+import * as Express from 'express';
+
 
 @Controller('csv')
 export class CsvController {
