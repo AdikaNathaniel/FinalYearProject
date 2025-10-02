@@ -121,7 +121,7 @@
     "@types/express": "^5.0.0",
     "@types/http-proxy-middleware": "^0.19.3",
     "@types/jest": "^29.5.2",
-    "@types/multer": "^1.4.12",
+    "@types/multer": "^1.4.13",
     "@types/next": "^8.0.7",
     "@types/node": "^20.19.0",
     "@types/nodemailer": "^6.4.17",
