@@ -13,17 +13,9 @@ import { HealthCheckService, MicroserviceHealthIndicator } from '@nestjs/terminu
 import * as crypto from 'crypto';
 
 // Import SearchService class directly
-// Update these import paths according to your project structure
-import { SearchService } from './search/search.service'; // Adjust path as needed
-// Alternative common paths you might need to check:
-// import { SearchService } from './modules/search/search.service';
-// import { SearchService } from './services/search.service';
-// import { SearchService } from './search/services/search.service';
+import { SearchService } from './search/search.service';
 
-// Fix for crypto is not defined error
-// @ts-ignore
-// global.crypto = crypto;
-
+// Fix for crypto is not defined error - removed for Node.js 22 compatibility
 // Type definitions for better type safety
 interface ElasticsearchClient {
   cluster: {
@@ -39,7 +31,6 @@ interface RedisClient {
   ping(): Promise<string>;
 }
 
-// Extended SearchService interface to ensure type safety
 interface ISearchService {
   redisClient?: RedisClient;
   esClient?: ElasticsearchClient;
@@ -57,11 +48,13 @@ const CONFIG = {
     },
     maxRetries: 5,
     requestTimeout: 60000,
+    required: process.env.ELASTICSEARCH_REQUIRED !== 'false',
   },
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-    ttl: parseInt(process.env.REDIS_TTL, 10) || 3600, // 1 hour in seconds
+    ttl: parseInt(process.env.REDIS_TTL, 10) || 3600,
+    required: process.env.REDIS_REQUIRED !== 'false',
   },
   rabbitmq: {
     url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
@@ -70,21 +63,6 @@ const CONFIG = {
     maxAttempts: 10,
     timeout: 10000,
   },
-  // KAFKA CONFIG COMMENTED OUT
-  // kafka: {
-  //   brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'],
-  //   consumer: {
-  //     groupId: process.env.KAFKA_CONSUMER_GROUP_ID || 'pregnancy-monitor-consumer',
-  //   },
-  //   producer: {
-  //     maxInFlightRequests: 1,
-  //     idempotent: true,
-  //     transactionTimeout: 30000,
-  //   },
-  //   connectionTimeout: 3000,
-  //   authenticationTimeout: 10000,
-  //   reauthenticationThreshold: 10000,
-  // },
   server: {
     port: parseInt(process.env.PORT, 10) || 3000,
     notificationPort: 3001,
@@ -100,7 +78,7 @@ const CONFIG = {
   },
   fallback: {
     maxQueueSize: 1000,
-    retryInterval: 60000, // 1 minute
+    retryInterval: 60000,
     maxRetries: 5,
   },
   static: {
@@ -113,8 +91,6 @@ class ApplicationManager {
   public mainApp: any;
   private notificationApp: any;
   private emailMicroservice: any;
-  // KAFKA MICROSERVICE COMMENTED OUT
-  // private kafkaMicroservice: any;
   private reconnectAttempts = 0;
   private isShuttingDown = false;
   private inMemoryEmailQueue: Array<{
@@ -126,235 +102,163 @@ class ApplicationManager {
 
   async initialize() {
     try {
+      logger.log('=== STARTING APPLICATION INITIALIZATION ===');
+      logger.log(`Node.js version: ${process.version}`);
+      logger.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+      logger.log(`PORT: ${CONFIG.server.port}`);
+      
       await this.setupErrorHandlers();
+      logger.log('✓ Error handlers configured');
+      
       await this.initializeMainApplication();
-      // KAFKA INITIALIZATION COMMENTED OUT
-      // await this.initializeKafkaMicroservice();
+      logger.log('✓ Main application initialized');
+      
       await this.setupEmailFallbackMechanism();
+      logger.log('✓ Email fallback mechanism configured');
+      
       await this.checkSearchServicesConnection();
-      // KAFKA CONNECTION CHECK COMMENTED OUT
-      // await this.checkKafkaConnection();
+      logger.log('✓ Search services checked');
+      
       this.logStartupComplete();
     } catch (error) {
-      logger.error('Initialization failed', error.stack);
+      logger.error('=== INITIALIZATION FAILED ===');
+      logger.error(`Error type: ${error.constructor.name}`);
+      logger.error(`Error message: ${error.message}`);
+      logger.error(`Error stack: ${error.stack}`);
+      logger.error('=== END ERROR DETAILS ===');
       await this.gracefulShutdown(1);
     }
   }
 
   private async setupErrorHandlers() {
-    process.on('unhandledRejection', (reason) => {
-      logger.error('Unhandled Rejection:', reason);
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('=== UNHANDLED REJECTION ===');
+      logger.error(`Reason: ${reason}`);
+      logger.error(`Promise: ${promise}`);
+      if (reason instanceof Error) {
+        logger.error(`Stack: ${reason.stack}`);
+      }
     });
 
     process.on('uncaughtException', (error) => {
-      logger.error('Uncaught Exception:', error.stack);
+      logger.error('=== UNCAUGHT EXCEPTION ===');
+      logger.error(`Error: ${error.message}`);
+      logger.error(`Stack: ${error.stack}`);
       this.gracefulShutdown(1);
     });
 
-    process.on('SIGTERM', () => this.gracefulShutdown(0));
-    process.on('SIGINT', () => this.gracefulShutdown(0));
+    process.on('SIGTERM', () => {
+      logger.log('SIGTERM received');
+      this.gracefulShutdown(0);
+    });
+    
+    process.on('SIGINT', () => {
+      logger.log('SIGINT received');
+      this.gracefulShutdown(0);
+    });
   }
 
   private async initializeMainApplication() {
-    this.mainApp = await NestFactory.create(AppModule, {
-      rawBody: true,
-      logger: ['error', 'warn', 'log'],
-    });
+    try {
+      logger.log('Creating NestJS application...');
+      this.mainApp = await NestFactory.create(AppModule, {
+        rawBody: true,
+        logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+      });
+      logger.log('✓ NestJS application created');
 
-    this.configureMainApplication();
-    await this.mainApp.listen(CONFIG.server.port);
-    logger.log(`Main application running on port ${CONFIG.server.port}`);
-    logger.log(`Application is running on: ${await this.mainApp.getUrl()}`);
+      logger.log('Configuring application...');
+      this.configureMainApplication();
+      logger.log('✓ Application configured');
+
+      logger.log(`Starting server on port ${CONFIG.server.port}...`);
+      await this.mainApp.listen(CONFIG.server.port);
+      logger.log(`✓ Main application running on port ${CONFIG.server.port}`);
+      logger.log(`✓ Application is running on: ${await this.mainApp.getUrl()}`);
+    } catch (error) {
+      logger.error('Failed to initialize main application');
+      logger.error(`Error: ${error.message}`);
+      logger.error(`Stack: ${error.stack}`);
+      throw error;
+    }
   }
-
-  // ENTIRE KAFKA MICROSERVICE INITIALIZATION COMMENTED OUT
-  // private async initializeKafkaMicroservice() {
-  //   try {
-  //     logger.log('🔄 Initializing Kafka microservice...');
-      
-  //     // Connect Kafka microservice to the main application
-  //     this.kafkaMicroservice = this.mainApp.connectMicroservice({
-  //       transport: Transport.KAFKA,
-  //       options: {
-  //         client: {
-  //           clientId: process.env.KAFKA_CLIENT_ID || 'pregnancy-monitor-client',
-  //           brokers: CONFIG.kafka.brokers,
-  //           connectionTimeout: CONFIG.kafka.connectionTimeout,
-  //           authenticationTimeout: CONFIG.kafka.authenticationTimeout,
-  //           reauthenticationThreshold: CONFIG.kafka.reauthenticationThreshold,
-  //           // Add SSL configuration if needed
-  //           ssl: process.env.KAFKA_SSL === 'true' ? {
-  //             rejectUnauthorized: false,
-  //           } : false,
-  //           // Add SASL configuration if needed
-  //           sasl: process.env.KAFKA_USERNAME ? {
-  //             mechanism: 'plain',
-  //             username: process.env.KAFKA_USERNAME,
-  //             password: process.env.KAFKA_PASSWORD,
-  //           } : undefined,
-  //         },
-  //         consumer: {
-  //           groupId: CONFIG.kafka.consumer.groupId,
-  //           allowAutoTopicCreation: true,
-  //           // Configure consumer for pregnancy monitoring
-  //           sessionTimeout: 30000,
-  //           rebalanceTimeout: 60000,
-  //           heartbeatInterval: 3000,
-  //           maxWaitTimeInMs: 5000,
-  //           retry: {
-  //             retries: 8,
-  //           },
-  //         },
-  //         producer: {
-  //           maxInFlightRequests: CONFIG.kafka.producer.maxInFlightRequests,
-  //           idempotent: CONFIG.kafka.producer.idempotent,
-  //           transactionTimeout: CONFIG.kafka.producer.transactionTimeout,
-  //           retry: {
-  //             retries: 5,
-  //           },
-  //         },
-  //         subscribe: {
-  //           fromBeginning: false,
-  //         },
-  //       },
-  //     });
-
-  //     // Start all microservices
-  //     await this.mainApp.startAllMicroservices();
-  //     logger.log('✅ Kafka microservice initialized and started successfully');
-      
-  //   } catch (error) {
-  //     logger.error('❌ Failed to initialize Kafka microservice:', error.message);
-  //     throw new Error(`Kafka microservice initialization failed: ${error.message}`);
-  //   }
-  // }
-
-  // ENTIRE KAFKA CONNECTION CHECK COMMENTED OUT
-  // private async checkKafkaConnection() {
-  //   try {
-  //     logger.log('🔍 Checking Kafka connection...');
-      
-  //     // Create a test producer to verify connection
-  //     const { Kafka } = require('kafkajs');
-  //     const kafka = new Kafka({
-  //       clientId: 'pregnancy-monitor-health-check',
-  //       brokers: CONFIG.kafka.brokers,
-  //       connectionTimeout: CONFIG.kafka.connectionTimeout,
-  //       // Add SSL configuration if needed
-  //       ssl: process.env.KAFKA_SSL === 'true' ? {
-  //         rejectUnauthorized: false,
-  //       } : false,
-  //       // Add SASL configuration if needed
-  //       sasl: process.env.KAFKA_USERNAME ? {
-  //         mechanism: 'plain',
-  //         username: process.env.KAFKA_USERNAME,
-  //         password: process.env.KAFKA_PASSWORD,
-  //       } : undefined,
-  //     });
-
-  //     const admin = kafka.admin();
-      
-  //     try {
-  //       await admin.connect();
-        
-  //       // List topics to verify connection
-  //       const topics = await admin.listTopics();
-  //       logger.log(`✅ Kafka connection established successfully. Available topics: ${topics.length}`);
-        
-  //       // Create pregnancy monitoring topics if they don't exist
-  //       const requiredTopics = [
-  //         'pregnancy-vitals',
-  //         'pregnancy-alerts',
-  //         'pregnancy-notifications',
-  //         'pregnancy-analytics'
-  //       ];
-        
-  //       const existingTopics = new Set(topics);
-  //       const topicsToCreate = requiredTopics.filter(topic => !existingTopics.has(topic));
-        
-  //       if (topicsToCreate.length > 0) {
-  //         logger.log(`📝 Creating missing topics: ${topicsToCreate.join(', ')}`);
-  //         await admin.createTopics({
-  //           topics: topicsToCreate.map(topic => ({
-  //             topic,
-  //             numPartitions: 3,
-  //             replicationFactor: 1,
-  //           })),
-  //           timeout: 30000,
-  //         });
-  //         logger.log('✅ Required topics created successfully');
-  //       } else {
-  //         logger.log('✅ All required topics already exist');
-  //       }
-        
-  //     } finally {
-  //       await admin.disconnect();
-  //     }
-      
-  //   } catch (error) {
-  //     logger.error('❌ Kafka connection check failed:', error.message);
-      
-  //     // Decide whether to fail startup or continue with degraded functionality
-  //     if (process.env.KAFKA_REQUIRED === 'true') {
-  //       throw new Error(`Kafka connection failed and is required: ${error.message}`);
-  //     } else {
-  //       logger.warn('⚠️  Kafka connection failed but continuing with degraded functionality');
-  //     }
-  //   }
-  // }
 
   private async checkSearchServicesConnection() {
     try {
+      logger.log('=== CHECKING SEARCH SERVICES ===');
+      
       let searchService: SearchService;
       
       try {
         searchService = this.mainApp.select(AppModule).get(SearchService, { strict: false });
-        logger.log('✅ SearchService resolved successfully using class import');
+        logger.log('✓ SearchService resolved successfully using class import');
       } catch (classError) {
         logger.warn('Class-based service resolution failed, trying fallback approaches...');
+        logger.warn(`Error: ${classError.message}`);
         
         try {
           searchService = this.mainApp.get(SearchService, { strict: false });
-          logger.log('✅ SearchService resolved using fallback method');
+          logger.log('✓ SearchService resolved using fallback method');
         } catch (fallbackError) {
+          logger.warn(`Fallback resolution failed: ${fallbackError.message}`);
           try {
             searchService = this.mainApp.get('SearchService', { strict: false }) as SearchService;
-            logger.log('✅ SearchService resolved using string token');
+            logger.log('✓ SearchService resolved using string token');
           } catch (stringError) {
-            const errorMessage = 'All SearchService resolution methods failed. Cannot start application without search services.';
-            logger.error(errorMessage);
-            throw new Error(errorMessage);
+            logger.error('All SearchService resolution methods failed');
+            logger.error(`String token error: ${stringError.message}`);
+            
+            if (CONFIG.redis.required || CONFIG.elasticsearch.required) {
+              throw new Error('SearchService could not be resolved and search services are required');
+            } else {
+              logger.warn('⚠ Continuing without SearchService (not required)');
+              return;
+            }
           }
         }
       }
 
       if (!searchService) {
-        throw new Error('SearchService resolved to null/undefined. Cannot start application.');
+        if (CONFIG.redis.required || CONFIG.elasticsearch.required) {
+          throw new Error('SearchService resolved to null/undefined and is required');
+        } else {
+          logger.warn('⚠ SearchService is null but not required, continuing...');
+          return;
+        }
       }
 
-      logger.log('🔍 Starting search services connection validation...');
+      logger.log('Validating search services connections...');
 
-      // Check Redis connection - make it mandatory
+      // Check Redis connection
       const redisClient = (searchService as any).redisClient;
       if (redisClient) {
         try {
+          logger.log(`Attempting Redis connection to ${CONFIG.redis.host}:${CONFIG.redis.port}...`);
           await redisClient.ping();
-          logger.log('✅ Redis connection established successfully');
+          logger.log('✓ Redis connection established successfully');
         } catch (redisError) {
-          logger.error('❌ Redis connection failed:', redisError.message);
-          throw new Error(`Redis connection failed: ${redisError.message}`);
+          logger.error(`Redis connection failed: ${redisError.message}`);
+          if (CONFIG.redis.required) {
+            throw new Error(`Redis connection failed: ${redisError.message}`);
+          } else {
+            logger.warn('⚠ Redis connection failed but not required, continuing...');
+          }
         }
       } else {
-        throw new Error('Redis client not found in SearchService');
+        logger.warn('Redis client not found in SearchService');
+        if (CONFIG.redis.required) {
+          throw new Error('Redis client not found but is required');
+        }
       }
       
-      // Check Elasticsearch connection - make it mandatory
+      // Check Elasticsearch connection
       const esClient = (searchService as any).esClient;
       if (esClient) {
         try {
+          logger.log(`Attempting Elasticsearch connection to ${CONFIG.elasticsearch.node}...`);
           const esResponse = await esClient.cluster.health();
           const clusterStatus = esResponse.body?.status || esResponse.status || 'unknown';
-          logger.log(`✅ Elasticsearch connection established successfully - Cluster status: ${clusterStatus}`);
+          logger.log(`✓ Elasticsearch connection established - Cluster status: ${clusterStatus}`);
           
           // Ensure default index exists
           const indexExists = await esClient.indices.exists({ 
@@ -364,15 +268,14 @@ class ApplicationManager {
           const indexExistsResult = indexExists.body !== undefined ? indexExists.body : indexExists;
           
           if (!indexExistsResult) {
-            logger.log(`📝 Creating default index: ${CONFIG.elasticsearch.indices.default}`);
+            logger.log(`Creating default index: ${CONFIG.elasticsearch.indices.default}`);
             
             if (typeof (searchService as any).createIndex === 'function') {
               try {
                 await (searchService as any).createIndex(CONFIG.elasticsearch.indices.default);
-                logger.log(`✅ Default index created successfully: ${CONFIG.elasticsearch.indices.default}`);
+                logger.log(`✓ Default index created: ${CONFIG.elasticsearch.indices.default}`);
               } catch (createError) {
-                logger.error(`❌ Failed to create index using service method: ${createError.message}`);
-                // Try direct client approach
+                logger.warn(`Service createIndex failed: ${createError.message}, trying direct approach`);
                 try {
                   await esClient.indices.create({
                     index: CONFIG.elasticsearch.indices.default,
@@ -383,14 +286,16 @@ class ApplicationManager {
                       }
                     }
                   });
-                  logger.log(`✅ Default index created successfully using direct client: ${CONFIG.elasticsearch.indices.default}`);
+                  logger.log(`✓ Default index created via direct client: ${CONFIG.elasticsearch.indices.default}`);
                 } catch (directCreateError) {
-                  logger.error(`❌ Failed to create index using direct client: ${directCreateError.message}`);
-                  throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
+                  logger.error(`Direct index creation failed: ${directCreateError.message}`);
+                  if (CONFIG.elasticsearch.required) {
+                    throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
+                  }
                 }
               }
             } else {
-              logger.warn('⚠️  createIndex method not available on SearchService, trying direct client approach');
+              logger.log('createIndex method not available, using direct client');
               try {
                 await esClient.indices.create({
                   index: CONFIG.elasticsearch.indices.default,
@@ -401,66 +306,81 @@ class ApplicationManager {
                     }
                   }
                 });
-                logger.log(`✅ Default index created successfully: ${CONFIG.elasticsearch.indices.default}`);
+                logger.log(`✓ Default index created: ${CONFIG.elasticsearch.indices.default}`);
               } catch (directCreateError) {
-                logger.error(`❌ Failed to create index: ${directCreateError.message}`);
-                throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
+                logger.error(`Index creation failed: ${directCreateError.message}`);
+                if (CONFIG.elasticsearch.required) {
+                  throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
+                }
               }
             }
           } else {
-            logger.log(`✅ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
+            logger.log(`✓ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
           }
         } catch (esError) {
-          logger.error('❌ Elasticsearch connection failed:', esError.message);
-          throw new Error(`Elasticsearch connection failed: ${esError.message}`);
+          logger.error(`Elasticsearch connection failed: ${esError.message}`);
+          logger.error(`Stack: ${esError.stack}`);
+          if (CONFIG.elasticsearch.required) {
+            throw new Error(`Elasticsearch connection failed: ${esError.message}`);
+          } else {
+            logger.warn('⚠ Elasticsearch connection failed but not required, continuing...');
+          }
         }
       } else {
-        throw new Error('Elasticsearch client not found in SearchService');
+        logger.warn('Elasticsearch client not found in SearchService');
+        if (CONFIG.elasticsearch.required) {
+          throw new Error('Elasticsearch client not found but is required');
+        }
       }
 
-      logger.log('🏁 Search services connection validation completed');
+      logger.log('✓ Search services validation completed');
       
     } catch (error) {
-      logger.error('❌ Search services connection check failed:', error.message);
-      logger.error('Application cannot start without search services');
-      throw error; // Re-throw to stop application startup
+      logger.error('=== SEARCH SERVICES CHECK FAILED ===');
+      logger.error(`Error: ${error.message}`);
+      logger.error(`Stack: ${error.stack}`);
+      
+      if (CONFIG.redis.required || CONFIG.elasticsearch.required) {
+        logger.error('Application cannot start without required search services');
+        throw error;
+      } else {
+        logger.warn('⚠ Search services check failed but services are not required, continuing...');
+      }
     }
   }
 
   private configureMainApplication() {
-    const configService = this.mainApp.get(ConfigService);
-    
-    this.mainApp.enableCors({
-      origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
-      credentials: CONFIG.cors.credentials,
-      methods: CONFIG.cors.methods,
-      allowedHeaders: CONFIG.cors.allowedHeaders,
-    });
-    
-    // Configure WebSocket adapter
-    this.mainApp.useWebSocketAdapter(new IoAdapter(this.mainApp));
-    
-    // Configure middleware
-    this.mainApp.use(express.json({ limit: '50mb' }));
-    this.mainApp.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    this.mainApp.use(cookieParser());
-    this.mainApp.use('/api/v1/orders/webhook', raw({ type: '*/*' }));
-    
-    // Add raw body middleware for heltec-live-vitals endpoint to handle encrypted data
-    this.mainApp.use('/api/v1/heltec-live-vitals', express.raw({ type: 'text/plain' }));
-    
-    // Set up static file serving for profile photos
-    this.mainApp.use(CONFIG.static.profilePhotosRoute, express.static(CONFIG.static.profilePhotosPath));
-    logger.log(`Static files configured: ${CONFIG.static.profilePhotosRoute} -> ${CONFIG.static.profilePhotosPath}`);
+    try {
+      const configService = this.mainApp.get(ConfigService);
+      
+      this.mainApp.enableCors({
+        origin: configService.get('FRONTEND_URL') || CONFIG.cors.allowedOrigins,
+        credentials: CONFIG.cors.credentials,
+        methods: CONFIG.cors.methods,
+        allowedHeaders: CONFIG.cors.allowedHeaders,
+      });
+      
+      this.mainApp.useWebSocketAdapter(new IoAdapter(this.mainApp));
+      
+      this.mainApp.use(express.json({ limit: '50mb' }));
+      this.mainApp.use(express.urlencoded({ extended: true, limit: '50mb' }));
+      this.mainApp.use(cookieParser());
+      this.mainApp.use('/api/v1/orders/webhook', raw({ type: '*/*' }));
+      this.mainApp.use('/api/v1/heltec-live-vitals', express.raw({ type: 'text/plain' }));
+      this.mainApp.use(CONFIG.static.profilePhotosRoute, express.static(CONFIG.static.profilePhotosPath));
+      
+      logger.log(`Static files: ${CONFIG.static.profilePhotosRoute} -> ${CONFIG.static.profilePhotosPath}`);
 
-    // Set global prefix and interceptors
-    this.mainApp.setGlobalPrefix(CONFIG.server.apiPrefix);
-    this.mainApp.useGlobalInterceptors(new TransformationInterceptor());
-    
-    // Add validation pipe
-    this.mainApp.useGlobalPipes(new ValidationPipe({ transform: true }));
+      this.mainApp.setGlobalPrefix(CONFIG.server.apiPrefix);
+      this.mainApp.useGlobalInterceptors(new TransformationInterceptor());
+      this.mainApp.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-    this.logApplicationRoutes();
+      this.logApplicationRoutes();
+    } catch (error) {
+      logger.error('Failed to configure main application');
+      logger.error(`Error: ${error.message}`);
+      throw error;
+    }
   }
 
   private logApplicationRoutes() {
@@ -474,13 +394,16 @@ class ApplicationManager {
         })) || [];
 
       if (routes.length > 0) {
-        logger.log('Registered Routes:');
-        routes.forEach(route => logger.log(`${route.method} ${route.path}`));
+        logger.log(`Registered ${routes.length} routes`);
+        routes.slice(0, 5).forEach(route => logger.log(`  ${route.method} ${route.path}`));
+        if (routes.length > 5) {
+          logger.log(`  ... and ${routes.length - 5} more routes`);
+        }
       } else {
         logger.log('No routes found or routes not yet registered');
       }
     } catch (error) {
-      logger.warn('Could not log application routes:', error.message);
+      logger.warn(`Could not log application routes: ${error.message}`);
     }
   }
 
@@ -488,7 +411,6 @@ class ApplicationManager {
     try {
       logger.log('Setting up email fallback mechanism...');
       
-      // Add fallback endpoint after app initialization
       const app = this.mainApp.getHttpAdapter().getInstance();
       
       app.post('/api/v1/emails/fallback', (req: any, res: any) => {
@@ -520,9 +442,10 @@ class ApplicationManager {
         });
       }, CONFIG.fallback.retryInterval);
 
-      logger.log('Email fallback mechanism setup complete');
+      logger.log('✓ Email fallback mechanism setup complete');
     } catch (error) {
-      logger.error('Failed to setup email fallback mechanism:', error);
+      logger.error(`Failed to setup email fallback mechanism: ${error.message}`);
+      throw error;
     }
   }
 
@@ -539,7 +462,6 @@ class ApplicationManager {
     for (const item of this.inMemoryEmailQueue) {
       try {
         logger.log(`Processing email from fallback queue: ${JSON.stringify(item.data)}`);
-        // Add your email processing logic here
         processedItems.push(item);
       } catch (error) {
         item.retryCount++;
@@ -566,14 +488,11 @@ class ApplicationManager {
 
   private logStartupComplete() {
     logger.log('==========================================');
-    logger.log('🚀 Application startup complete!');
+    logger.log('APPLICATION STARTUP COMPLETE');
     logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
-    logger.log(`Elasticsearch: ${CONFIG.elasticsearch.node}`);
-    logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port}`);
-    // KAFKA LOGGING COMMENTED OUT
-    // logger.log(`Kafka Brokers: ${CONFIG.kafka.brokers.join(', ')}`);
-    // logger.log(`Kafka Consumer Group: ${CONFIG.kafka.consumer.groupId}`);
+    logger.log(`Elasticsearch: ${CONFIG.elasticsearch.node} (required: ${CONFIG.elasticsearch.required})`);
+    logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port} (required: ${CONFIG.redis.required})`);
     logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
     logger.log('==========================================');
   }
@@ -588,11 +507,6 @@ class ApplicationManager {
     if (this.mainApp) shutdownPromises.push(this.mainApp.close());
     if (this.notificationApp) shutdownPromises.push(this.notificationApp.close());
     if (this.emailMicroservice) shutdownPromises.push(this.emailMicroservice.close());
-    // KAFKA SHUTDOWN COMMENTED OUT
-    // if (this.kafkaMicroservice) {
-    //   logger.log('Shutting down Kafka microservice...');
-    //   shutdownPromises.push(this.kafkaMicroservice.close());
-    // }
     
     if (this.fallbackInterval) {
       clearInterval(this.fallbackInterval);
@@ -616,13 +530,26 @@ export const handler = async (req: any, res: any) => {
 };
 
 async function bootstrap() {
-  const appManager = new ApplicationManager();
-  await appManager.initialize();
+  try {
+    logger.log('=== BOOTSTRAP STARTING ===');
+    const appManager = new ApplicationManager();
+    await appManager.initialize();
+    logger.log('=== BOOTSTRAP COMPLETED SUCCESSFULLY ===');
+  } catch (error) {
+    logger.error('=== BOOTSTRAP FAILED ===');
+    logger.error(`Fatal error: ${error.message}`);
+    logger.error(`Stack trace: ${error.stack}`);
+    process.exit(1);
+  }
 }
 
 if (process.env.NODE_ENV !== 'production') {
+  bootstrap();
+} else {
   bootstrap().catch(err => {
-    logger.error('Fatal error during initialization', err.stack);
+    logger.error('=== PRODUCTION BOOTSTRAP FAILED ===');
+    logger.error(`Fatal error: ${err.message}`);
+    logger.error(`Stack: ${err.stack}`);
     process.exit(1);
   });
 }
