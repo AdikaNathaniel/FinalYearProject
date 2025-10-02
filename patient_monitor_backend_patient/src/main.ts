@@ -22,7 +22,7 @@ import { SearchService } from './search/search.service'; // Adjust path as neede
 
 // Fix for crypto is not defined error
 // @ts-ignore
-global.crypto = crypto;
+// global.crypto = crypto;
 
 // Type definitions for better type safety
 interface ElasticsearchClient {
