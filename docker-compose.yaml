@@ -1,0 +1,56 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: pm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pregnancy_monitor_network
+    command: redis-server --appendonly yes
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: pm-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - cluster.name=pregnancy-monitor-cluster
+      - node.name=pregnancy-monitor-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - pregnancy_monitor_network
+
+  search-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.search
+    container_name: pm-search-service
+    ports:
+      - "3300:3100"
+    depends_on:
+      - redis
+      - elasticsearch
+    environment:
+      - PORT=3100
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - NODE_ENV=production
+    networks:
+      - pregnancy_monitor_network
+
+volumes:
+  redis_data:
+  es_data:
+
+networks:
+  pregnancy_monitor_network:
+    driver: bridge

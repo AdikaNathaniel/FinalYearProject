@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "329774390758",
+    "project_id": "video-call-65301",
+    "storage_bucket": "video-call-65301.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329774390758:android:330f719422697bba5aca27",
+        "android_client_info": {
+          "package_name": "com.example.patient_monitor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjrV-0z-e-Cd-pxv4X1dU6Tsv-aQw6cIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329774390758:android:2276e12aeab7fd0f5aca27",
+        "android_client_info": {
+          "package_name": "com.richard.quickcall"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjrV-0z-e-Cd-pxv4X1dU6Tsv-aQw6cIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
