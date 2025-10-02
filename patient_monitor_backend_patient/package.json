@@ -27,6 +27,7 @@
     "@langchain/core": "^0.3.77",
     "@langchain/openai": "^0.6.13",
     "@nestjs/axios": "^4.0.0",
+    "@nestjs/cli": "^10.4.9",
     "@nestjs/common": "^10.4.17",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.4.17",
@@ -39,6 +40,7 @@
     "@nestjs/platform-express": "^10.4.17",
     "@nestjs/platform-socket.io": "^11.1.1",
     "@nestjs/schedule": "^6.0.0",
+    "@nestjs/schematics": "^10.0.0",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",
@@ -106,11 +108,12 @@
     "stream-browserify": "^3.0.0",
     "stripe": "^17.6.0",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.20"
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typeorm": "^0.3.20",
+    "typescript": "^5.1.3"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.4.9",
-    "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
     "@types/config": "^3.3.5",
     "@types/csurf": "^1.11.5",
@@ -139,10 +142,7 @@
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.0",
-    "ts-loader": "^9.4.3",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "ts-loader": "^9.4.3"
   },
   "jest": {
     "moduleFileExtensions": [
