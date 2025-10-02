@@ -27,7 +27,7 @@ class _UpdateAppointmentStatusPageState extends State<UpdateAppointmentStatusPag
     try {
       final response = await http.patch(
         Uri.parse(
-          'http://localhost:3100/api/v1/doctors/${Uri.encodeComponent(_doctorNameController.text.trim())}/appointments/${_appointmentIdController.text.trim()}/status',
+          'https://finalyearproject-3-y6io.onrender.com/api/v1/doctors/${Uri.encodeComponent(_doctorNameController.text.trim())}/appointments/${_appointmentIdController.text.trim()}/status',
         ),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'status': _selectedStatus.toLowerCase()}),

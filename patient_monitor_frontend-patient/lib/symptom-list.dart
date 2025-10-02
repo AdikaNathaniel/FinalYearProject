@@ -21,7 +21,7 @@ class _SymptomListPageState extends State<SymptomListPage> {
 
   Future<void> fetchSymptoms() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/symptoms'));
+      final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/symptoms'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

@@ -21,7 +21,7 @@ class _GetAnaemiaByIdPageState extends State<GetAnaemiaByIdPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/anaemia-risk/assessments/patient/${_patientIdController.text.trim()}'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/anaemia-risk/assessments/patient/${_patientIdController.text.trim()}'),
       );
 
       if (response.statusCode == 200) {

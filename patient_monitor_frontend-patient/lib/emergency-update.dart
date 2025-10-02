@@ -29,7 +29,7 @@ class _UpdateEmergencyContactState extends State<UpdateEmergencyContact> {
 
     try {
       final response = await http.put(
-        Uri.parse('http://localhost:3100/api/v1/emergency/contacts/${_nameController.text.trim()}'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergency/contacts/${_nameController.text.trim()}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'phoneNumber': _phoneController.text.trim(),

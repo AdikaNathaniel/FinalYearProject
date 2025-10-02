@@ -327,7 +327,7 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
     try {
       final response = await http.put(
         Uri.parse(
-            'http://localhost:3100/api/v1/users/reactivate-account/$userEmail'),
+            'https://finalyearproject-3-y6io.onrender.com/api/v1/users/reactivate-account/$userEmail'),
         headers: {
           'Content-Type': 'application/json',
         },

@@ -17,7 +17,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
   String? _errorMessage;
 
   // Update this URL to match your backend server
-  static const String baseUrl = 'http://localhost:3100';
+  static const String baseUrl = 'https://finalyearproject-3-y6io.onrender.com';
 
   @override
   void initState() {

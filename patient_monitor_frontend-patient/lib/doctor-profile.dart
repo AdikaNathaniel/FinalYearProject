@@ -86,7 +86,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
     });
 
     try {
-      final uri = Uri.parse('http://localhost:3100/api/v1/medics');
+      final uri = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/medics');
       final request = http.MultipartRequest('POST', uri);
 
       // Handle image upload

@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => Provider(
-                        create: (_) => VideoService(serverUrl: 'http://localhost:3100'),
+                        create: (_) => VideoService(serverUrl: 'https://finalyearproject-3-y6io.onrender.com'),
                         child: VideoChatScreen(roomName: roomName),
                       ),
                     ),

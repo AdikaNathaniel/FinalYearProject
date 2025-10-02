@@ -24,7 +24,7 @@ class _SupportRequestsPageState extends State<SupportRequestsPage> {
 
   Future<void> fetchSupportRequests() async {
     final response =
-        await http.get(Uri.parse('http://localhost:3100/api/v1/support'));
+        await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/support'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

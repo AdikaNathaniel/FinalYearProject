@@ -17,7 +17,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
   }
 
   Future<void> fetchPrescriptions() async {
-    final response = await http.get(Uri.parse('http://localhost:3100/api/v1/prescriptions'));
+    final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/prescriptions'));
 
     if (response.statusCode == 200) {
       setState(() {

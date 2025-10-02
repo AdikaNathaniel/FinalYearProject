@@ -59,7 +59,7 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
     if (!_isFormValid) return;
 
     try {
-      final url = Uri.parse('http://localhost:3100/api/v1/notifications');
+      final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/notifications');
 
       final body = {
         'role': 'Admin',

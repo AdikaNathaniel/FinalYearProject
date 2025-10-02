@@ -44,7 +44,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3100/api/v1/users', {
+      const res = await fetch('https://finalyearproject-3-y6io.onrender.com/api/v1/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: email.toLowerCase(), password, type: type.toLowerCase(), card }),

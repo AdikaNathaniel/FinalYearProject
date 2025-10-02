@@ -21,7 +21,7 @@ export class MobileAppSyncService {
     @InjectModel(OfflineReminder.name)
     private readonly offlineReminderModel: Model<OfflineReminderDocument>,
   ) {
-    this.apiBaseUrl = this.configService.get<string>('API_BASE_URL') || 'http://localhost:3100';
+    this.apiBaseUrl = this.configService.get<string>('API_BASE_URL') || 'https://finalyearproject-3-y6io.onrender.com';
   }
 
   /**

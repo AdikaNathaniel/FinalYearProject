@@ -365,7 +365,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
 
     setState(() => _isLoading = true);
 
-    final uri = Uri.parse('http://localhost:3100/api/v1/face/register');
+    final uri = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/face/register');
     final request = http.MultipartRequest('POST', uri)
       ..fields['userId'] = userId;
 

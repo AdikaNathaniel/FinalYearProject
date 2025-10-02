@@ -25,7 +25,7 @@ export default function OTPVerification() {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:3100/api/v1/users/verify-email/${otp}/${email}`
+        `https://finalyearproject-3-y6io.onrender.com/api/v1/users/verify-email/${otp}/${email}`
       );
       const data = response.data;
 

@@ -20,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscurePassword = true;
   bool _allowRelative = false;
 
-  static const String _baseUrl = 'http://localhost:3100';
+  static const String _baseUrl = 'https://finalyearproject-3-y6io.onrender.com';
 
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);

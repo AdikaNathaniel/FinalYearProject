@@ -22,7 +22,7 @@ class _NotificationUpdatePageState extends State<NotificationUpdatePage> {
 
     try {
       final response = await http.put(
-        Uri.parse('http://localhost:3100/api/v1/notifications/${_idController.text.trim()}'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/${_idController.text.trim()}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'message': _messageController.text.trim(),

@@ -31,7 +31,7 @@ class _NotificationByIdPageState extends State<NotificationByIdPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/notifications/${_idController.text.trim()}'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/${_idController.text.trim()}'),
       );
 
       if (response.statusCode == 200) {

@@ -18,7 +18,7 @@ class _CreateEmergencyContactState extends State<CreateEmergencyContact> {
   final TextEditingController _relationshipController = TextEditingController();
 
   Future<void> _submitForm() async {
-    final url = Uri.parse('http://localhost:3100/api/v1/emergency/contacts');
+    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergency/contacts');
 
     final Map<String, String> body = {
       "name": _nameController.text,

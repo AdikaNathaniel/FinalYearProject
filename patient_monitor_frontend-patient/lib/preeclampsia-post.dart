@@ -25,7 +25,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3100/api/v1/preeclampsia-vitals'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/preeclampsia-vitals'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           "patientId": patientIdController.text,

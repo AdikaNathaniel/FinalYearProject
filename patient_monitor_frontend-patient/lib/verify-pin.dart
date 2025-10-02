@@ -23,7 +23,7 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
     });
 
     try {
-      final url = Uri.parse('http://localhost:3100/api/v1/pin/verify');
+      final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/pin/verify');
       final body = jsonEncode({
         'userId': userIdController.text.trim(),
         'pin': pinController.text.trim(),

@@ -13,7 +13,7 @@ class _DeleteEmergencyContactPageState extends State<DeleteEmergencyContactPage>
   Future<void> _deleteContact(String name) async {
     setState(() => _isLoading = true);
 
-    final url = Uri.parse('http://localhost:3100/api/v1/emergency/contacts/$name');
+    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergency/contacts/$name');
     final response = await http.delete(url);
 
     setState(() => _isLoading = false);

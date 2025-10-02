@@ -95,7 +95,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
   //           TextButton(
   //             onPressed: () async {
   //               final response = await http.put(
-  //                 Uri.parse('http://localhost:3100/api/v1/users/logout'),
+  //                 Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
   //                 headers: {'Content-Type': 'application/json'},
   //               );
 
@@ -158,7 +158,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
               onPressed: () async {
                 // Call logout API
                 final response = await http.put(
-                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
                 );
 

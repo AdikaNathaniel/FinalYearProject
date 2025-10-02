@@ -23,7 +23,7 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/preeclampsia-vitals/${idController.text}'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/preeclampsia-vitals/${idController.text}'),
       );
       
       if (response.statusCode == 200) {

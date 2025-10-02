@@ -21,7 +21,7 @@ class _FindDoctorByNamePageState extends State<FindDoctorByNamePage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/medics/${_nameController.text.trim()}'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/medics/${_nameController.text.trim()}'),
       );
 
       if (response.statusCode == 200) {
@@ -72,7 +72,7 @@ class _FindDoctorByNamePageState extends State<FindDoctorByNamePage> {
       // Construct full URL for the profile photo
       profilePhotoUrl = photoPath.startsWith('http') 
           ? photoPath 
-          : 'http://localhost:3100${photoPath}';
+          : 'https://finalyearproject-3-y6io.onrender.com${photoPath}';
     }
 
     showDialog(

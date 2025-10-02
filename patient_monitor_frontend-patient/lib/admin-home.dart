@@ -23,7 +23,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Future<void> _logout(BuildContext context) async {
     try {
       final response = await http.put(
-        Uri.parse('http://localhost:3100/api/v1/users/logout'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
         headers: {'Content-Type': 'application/json'},
       );
 

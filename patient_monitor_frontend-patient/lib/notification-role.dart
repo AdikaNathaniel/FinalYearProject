@@ -35,7 +35,7 @@ class _NotificationsByRolePageState extends State<NotificationsByRolePage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/notifications/role/$selectedRole'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/role/$selectedRole'),
       );
 
       if (response.statusCode == 200) {

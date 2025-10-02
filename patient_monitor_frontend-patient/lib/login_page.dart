@@ -263,7 +263,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3100/api/v1/users/login'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/login'),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           'email': email,
@@ -441,7 +441,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/users/send-otp-email/$email'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/send-otp-email/$email'),
       );
 
       final responseData = json.decode(response.body);
@@ -634,7 +634,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _forgotPassword(String email) async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3100/api/v1/users/forgot-password/$email'),
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/forgot-password/$email'),
         headers: {"Content-Type": "application/json"},
       );
 

@@ -50,7 +50,7 @@ class _VitalsHealthDataListPageState extends State<VitalsHealthDataListPage> {
 
     try {
       final url = Uri.parse(
-        "http://localhost:3100/api/v1/vitals-health-data"
+        "https://finalyearproject-3-y6io.onrender.com/api/v1/vitals-health-data"
         "?page=$currentPage&limit=$limit"
         "&startDate=${startDate!.toIso8601String()}"
         "&endDate=${endDate!.toIso8601String()}"

@@ -185,7 +185,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     try {
       final response = await http.patch(
-        Uri.parse('http://localhost:3100/api/v1/users/update-password-or-name'), // Your API endpoint
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/update-password-or-name'), // Your API endpoint
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           'email': email,
