@@ -56,9 +56,15 @@ export class SearchService {
     const cacheKey = this.getCacheKey(params);
     
     // Try to get from cache first
-    const cachedResult = await this.redisClient.get(cacheKey);
-    if (cachedResult) {
-      return JSON.parse(cachedResult);
+    try {
+      const cachedResult = await this.redisClient.get(cacheKey);
+      if (cachedResult) {
+        this.logger.debug(`Cache hit for key: ${cacheKey}`);
+        return JSON.parse(cachedResult);
+      }
+    } catch (cacheError) {
+      this.logger.warn(`Redis cache read failed: ${cacheError.message}`);
+      // Continue without cache
     }
 
     const { index, query, fields = [], limit = 10, offset = 0 } = params;
@@ -96,8 +102,14 @@ export class SearchService {
         took: esResponse.took,
       };
 
-      // Cache the result
-      await this.redisClient.set(cacheKey, JSON.stringify(response), 'EX', this.CACHE_TTL);
+      // Try to cache the result
+      try {
+        await this.redisClient.set(cacheKey, JSON.stringify(response), 'EX', this.CACHE_TTL);
+        this.logger.debug(`Cached result for key: ${cacheKey}`);
+      } catch (cacheError) {
+        this.logger.warn(`Redis cache write failed: ${cacheError.message}`);
+        // Continue without caching
+      }
 
       // Store search query in MongoDB
       await this.storeSearchQuery(params, response);

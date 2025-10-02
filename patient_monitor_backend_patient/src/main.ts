@@ -47,14 +47,17 @@ const CONFIG = {
     },
     maxRetries: 5,
     requestTimeout: 60000,
-    // CHANGED: Default to false (optional)
     required: process.env.ELASTICSEARCH_REQUIRED === 'true',
   },
   redis: {
+    // Support for Redis URL (like Upstash, Redis Cloud, etc.)
+    url: process.env.REDIS_URL,
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+    password: process.env.REDIS_PASSWORD,
+    // Auto-detect TLS from URL or explicit flag
+    tls: process.env.REDIS_TLS === 'true' || process.env.REDIS_URL?.startsWith('rediss://'),
     ttl: parseInt(process.env.REDIS_TTL, 10) || 3600,
-    // CHANGED: Default to false (optional)
     required: process.env.REDIS_REQUIRED === 'true',
   },
   rabbitmq: {
@@ -63,11 +66,9 @@ const CONFIG = {
     reconnectDelay: 5000,
     maxAttempts: 10,
     timeout: 10000,
-    // CHANGED: Default to false (optional)
     required: process.env.RABBITMQ_REQUIRED === 'true',
   },
   kafka: {
-    // CHANGED: Default to false (optional)
     required: process.env.KAFKA_REQUIRED === 'true',
   },
   server: {
@@ -123,7 +124,6 @@ class ApplicationManager {
       await this.setupEmailFallbackMechanism();
       logger.log('✓ Email fallback mechanism configured');
       
-      // CHANGED: Now wrapped in try-catch to prevent startup failure
       await this.checkSearchServicesConnection();
       logger.log('✓ Search services check completed (optional services may have failed)');
       
@@ -192,7 +192,6 @@ class ApplicationManager {
   }
 
   private async checkSearchServicesConnection() {
-    // CHANGED: Entire method wrapped to be non-blocking
     try {
       logger.log('=== CHECKING SEARCH SERVICES (OPTIONAL) ===');
       
@@ -216,31 +215,41 @@ class ApplicationManager {
           } catch (stringError) {
             logger.warn('All SearchService resolution methods failed');
             logger.warn('⚠ Continuing without SearchService (all search services are optional)');
-            return; // CHANGED: Just return instead of throwing
+            return;
           }
         }
       }
 
       if (!searchService) {
         logger.warn('⚠ SearchService is null, continuing without search services...');
-        return; // CHANGED: Just return instead of throwing
+        return;
       }
 
       logger.log('Validating search services connections...');
 
-      // CHANGED: Redis check now fully optional and non-blocking
+      // Redis connection check with improved logging
       const redisClient = (searchService as any).redisClient;
       if (redisClient) {
         try {
-          logger.log(`Attempting Redis connection to ${CONFIG.redis.host}:${CONFIG.redis.port}...`);
+          const connectionInfo = CONFIG.redis.url 
+            ? `Redis URL (${CONFIG.redis.url.split('@')[1] || 'external'})`
+            : `${CONFIG.redis.host}:${CONFIG.redis.port}`;
+          
+          logger.log(`Attempting Redis connection to ${connectionInfo}...`);
+          logger.log(`TLS enabled: ${CONFIG.redis.tls ? 'Yes' : 'No'}`);
+          
           await redisClient.ping();
           logger.log('✓ Redis connection established successfully');
+          logger.log(`✓ Redis is ready for caching operations`);
         } catch (redisError) {
           logger.warn(`⚠ Redis connection failed: ${redisError.message}`);
+          logger.warn(`Redis error details: ${redisError.stack}`);
+          
           if (CONFIG.redis.required) {
             throw new Error(`Redis connection failed: ${redisError.message}`);
           } else {
             logger.warn('⚠ Redis not available but not required, continuing without Redis...');
+            logger.warn('⚠ Search result caching will be disabled');
           }
         }
       } else {
@@ -252,7 +261,7 @@ class ApplicationManager {
         }
       }
       
-      // CHANGED: Elasticsearch check now fully optional and non-blocking
+      // Elasticsearch connection check
       const esClient = (searchService as any).esClient;
       if (esClient) {
         try {
@@ -305,7 +314,6 @@ class ApplicationManager {
       logger.log('✓ Search services validation completed (available services are connected)');
       
     } catch (error) {
-      // CHANGED: Only throw if services are actually required
       logger.warn('=== SEARCH SERVICES CHECK ENCOUNTERED ERRORS ===');
       logger.warn(`Error: ${error.message}`);
       
@@ -462,7 +470,15 @@ class ApplicationManager {
     logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
     logger.log(`Elasticsearch: ${CONFIG.elasticsearch.node} (required: ${CONFIG.elasticsearch.required})`);
-    logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port} (required: ${CONFIG.redis.required})`);
+    
+    // Enhanced Redis logging
+    if (CONFIG.redis.url) {
+      const maskedUrl = CONFIG.redis.url.replace(/:\/\/.*@/, '://****@');
+      logger.log(`Redis: ${maskedUrl} (required: ${CONFIG.redis.required})`);
+    } else {
+      logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port} (required: ${CONFIG.redis.required})`);
+    }
+    
     logger.log(`Kafka: (required: ${CONFIG.kafka.required})`);
     logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
     logger.log('⚠ NOTE: All external services (Redis, Elasticsearch, Kafka) are OPTIONAL');
