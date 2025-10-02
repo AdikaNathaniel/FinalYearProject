@@ -66,7 +66,7 @@ const CONFIG = {
   server: {
     port: parseInt(process.env.PORT, 10) || 3000,
     notificationPort: 3001,
-    apiPrefix: process.env.API_PREFIX || 'api/v1',
+    apiPrefix: process.env.APP_PREFIX || 'api/v1',
   },
   cors: {
     allowedOrigins: process.env.NODE_ENV === 'production'

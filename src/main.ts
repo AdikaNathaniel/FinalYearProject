@@ -76,7 +76,7 @@ app.enableCors({
 
       app.use('/api/v1/orders/webhook', raw({ type: '*/*' }));
 
-      const prefix = process.env.API_PREFIX || 'api/v1';
+      const prefix = process.env.APP_PREFIX || 'api/v1';
       app.setGlobalPrefix(prefix);
       app.useGlobalInterceptors(new TransformationInterceptor());
 
