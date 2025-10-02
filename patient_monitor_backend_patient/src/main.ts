@@ -15,7 +15,6 @@ import * as crypto from 'crypto';
 // Import SearchService class directly
 import { SearchService } from './search/search.service';
 
-// Fix for crypto is not defined error - removed for Node.js 22 compatibility
 // Type definitions for better type safety
 interface ElasticsearchClient {
   cluster: {
@@ -39,7 +38,7 @@ interface ISearchService {
 
 const logger = new Logger('Bootstrap');
 
-// Enhanced configuration with Elasticsearch, Redis, and RabbitMQ settings (Kafka removed)
+// Enhanced configuration - ALL SERVICES NOW OPTIONAL BY DEFAULT
 const CONFIG = {
   elasticsearch: {
     node: process.env.ELASTICSEARCH_HOST || 'http://localhost:9200',
@@ -48,13 +47,15 @@ const CONFIG = {
     },
     maxRetries: 5,
     requestTimeout: 60000,
-    required: process.env.ELASTICSEARCH_REQUIRED !== 'false',
+    // CHANGED: Default to false (optional)
+    required: process.env.ELASTICSEARCH_REQUIRED === 'true',
   },
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
     ttl: parseInt(process.env.REDIS_TTL, 10) || 3600,
-    required: process.env.REDIS_REQUIRED !== 'false',
+    // CHANGED: Default to false (optional)
+    required: process.env.REDIS_REQUIRED === 'true',
   },
   rabbitmq: {
     url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
@@ -62,6 +63,12 @@ const CONFIG = {
     reconnectDelay: 5000,
     maxAttempts: 10,
     timeout: 10000,
+    // CHANGED: Default to false (optional)
+    required: process.env.RABBITMQ_REQUIRED === 'true',
+  },
+  kafka: {
+    // CHANGED: Default to false (optional)
+    required: process.env.KAFKA_REQUIRED === 'true',
   },
   server: {
     port: parseInt(process.env.PORT, 10) || 3000,
@@ -116,8 +123,9 @@ class ApplicationManager {
       await this.setupEmailFallbackMechanism();
       logger.log('✓ Email fallback mechanism configured');
       
+      // CHANGED: Now wrapped in try-catch to prevent startup failure
       await this.checkSearchServicesConnection();
-      logger.log('✓ Search services checked');
+      logger.log('✓ Search services check completed (optional services may have failed)');
       
       this.logStartupComplete();
     } catch (error) {
@@ -184,16 +192,17 @@ class ApplicationManager {
   }
 
   private async checkSearchServicesConnection() {
+    // CHANGED: Entire method wrapped to be non-blocking
     try {
-      logger.log('=== CHECKING SEARCH SERVICES ===');
+      logger.log('=== CHECKING SEARCH SERVICES (OPTIONAL) ===');
       
       let searchService: SearchService;
       
       try {
         searchService = this.mainApp.select(AppModule).get(SearchService, { strict: false });
-        logger.log('✓ SearchService resolved successfully using class import');
+        logger.log('✓ SearchService resolved successfully');
       } catch (classError) {
-        logger.warn('Class-based service resolution failed, trying fallback approaches...');
+        logger.warn('SearchService resolution failed, trying fallback approaches...');
         logger.warn(`Error: ${classError.message}`);
         
         try {
@@ -205,31 +214,21 @@ class ApplicationManager {
             searchService = this.mainApp.get('SearchService', { strict: false }) as SearchService;
             logger.log('✓ SearchService resolved using string token');
           } catch (stringError) {
-            logger.error('All SearchService resolution methods failed');
-            logger.error(`String token error: ${stringError.message}`);
-            
-            if (CONFIG.redis.required || CONFIG.elasticsearch.required) {
-              throw new Error('SearchService could not be resolved and search services are required');
-            } else {
-              logger.warn('⚠ Continuing without SearchService (not required)');
-              return;
-            }
+            logger.warn('All SearchService resolution methods failed');
+            logger.warn('⚠ Continuing without SearchService (all search services are optional)');
+            return; // CHANGED: Just return instead of throwing
           }
         }
       }
 
       if (!searchService) {
-        if (CONFIG.redis.required || CONFIG.elasticsearch.required) {
-          throw new Error('SearchService resolved to null/undefined and is required');
-        } else {
-          logger.warn('⚠ SearchService is null but not required, continuing...');
-          return;
-        }
+        logger.warn('⚠ SearchService is null, continuing without search services...');
+        return; // CHANGED: Just return instead of throwing
       }
 
       logger.log('Validating search services connections...');
 
-      // Check Redis connection
+      // CHANGED: Redis check now fully optional and non-blocking
       const redisClient = (searchService as any).redisClient;
       if (redisClient) {
         try {
@@ -237,21 +236,23 @@ class ApplicationManager {
           await redisClient.ping();
           logger.log('✓ Redis connection established successfully');
         } catch (redisError) {
-          logger.error(`Redis connection failed: ${redisError.message}`);
+          logger.warn(`⚠ Redis connection failed: ${redisError.message}`);
           if (CONFIG.redis.required) {
             throw new Error(`Redis connection failed: ${redisError.message}`);
           } else {
-            logger.warn('⚠ Redis connection failed but not required, continuing...');
+            logger.warn('⚠ Redis not available but not required, continuing without Redis...');
           }
         }
       } else {
-        logger.warn('Redis client not found in SearchService');
+        logger.warn('⚠ Redis client not found in SearchService');
         if (CONFIG.redis.required) {
           throw new Error('Redis client not found but is required');
+        } else {
+          logger.warn('⚠ Continuing without Redis (not required)');
         }
       }
       
-      // Check Elasticsearch connection
+      // CHANGED: Elasticsearch check now fully optional and non-blocking
       const esClient = (searchService as any).esClient;
       if (esClient) {
         try {
@@ -275,42 +276,9 @@ class ApplicationManager {
                 await (searchService as any).createIndex(CONFIG.elasticsearch.indices.default);
                 logger.log(`✓ Default index created: ${CONFIG.elasticsearch.indices.default}`);
               } catch (createError) {
-                logger.warn(`Service createIndex failed: ${createError.message}, trying direct approach`);
-                try {
-                  await esClient.indices.create({
-                    index: CONFIG.elasticsearch.indices.default,
-                    body: {
-                      settings: {
-                        number_of_shards: 1,
-                        number_of_replicas: 0
-                      }
-                    }
-                  });
-                  logger.log(`✓ Default index created via direct client: ${CONFIG.elasticsearch.indices.default}`);
-                } catch (directCreateError) {
-                  logger.error(`Direct index creation failed: ${directCreateError.message}`);
-                  if (CONFIG.elasticsearch.required) {
-                    throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
-                  }
-                }
-              }
-            } else {
-              logger.log('createIndex method not available, using direct client');
-              try {
-                await esClient.indices.create({
-                  index: CONFIG.elasticsearch.indices.default,
-                  body: {
-                    settings: {
-                      number_of_shards: 1,
-                      number_of_replicas: 0
-                    }
-                  }
-                });
-                logger.log(`✓ Default index created: ${CONFIG.elasticsearch.indices.default}`);
-              } catch (directCreateError) {
-                logger.error(`Index creation failed: ${directCreateError.message}`);
-                if (CONFIG.elasticsearch.required) {
-                  throw new Error(`Failed to create Elasticsearch index: ${directCreateError.message}`);
+                logger.warn(`Service createIndex failed: ${createError.message}`);
+                if (!CONFIG.elasticsearch.required) {
+                  logger.warn('⚠ Continuing without Elasticsearch index (not required)');
                 }
               }
             }
@@ -318,33 +286,35 @@ class ApplicationManager {
             logger.log(`✓ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
           }
         } catch (esError) {
-          logger.error(`Elasticsearch connection failed: ${esError.message}`);
-          logger.error(`Stack: ${esError.stack}`);
+          logger.warn(`⚠ Elasticsearch connection failed: ${esError.message}`);
           if (CONFIG.elasticsearch.required) {
             throw new Error(`Elasticsearch connection failed: ${esError.message}`);
           } else {
-            logger.warn('⚠ Elasticsearch connection failed but not required, continuing...');
+            logger.warn('⚠ Elasticsearch not available but not required, continuing without Elasticsearch...');
           }
         }
       } else {
-        logger.warn('Elasticsearch client not found in SearchService');
+        logger.warn('⚠ Elasticsearch client not found in SearchService');
         if (CONFIG.elasticsearch.required) {
           throw new Error('Elasticsearch client not found but is required');
+        } else {
+          logger.warn('⚠ Continuing without Elasticsearch (not required)');
         }
       }
 
-      logger.log('✓ Search services validation completed');
+      logger.log('✓ Search services validation completed (available services are connected)');
       
     } catch (error) {
-      logger.error('=== SEARCH SERVICES CHECK FAILED ===');
-      logger.error(`Error: ${error.message}`);
-      logger.error(`Stack: ${error.stack}`);
+      // CHANGED: Only throw if services are actually required
+      logger.warn('=== SEARCH SERVICES CHECK ENCOUNTERED ERRORS ===');
+      logger.warn(`Error: ${error.message}`);
       
       if (CONFIG.redis.required || CONFIG.elasticsearch.required) {
         logger.error('Application cannot start without required search services');
         throw error;
       } else {
-        logger.warn('⚠ Search services check failed but services are not required, continuing...');
+        logger.warn('⚠ Search services failed but are not required, application will continue...');
+        logger.warn('⚠ Some features may be limited without search services');
       }
     }
   }
@@ -493,7 +463,9 @@ class ApplicationManager {
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
     logger.log(`Elasticsearch: ${CONFIG.elasticsearch.node} (required: ${CONFIG.elasticsearch.required})`);
     logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port} (required: ${CONFIG.redis.required})`);
+    logger.log(`Kafka: (required: ${CONFIG.kafka.required})`);
     logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
+    logger.log('⚠ NOTE: All external services (Redis, Elasticsearch, Kafka) are OPTIONAL');
     logger.log('==========================================');
   }
 
