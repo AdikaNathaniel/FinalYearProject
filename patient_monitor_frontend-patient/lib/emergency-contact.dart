@@ -98,7 +98,7 @@ class EmergencyContactsPage extends StatelessWidget {
             // Emergency Contact Actions
             _buildSettingCard(
               icon: Icons.contact_emergency,
-              title: 'Add New Emergency Contact',
+              title: 'Add Emergency Contact',
               iconColor: Colors.green,
               onTap: () {
                 Navigator.push(
