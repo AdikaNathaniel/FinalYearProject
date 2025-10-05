@@ -124,7 +124,7 @@ class _EmergencyContactsListState extends State<EmergencyContactsList> {
       appBar: AppBar(
         title: const Text('Emergency Contacts'),
         centerTitle: true,
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.pinkAccent,
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [

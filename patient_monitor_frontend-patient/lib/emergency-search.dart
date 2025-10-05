@@ -14,8 +14,11 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
   Map<String, dynamic>? contact;
   bool isLoading = false;
   String errorMessage = '';
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future<void> _searchContact() async {
+    if (!_formKey.currentState!.validate()) return;
+
     final name = _searchController.text.trim();
     if (name.isEmpty) return;
 
@@ -42,16 +45,19 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
           setState(() {
             errorMessage = data['message'] ?? 'Contact not found';
           });
+          _showErrorDialog(errorMessage);
         }
       } else {
         setState(() {
           errorMessage = 'Error: ${response.statusCode}';
         });
+        _showErrorDialog(errorMessage);
       }
     } catch (e) {
       setState(() {
         errorMessage = 'Network error: ${e.toString()}';
       });
+      _showErrorDialog(errorMessage);
     } finally {
       setState(() {
         isLoading = false;
@@ -65,113 +71,79 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+        return AlertDialog(
+          title: const Center(
+            child: Text('Contact Details'),
           ),
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.8, // Limit height to 80% of screen
-            ),
+          content: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Dialog Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    'Emergency Contact Found',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                
-                // Scrollable Contact Info
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _buildDialogInfoRow(Icons.person_outline, 'Name', contact!['name']),
-                        const SizedBox(height: 20),
-                        _buildDialogInfoRow(Icons.phone, 'Phone', contact!['phoneNumber']),
-                        const SizedBox(height: 20),
-                        _buildDialogInfoRow(Icons.email, 'Email', contact!['email']),
-                        const SizedBox(height: 20),
-                        _buildDialogInfoRow(Icons.group, 'Relationship', contact!['relationship']),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // Close Button
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Close'),
-                  ),
-                ),
+                _buildDialogDetailRow('Name:', contact!['name']),
+                const Divider(),
+                _buildDialogDetailRow('Phone:', contact!['phoneNumber']),
+                const Divider(),
+                _buildDialogDetailRow('Email:', contact!['email']),
+                const Divider(),
+                _buildDialogDetailRow('Relationship:', contact!['relationship']),
               ],
             ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
         );
       },
+    ).then((_) {
+      // Clear the field after dialog is closed
+      _searchController.clear();
+    });
+  }
+
+  Widget _buildDialogDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildDialogInfoRow(IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: Colors.redAccent, size: 28),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -238,79 +210,79 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search Emergency Contact'),
-        centerTitle: true,
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.pinkAccent,
         foregroundColor: Colors.white,
+        centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter contact name',
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
-                    ),
-                  ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.search, color: Colors.white),
-                    onPressed: isLoading ? null : _searchContact,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (isLoading)
-            const Expanded(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (errorMessage.isNotEmpty)
-            Expanded(
-              child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.search,
+                        size: 48,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter Contact Name',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          labelText: 'Contact Name',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'e.g., John Doe',
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Please enter a name' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _searchContact,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.pinkAccent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'Search Contact',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            )
-          else
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Enter a name to search for emergency contacts',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -56,4 +56,4 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 .vercel
-patient_monitor_backend_patient/service-account-file.json
+_backend_patient/service-account-file.json

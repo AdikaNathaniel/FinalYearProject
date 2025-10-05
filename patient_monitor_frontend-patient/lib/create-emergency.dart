@@ -148,7 +148,7 @@ class _CreateEmergencyContactState extends State<CreateEmergencyContact> {
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.pinkAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -276,7 +276,7 @@ class _CreateEmergencyContactState extends State<CreateEmergencyContact> {
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: Colors.pinkAccent,
                 ),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {

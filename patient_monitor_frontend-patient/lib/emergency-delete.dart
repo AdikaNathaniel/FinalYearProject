@@ -9,6 +9,7 @@ class DeleteEmergencyContactPage extends StatefulWidget {
 class _DeleteEmergencyContactPageState extends State<DeleteEmergencyContactPage> {
   final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future<void> _deleteContact(String name) async {
     setState(() => _isLoading = true);
@@ -58,46 +59,106 @@ class _DeleteEmergencyContactPageState extends State<DeleteEmergencyContactPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: Text('Delete Emergency Contact',
-         style: TextStyle(
-      color: Colors.white, // Makes the title white
-    ),       
+        title: const Text(
+          'Delete Emergency Contact',
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.pinkAccent,
+        foregroundColor: Colors.white,
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Enter Contact Name',
-                  border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.delete_forever,
+                        size: 48,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter Contact Name to Delete',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Contact Name',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'e.g., John Doe',
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Please enter a name' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  if (_formKey.currentState!.validate()) {
+                                    final name = _nameController.text.trim();
+                                    if (name.isNotEmpty) {
+                                      _deleteContact(name);
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Please enter a contact name')),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.pinkAccent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'Delete Contact',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(width: 10),
-            _isLoading
-                ? CircularProgressIndicator()
-                : IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red, size: 30),
-                    onPressed: () {
-                      final name = _nameController.text.trim();
-                      if (name.isNotEmpty) {
-                        _deleteContact(name);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Please enter a contact name')),
-                        );
-                      }
-                    },
-                  ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 }
