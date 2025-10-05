@@ -235,7 +235,7 @@ class _AppointmentScheduleByMedicPageState
                 child: isSubmitting
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                        "SCHEDULE APPOINTMENT",
+                        "Schedule Appointment",
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
