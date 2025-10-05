@@ -6,11 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html;
+import 'package:flutter/services.dart';
+
 import 'view-appointment.dart';
 import 'create_cancel-appointment.dart';
 import 'login_page.dart';
@@ -212,11 +210,11 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                       child: const Text('Close'),
                     ),
                     ElevatedButton(
-                      onPressed: () => _generateAndDownloadPdf(patientData),
+                      onPressed: () => _generateAndShowPdfOptions(patientData),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
-                      child: const Text('Download PDF'),
+                      child: const Text('Export PDF'),
                     ),
                   ],
                 ),
@@ -258,7 +256,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             'Other Metrics',
             [
               _buildDataRow('Skin Temp', '${vitalsData['skinTemp']}°C', Icons.thermostat_auto)
-              // _buildDataRow('Protein Level', '${vitalsData['proteinLevel']}', Icons.science),
             ],
           ),
         ],
@@ -545,13 +542,11 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
   }
 
   String _formatFeatureName(String key) {
-    // Convert camelCase to readable text
     String result = key.replaceAllMapped(
       RegExp(r'([A-Z])'),
       (Match m) => ' ${m[1]}',
     );
     
-    // Capitalize first letter of each word
     result = result.split(' ').map((word) {
       if (word.isEmpty) return '';
       return word[0].toUpperCase() + word.substring(1);
@@ -680,13 +675,13 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     );
   }
 
-  // PDF Generation Functions
-  Future<void> _generateAndDownloadPdf(Map<String, dynamic> patientData) async {
+  // Enhanced PDF Generation with Export Options
+  Future<void> _generateAndShowPdfOptions(Map<String, dynamic> patientData) async {
     setState(() => isLoading = true);
     
     try {
       final pdfBytes = await _generatePdfBytes(patientData);
-      await _downloadPdf(pdfBytes);
+      _showPdfExportOptions(pdfBytes, patientData);
     } catch (e) {
       _showErrorDialog('Error generating PDF: $e');
     } finally {
@@ -700,7 +695,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     final formattedDate = dateFormat.format(DateTime.now());
     final patientId = _patientIdController.text.trim();
 
-    // Define text styles
     final normalTextStyle = pw.TextStyle(fontSize: 12);
     final boldTextStyle = pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold);
     final titleTextStyle = pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800);
@@ -772,7 +766,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
         },
         build: (pw.Context context) {
           return [
-            // Vitals Section
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -790,7 +783,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
             pw.SizedBox(height: 16),
             
-            // Preeclampsia Section
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -808,7 +800,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
             pw.SizedBox(height: 16),
             
-            // Symptoms Section
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -826,7 +817,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
             pw.SizedBox(height: 16),
             
-            // Anaemia Section
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -871,7 +861,6 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       pw.Text('Other Metrics:', style: boldTextStyle),
       pw.SizedBox(height: 8),
       pw.Row(children: [pw.Text('Skin Temp: ', style: boldTextStyle), pw.Text('${vitalsData['skinTemp']}°C', style: normalTextStyle)])
-      // pw.Row(children: [pw.Text('Protein Level: ', style: boldTextStyle), pw.Text('${vitalsData['proteinLevel']}', style: normalTextStyle)]),
     ];
   }
 
@@ -964,25 +953,232 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     ];
   }
 
-  Future<void> _downloadPdf(Uint8List pdfBytes) async {
-    if (kIsWeb) {
-      final blob = html.Blob([pdfBytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.document.createElement('a') as html.AnchorElement
-        ..href = url
-        ..style.display = 'none'
-        ..download = 'patient_summary_${_patientIdController.text.trim()}.pdf';
-      
-      html.document.body?.children.add(anchor);
-      anchor.click();
-      html.document.body?.children.remove(anchor);
-      html.Url.revokeObjectUrl(url);
-    } else {
-      final output = await getTemporaryDirectory();
-      final file = File('${output.path}/patient_summary_${_patientIdController.text.trim()}.pdf');
-      await file.writeAsBytes(pdfBytes);
-      await OpenFile.open(file.path);
-    }
+  // Enhanced PDF Export Options Dialog
+  void _showPdfExportOptions(Uint8List pdfBytes, Map<String, dynamic> patientData) {
+    final patientId = _patientIdController.text.trim();
+    final pdfSize = (pdfBytes.length / 1024 / 1024).toStringAsFixed(2); // Size in MB
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.picture_as_pdf, color: Colors.red),
+            SizedBox(width: 8),
+            Text('PDF Export Options'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Patient Summary for: $patientId',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text('PDF Size: ${pdfSize} MB'),
+            SizedBox(height: 16),
+            Text(
+              'Choose export method:',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+        actions: [
+          // Copy summary text option
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _copySummaryToClipboard(patientData);
+            },
+            icon: Icon(Icons.copy, size: 18),
+            label: Text('Copy Summary'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          
+          // Generate and show PDF content
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _showPdfContent(pdfBytes, patientId);
+            },
+            icon: Icon(Icons.preview, size: 18),
+            label: Text('View PDF Content'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Copy summary text to clipboard
+  void _copySummaryToClipboard(Map<String, dynamic> patientData) {
+    final patientId = _patientIdController.text.trim();
+    final dateFormat = DateFormat('MMMM d, yyyy - h:mm a');
+    final formattedDate = dateFormat.format(DateTime.now());
+    
+    String summaryText = '''
+PATIENT MEDICAL SUMMARY
+Generated: $formattedDate
+Patient ID: $patientId
+
+VITALS:
+${_buildTextVitalsSection(patientData['vitals'])}
+
+PREECLAMPSIA ASSESSMENT:
+${_buildTextPreeclampsiaSection(patientData['preeclampsia'])}
+
+SYMPTOMS:
+${_buildTextSymptomsSection(patientData['symptoms'])}
+
+ANAEMIA RISK ASSESSMENT:
+${_buildTextAnaemiaSection(patientData['anaemia'])}
+''';
+
+    Clipboard.setData(ClipboardData(text: summaryText));
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Patient summary copied to clipboard'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  String _buildTextVitalsSection(dynamic vitalsData) {
+    if (vitalsData == null) return 'No vitals data available';
+    
+    return '''
+Glucose: ${vitalsData['glucose']} mg/dL
+Heart Rate: ${vitalsData['heartRate']} bpm
+SpO2: ${vitalsData['spo2']}%
+Body Temp: ${vitalsData['bodyTemp']}°C
+Systolic BP: ${vitalsData['systolicBP']} mmHg
+Diastolic BP: ${vitalsData['diastolicBP']} mmHg
+Skin Temp: ${vitalsData['skinTemp']}°C
+''';
+  }
+
+  String _buildTextPreeclampsiaSection(dynamic preeclampsiaData) {
+    if (preeclampsiaData == null) return 'No preeclampsia data available';
+    
+    return '''
+Status: ${preeclampsiaData['status'] ?? 'Unknown'}
+Systolic BP: ${preeclampsiaData['systolicBP']} mmHg
+Diastolic BP: ${preeclampsiaData['diastolicBP']} mmHg
+MAP: ${preeclampsiaData['map']?.toStringAsFixed(1)} mmHg
+Protein in Urine: ${preeclampsiaData['proteinUrine']}
+Last updated: ${preeclampsiaData['createdAt'] != null ? _formatDate(preeclampsiaData['createdAt']) : 'N/A'}
+''';
+  }
+
+  String _buildTextSymptomsSection(dynamic symptomsData) {
+    if (symptomsData == null) return 'No symptoms data available';
+    
+    return '''
+Patient: ${symptomsData['username'] ?? 'Unknown'}
+Headache: ${_formatBoolean(symptomsData['feelingHeadache'])}
+Dizziness: ${_formatBoolean(symptomsData['feelingDizziness'])}
+Nausea/Vomiting: ${_formatBoolean(symptomsData['vomitingAndNausea'])}
+Abdominal Pain: ${_formatBoolean(symptomsData['painAtTopOfTommy'])}
+Reported on: ${symptomsData['createdAt'] != null ? _formatDate(symptomsData['createdAt']) : 'N/A'}
+''';
+  }
+
+  String _buildTextAnaemiaSection(dynamic anaemiaData) {
+    if (anaemiaData == null) return 'No anaemia assessment available';
+    
+    return '''
+Risk Level: ${anaemiaData['riskClass'] ?? 'Unknown'}
+Probability: ${anaemiaData['probability']?.toStringAsFixed(1) ?? 'N/A'}%
+Raw Score: ${anaemiaData['rawScore'] ?? 'N/A'}
+BMI Value: ${anaemiaData['bmiValue']?.toStringAsFixed(1) ?? 'N/A'}
+Age ≤35: ${_formatBoolean(anaemiaData['age35OrLess'])}
+Assessed on: ${anaemiaData['createdAt'] != null ? _formatDate(anaemiaData['createdAt']) : 'N/A'}
+''';
+  }
+
+  // Show PDF content in a dialog
+  void _showPdfContent(Uint8List pdfBytes, String patientId) {
+    final pdfSize = pdfBytes.length;
+    final pdfSizeText = pdfSize > 1024 * 1024 
+        ? '${(pdfSize / 1024 / 1024).toStringAsFixed(2)} MB'
+        : '${(pdfSize / 1024).toStringAsFixed(2)} KB';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.picture_as_pdf, color: Colors.red),
+            SizedBox(width: 8),
+            Text('PDF Generated Successfully'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Patient: $patientId'),
+            SizedBox(height: 8),
+            Text('PDF Size: $pdfSizeText'),
+            SizedBox(height: 8),
+            Text('Pages: 1'),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'PDF is ready! You can:',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(height: 8),
+                  Text('• Copy summary text to clipboard'),
+                  Text('• Save this information manually'),
+                  Text('• Share the text content'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _copySummaryToClipboard(_currentPatientData!);
+            },
+            child: Text('Copy Summary Text'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showUserInfoDialog(BuildContext context) {

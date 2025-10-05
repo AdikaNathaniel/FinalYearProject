@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 class UrineStripColorSelector extends StatefulWidget {
   @override
@@ -27,21 +27,10 @@ class _UrineStripColorSelectorState extends State<UrineStripColorSelector> {
 
   int? selectedIndex;
   final String videoId = 'jfrqdZKpZEE';
-  final String iframeViewType = 'youtube-video-iframe';
 
   @override
   void initState() {
     super.initState();
-    // Register the iframe view factory for web
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(
-      iframeViewType,
-      (int viewId) => html.IFrameElement()
-        ..src = 'https://www.youtube.com/embed/$videoId?rel=0&modestbranding=1&showinfo=0'
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%',
-    );
   }
 
   void _showVideoModal() {
@@ -91,7 +80,7 @@ class _UrineStripColorSelectorState extends State<UrineStripColorSelector> {
                     margin: EdgeInsets.all(8),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: HtmlElementView(viewType: iframeViewType),
+                      child: _buildVideoPlayer(),
                     ),
                   ),
                 ),
@@ -103,6 +92,80 @@ class _UrineStripColorSelectorState extends State<UrineStripColorSelector> {
         );
       },
     );
+  }
+
+  Widget _buildVideoPlayer() {
+    // Use a simplified approach that works on all platforms
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.play_circle_filled,
+              size: 80,
+              color: Colors.white,
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Video Tutorial: How to Use Protein Strip',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 15),
+            Text(
+              'Learn the proper way to use urine protein test strips',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 25),
+            ElevatedButton.icon(
+              onPressed: _openYouTubeVideo,
+              icon: Icon(Icons.play_arrow),
+              label: Text('Watch on YouTube'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Alternative method using url_launcher (simpler approach)
+  Future<void> _openYouTubeVideo() async {
+    final String youtubeUrl = 'https://www.youtube.com/watch?v=$videoId';
+    final Uri url = Uri.parse(youtubeUrl);
+    
+    if (await canLaunchUrl(url)) {
+      await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open YouTube'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -175,6 +238,7 @@ class _UrineStripColorSelectorState extends State<UrineStripColorSelector> {
               SizedBox(height: 30),
             ],
             Spacer(),
+            // Option 1: Use simplified modal
             ElevatedButton(
               onPressed: _showVideoModal,
               style: ElevatedButton.styleFrom(
@@ -187,6 +251,23 @@ class _UrineStripColorSelectorState extends State<UrineStripColorSelector> {
               child: Text(
                 'Click Me to Learn How to Use A Protein Strip',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+            SizedBox(height: 10),
+            // Option 2: Direct YouTube link (alternative)
+            OutlinedButton(
+              onPressed: _openYouTubeVideo,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.pinkAccent,
+                side: BorderSide(color: Colors.pinkAccent),
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Open YouTube Directly',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),
             SizedBox(height: 25),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:html' as html;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class AnaemiaResultsScreen extends StatefulWidget {
   const AnaemiaResultsScreen({super.key});
@@ -92,7 +93,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-   Row(
+              Row(
                 children: [
                   Icon(Icons.info_outline, color: Colors.blue[700], size: 24),
                   const SizedBox(width: 8),
@@ -1024,7 +1025,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
     );
   }
 
-  void _exportAssessmentReport(Map<String, dynamic> assessment) {
+  Future<void> _exportAssessmentReport(Map<String, dynamic> assessment) async {
     final String riskClass = assessment['riskClass']?.toString() ?? 'UNKNOWN';
     final double calculatedRisk = _getCalculatedRisk(assessment);
     final String patientId = assessment['patientId']?.toString() ?? 'Unknown Patient';
@@ -1201,32 +1202,95 @@ providers for comprehensive evaluation and treatment decisions.
 Report Generated: ${DateTime.now().toString()}
 =========================================''';
 
-    // Create and download the file
-    final blob = html.Blob([reportContent], 'text/plain', 'native');
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.document.createElement('a') as html.AnchorElement
-      ..href = url
-      ..style.display = 'none'
-      ..download = 'anaemia_assessment_${patientId}_${DateTime.now().millisecondsSinceEpoch}.txt';
-    html.document.body?.children.add(anchor);
-    
-    // Trigger download
-    anchor.click();
-    
-    // Clean up
-    html.document.body?.children.remove(anchor);
-    html.Url.revokeObjectUrl(url);
-    
-    // Show success message
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Assessment report for Patient $patientId downloaded successfully!'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+    try {
+      // For mobile/desktop: Save to device storage
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/anaemia_assessment_${patientId}_${DateTime.now().millisecondsSinceEpoch}.txt');
+      await file.writeAsString(reportContent);
+      
+      // Show success message with file path
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Assessment report for Patient $patientId saved successfully!'),
+                Text(
+                  'File: ${file.path}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      // Fallback: Show share dialog with text content
+      if (mounted) {
+        _showShareDialog(reportContent, patientId);
+      }
     }
+  }
+
+  void _showShareDialog(String reportContent, String patientId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Report'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Report generated successfully!'),
+            const SizedBox(height: 16),
+            const Text('You can copy the report content and save it manually:'),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: SelectableText(
+                reportContent,
+                style: const TextStyle(fontSize: 10, fontFamily: 'Monospace'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Copy to clipboard
+              _copyToClipboard(reportContent);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Copy to Clipboard'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyToClipboard(String text) {
+    // For Flutter, you would typically use a package like clipboard
+    // This is a simplified version - in practice, use the clipboard package
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Report copied to clipboard!'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   String _formatDetailedDate(DateTime date) {

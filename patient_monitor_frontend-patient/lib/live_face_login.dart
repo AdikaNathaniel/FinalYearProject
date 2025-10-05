@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'dart:typed_data';
-import 'dart:html' as html;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -19,102 +17,34 @@ class LiveFaceLoginPage extends StatefulWidget {
 }
 
 class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
-  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
   Uint8List? _webImage;
   bool _isLoading = false;
 
   Future<void> _pickImageFromGallery() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      if (kIsWeb) {
+      if (pickedFile != null) {
         final bytes = await pickedFile.readAsBytes();
         setState(() {
           _webImage = bytes;
         });
-      } else {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-      }
-    }
-  }
-
-  Future<void> _openWebCamera() async {
-    if (!kIsWeb) return;
-    
-    final html.DivElement cameraContainer = html.DivElement()
-      ..id = 'camera-container'
-      ..style.position = 'fixed'
-      ..style.top = '0'
-      ..style.left = '0'
-      ..style.width = '100vw'
-      ..style.height = '100vh'
-      ..style.backgroundColor = 'rgba(0,0,0,0.9)'
-      ..style.zIndex = '9999'
-      ..style.display = 'flex'
-      ..style.flexDirection = 'column'
-      ..style.alignItems = 'center'
-      ..style.justifyContent = 'center';
-
-    final html.VideoElement video = html.VideoElement()
-      ..style.width = '80%'
-      ..style.maxWidth = '640px'
-      ..style.height = 'auto'
-      ..style.borderRadius = '10px'
-      ..autoplay = true;
-
-    final html.ButtonElement captureBtn = html.ButtonElement()
-      ..text = 'Capture Photo'
-      ..style.marginTop = '20px'
-      ..style.padding = '15px 30px'
-      ..style.fontSize = '16px'
-      ..style.backgroundColor = '#2196F3'
-      ..style.color = 'white'
-      ..style.border = 'none'
-      ..style.borderRadius = '25px'
-      ..style.cursor = 'pointer';
-
-    final html.ButtonElement closeBtn = html.ButtonElement()
-      ..text = 'Close'
-      ..style.marginTop = '10px'
-      ..style.padding = '10px 20px'
-      ..style.fontSize = '14px'
-      ..style.backgroundColor = '#f44336'
-      ..style.color = 'white'
-      ..style.border = 'none'
-      ..style.borderRadius = '20px'
-      ..style.cursor = 'pointer';
-
-    cameraContainer.children.addAll([video, captureBtn, closeBtn]);
-    html.document.body?.append(cameraContainer);
-
-    try {
-      final stream = await html.window.navigator.mediaDevices?.getUserMedia({
-        'video': {'facingMode': 'user'},
-        'audio': false,
-      });
-
-      if (stream != null) {
-        video.srcObject = stream;
-
-        captureBtn.onClick.listen((_) {
-          _captureFromVideo(video, stream);
-          cameraContainer.remove();
-        });
-
-        closeBtn.onClick.listen((_) {
-          stream.getTracks().forEach((track) => track.stop());
-          cameraContainer.remove();
-        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Image selected successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } catch (e) {
-      cameraContainer.remove();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Camera access failed: ${e.toString()}"),
+            content: Text("Error picking image: $e"),
             backgroundColor: Colors.red,
           ),
         );
@@ -122,31 +52,40 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
     }
   }
 
-  void _captureFromVideo(html.VideoElement video, html.MediaStream stream) {
-    final html.CanvasElement canvas = html.CanvasElement()
-      ..width = video.videoWidth
-      ..height = video.videoHeight;
-    
-    final canvasContext = canvas.getContext('2d') as html.CanvasRenderingContext2D;
-    canvasContext.drawImage(video, 0, 0);
-    
-    stream.getTracks().forEach((track) => track.stop());
-    
-    final dataUrl = canvas.toDataUrl('image/jpeg', 0.8);
-    final base64 = dataUrl.split(',')[1];
-    final bytes = base64Decode(base64);
-    
-    setState(() {
-      _webImage = bytes;
-    });
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Photo captured successfully!"),
-          backgroundColor: Colors.green,
-        ),
+  Future<void> _takePhoto() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
+        imageQuality: 90,
       );
+
+      if (pickedFile != null) {
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _webImage = bytes;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Live photo captured successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Camera error: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      // Fallback to gallery if camera fails
+      _pickImageFromGallery();
     }
   }
 
@@ -173,7 +112,7 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      _openWebCamera();
+                      _takePhoto();
                     },
                     child: Container(
                       width: 100,
@@ -183,11 +122,11 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(color: Colors.blue.withOpacity(0.3)),
                       ),
-                      child: Column(
+                      child: const Column(
                         children: [
-                          const Icon(Icons.camera_alt, size: 40, color: Colors.blue),
-                          const SizedBox(height: 8),
-                          const Text(
+                          Icon(Icons.camera_alt, size: 40, color: Colors.blue),
+                          SizedBox(height: 8),
+                          Text(
                             'Camera',
                             style: TextStyle(
                               fontSize: 14,
@@ -211,11 +150,11 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(color: Colors.blue.withOpacity(0.3)),
                       ),
-                      child: Column(
+                      child: const Column(
                         children: [
-                          const Icon(Icons.photo_library, size: 40, color: Colors.blue),
-                          const SizedBox(height: 8),
-                          const Text(
+                          Icon(Icons.photo_library, size: 40, color: Colors.blue),
+                          SizedBox(height: 8),
+                          Text(
                             'Gallery',
                             style: TextStyle(
                               fontSize: 14,
@@ -227,6 +166,15 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'For best results, use camera for live face authentication',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
             ],
@@ -349,9 +297,12 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
   }
 
   Future<void> _loginWithFaceAuth() async {
-    if (_selectedImage == null && _webImage == null) {
+    if (_webImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please capture or select an image")),
+        const SnackBar(
+          content: Text("Please capture or select an image"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -359,21 +310,14 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
     setState(() => _isLoading = true);
 
     final uri = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/face/detect');
-    final request = http.MultipartRequest('POST', uri);
-
+    
     try {
-      if (kIsWeb) {
-        request.files.add(http.MultipartFile.fromBytes(
+      final request = http.MultipartRequest('POST', uri)
+        ..files.add(http.MultipartFile.fromBytes(
           'image',
           _webImage!,
-          filename: 'face.jpg',
+          filename: 'face_login_${DateTime.now().millisecondsSinceEpoch}.jpg',
         ));
-      } else {
-        request.files.add(await http.MultipartFile.fromPath(
-          'image',
-          _selectedImage!.path,
-        ));
-      }
 
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
@@ -387,7 +331,7 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
         if (result['faces'] == null || 
             result['faces'].isEmpty || 
             result['match'] == null) {
-          _showErrorNotification('Invalid user');
+          _showErrorNotification('No face detected or invalid user');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -428,12 +372,18 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorNotification("Error: ${e.toString()}");
+      _showErrorNotification("Network error: ${e.toString()}");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
     }
+  }
+
+  void _clearImage() {
+    setState(() {
+      _webImage = null;
+    });
   }
 
   @override
@@ -445,18 +395,12 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
         actions: [
-        //   TextButton(
-        //     onPressed: () {
-        //       Navigator.pushReplacement(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => const LoginPage()),
-        //       );
-        //     },
-        //     // child: const Text(
-        //     //   'Use Email/Password',
-        //     //   style: TextStyle(color: Colors.white),
-        //     // ),
-        //   ),
+          if (_webImage != null)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _clearImage,
+              tooltip: 'Clear Image',
+            ),
         ],
       ),
       body: Container(
@@ -472,8 +416,10 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
           child: Column(
             children: [
               const SizedBox(height: 20),
+              
+              // Image Preview Section
               Container(
-                height: 180,
+                height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.05),
@@ -487,60 +433,66 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: (kIsWeb && _webImage != null)
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            constraints: BoxConstraints(
-                              maxHeight: 160,
-                              maxWidth: MediaQuery.of(context).size.width - 32,
-                            ),
-                            child: Image.memory(
-                              _webImage!,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        )
-                      : (!kIsWeb && _selectedImage != null)
-                          ? ClipRRect(
+                child: _webImage != null
+                    ? Stack(
+                        children: [
+                          Center(
+                            child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
                               child: Container(
                                 constraints: BoxConstraints(
-                                  maxHeight: 160,
+                                  maxHeight: 180,
                                   maxWidth: MediaQuery.of(context).size.width - 32,
                                 ),
-                                child: Image.file(
-                                  _selectedImage!,
+                                child: Image.memory(
+                                  _webImage!,
                                   fit: BoxFit.contain,
                                 ),
                               ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.face_retouching_natural,
-                                  size: 60,
-                                  color: Colors.white.withOpacity(0.5),
-                                ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "No image selected",
-                                  style: TextStyle(color: Colors.white70),
-                                ),
-                                const Text(
-                                  "Take a live photo for authentication",
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
                             ),
-                ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: CircleAvatar(
+                              backgroundColor: Colors.black54,
+                              radius: 16,
+                              child: IconButton(
+                                icon: const Icon(Icons.close, size: 16, color: Colors.white),
+                                onPressed: _clearImage,
+                                padding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.face_retouching_natural,
+                            size: 60,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "No image selected",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          const Text(
+                            "Take a live photo for authentication",
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
+              
               const SizedBox(height: 20),
+              
+              // Capture Button
               ElevatedButton.icon(
                 onPressed: _showImageSourceDialog,
                 icon: const Icon(Icons.camera_alt, color: Colors.white),
@@ -555,9 +507,21 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                   elevation: 4,
                 ),
               ),
+              
               const SizedBox(height: 20),
+              
+              // Login Button
               _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const Column(
+                      children: [
+                        CircularProgressIndicator(color: Colors.white),
+                        SizedBox(height: 10),
+                        Text(
+                          "Authenticating...",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    )
                   : ElevatedButton.icon(
                       onPressed: _loginWithFaceAuth,
                       icon: const Icon(Icons.login, color: Colors.white),
@@ -572,7 +536,10 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                         elevation: 4,
                       ),
                     ),
+              
               const SizedBox(height: 20),
+              
+              // Alternative Options
               Column(
                 children: [
                   TextButton(
@@ -603,6 +570,37 @@ class _LiveFaceLoginPageState extends State<LiveFaceLoginPage> {
                     ),
                   ),
                 ],
+              ),
+              
+              // Instructions
+              Container(
+                margin: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white30),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Face Login Instructions:",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "• Ensure good lighting\n• Face the camera directly\n• Keep a neutral expression\n• Remove glasses if possible",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

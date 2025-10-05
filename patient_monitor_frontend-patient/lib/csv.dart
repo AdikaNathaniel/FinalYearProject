@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class CsvPage extends StatefulWidget {
   @override
@@ -50,7 +50,7 @@ class _CsvPageState extends State<CsvPage> {
     }
   }
 
-  // --- Download CSV for Web ---
+  // --- Download CSV (Cross-platform without share_plus) ---
   Future<void> downloadCsv(String id) async {
     setState(() {
       downloadMessage = "Downloading...";
@@ -60,29 +60,14 @@ class _CsvPageState extends State<CsvPage> {
       final response = await http.get(Uri.parse("$baseUrl/download/$id"));
       
       if (response.statusCode == 200) {
-        // Create a blob from the response bytes
         final bytes = response.bodyBytes;
-        final blob = html.Blob([bytes]);
+        final csvContent = utf8.decode(bytes);
         
-        // Create a download URL
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        
-        // Create a temporary anchor element and trigger download
-        final anchor = html.document.createElement('a') as html.AnchorElement
-          ..href = url
-          ..style.display = 'none'
-          ..download = '$id.csv';
-        
-        // Add to DOM, click, and remove
-        html.document.body!.children.add(anchor);
-        anchor.click();
-        html.document.body!.children.remove(anchor);
-        
-        // Clean up the URL
-        html.Url.revokeObjectUrl(url);
+        // For all platforms, show CSV preview with enhanced options
+        _showEnhancedCsvPreviewDialog(id, csvContent, bytes.length);
         
         setState(() {
-          downloadMessage = "CSV file '$id.csv' downloaded successfully!";
+          downloadMessage = "CSV content loaded successfully!";
         });
         
         // Clear message after 5 seconds
@@ -104,6 +89,213 @@ class _CsvPageState extends State<CsvPage> {
         downloadMessage = "Error downloading CSV: $e";
       });
     }
+  }
+
+  // Enhanced CSV preview dialog with multiple export options
+  void _showEnhancedCsvPreviewDialog(String id, String content, int fileSize) {
+    final double sizeInKB = fileSize / 1024;
+    final double sizeInMB = sizeInKB / 1024;
+    final String fileSizeText = sizeInMB > 1 ? 
+        '${sizeInMB.toStringAsFixed(2)} MB' : '${sizeInKB.toStringAsFixed(2)} KB';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.table_chart, color: Colors.cyan),
+            SizedBox(width: 8),
+            Text('CSV File: $id'),
+          ],
+        ),
+        content: Container(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'File Size: $fileSizeText',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Preview (first 500 characters):',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+              SizedBox(height: 8),
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: SingleChildScrollView(
+                  child: SelectableText(
+                    content.length > 500 ? '${content.substring(0, 500)}...' : content,
+                    style: TextStyle(fontFamily: 'monospace', fontSize: 10),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'Export Options:',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          // Copy full content button
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: content));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Full CSV content copied to clipboard'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.copy, size: 18),
+            label: Text('Copy All'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.cyan,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          ),
+          
+          // View full content button
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context); // Close preview dialog
+              _showFullCsvContentDialog(id, content); // Open full content dialog
+            },
+            icon: Icon(Icons.fullscreen, size: 18),
+            label: Text('View Full'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          ),
+          
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close', style: TextStyle(color: Colors.grey)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Full CSV content dialog for large files
+  void _showFullCsvContentDialog(String id, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: EdgeInsets.all(20),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.cyan,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.table_chart, color: Colors.white),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Full CSV Content: $id',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Content
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(16),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      content,
+                      style: TextStyle(fontFamily: 'monospace', fontSize: 10),
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Footer actions
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${content.length} characters',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: content));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Full CSV content copied to clipboard'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.copy),
+                      label: Text('Copy All Content'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // --- GET all IDs ---
@@ -143,7 +335,7 @@ class _CsvPageState extends State<CsvPage> {
       appBar: AppBar(
         backgroundColor: Colors.cyan,
         title: Text("Pregnant Woman Vitals In CSV Format"),
-         centerTitle: true, 
+        centerTitle: true, 
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -309,6 +501,7 @@ class _CsvPageState extends State<CsvPage> {
                                                 SnackBar(
                                                   content: Text("ID '$id' copied to clipboard"),
                                                   duration: Duration(seconds: 2),
+                                                  backgroundColor: Colors.green,
                                                 ),
                                               );
                                             },
@@ -456,6 +649,55 @@ class _CsvPageState extends State<CsvPage> {
                 ),
               ),
             ],
+
+            // --- Instructions Section ---
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.white,
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.help_outline, color: Colors.cyan),
+                        SizedBox(width: 8),
+                        Text(
+                          "How to Use CSV Files",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.cyan,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "• Click 'Download CSV' to view and copy file content",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "• Use 'Copy All' to copy entire CSV to clipboard",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "• Use 'View Full' to see complete file content",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "• Paste copied content into Excel, Google Sheets, or any text editor",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\groovy\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\Richard\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\L400-SEM2\\PregnancyMonitor-Awoapa\\PregnantMonitor-Awoapa\\patient_monitor_frontend-patient\\android\\app\\.cxx\\Debug\\6d2l5g43\\arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\Richard\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\L400-SEM2\\PregnancyMonitor-Awoapa\\PregnantMonitor-Awoapa\\patient_monitor_frontend-patient\\android\\app\\.cxx\\Debug\\6d2l5g43\\arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

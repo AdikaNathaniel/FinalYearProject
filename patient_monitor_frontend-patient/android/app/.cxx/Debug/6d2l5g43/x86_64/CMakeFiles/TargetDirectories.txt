@@ -1,0 +1,2 @@
+C:/L400-SEM2/PregnancyMonitor-Awoapa/PregnantMonitor-Awoapa/patient_monitor_frontend-patient/android/app/.cxx/Debug/6d2l5g43/x86_64/CMakeFiles/edit_cache.dir
+C:/L400-SEM2/PregnancyMonitor-Awoapa/PregnantMonitor-Awoapa/patient_monitor_frontend-patient/android/app/.cxx/Debug/6d2l5g43/x86_64/CMakeFiles/rebuild_cache.dir
