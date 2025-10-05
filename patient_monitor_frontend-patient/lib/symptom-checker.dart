@@ -94,42 +94,39 @@ class _SymptomFormState extends State<SymptomForm> {
             Row(
               children: [
                 Icon(icon, color: Theme.of(context).primaryColor),
-                SizedBox(width: 12),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
             SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
-                  child: ListTile(
+                  child: RadioListTile<String>(
                     contentPadding: EdgeInsets.zero,
-                    leading: Radio<String>(
-                      value: 'yes',
-                      groupValue: groupValue,
-                      onChanged: onChanged,
-                    ),
                     title: Text('Yes'),
-                    onTap: () => onChanged('yes'),
+                    value: 'yes',
+                    groupValue: groupValue,
+                    onChanged: onChanged,
+                    dense: true,
                   ),
                 ),
                 Expanded(
-                  child: ListTile(
+                  child: RadioListTile<String>(
                     contentPadding: EdgeInsets.zero,
-                    leading: Radio<String>(
-                      value: 'no',
-                      groupValue: groupValue,
-                      onChanged: onChanged,
-                    ),
                     title: Text('No'),
-                    onTap: () => onChanged('no'),
+                    value: 'no',
+                    groupValue: groupValue,
+                    onChanged: onChanged,
+                    dense: true,
                   ),
                 ),
               ],
@@ -150,7 +147,7 @@ class _SymptomFormState extends State<SymptomForm> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -195,7 +192,7 @@ class _SymptomFormState extends State<SymptomForm> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 20),
               _buildSymptomTile(
                 label: "Do you feel headache?",
                 icon: Icons.headset,
@@ -223,9 +220,8 @@ class _SymptomFormState extends State<SymptomForm> {
                 groupValue: _painTopOfTommy,
                 onChanged: (value) => setState(() => _painTopOfTommy = value),
               ),
-              SizedBox(height: 32),
+              SizedBox(height: 24),
               SizedBox(
-                width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitForm,
@@ -244,6 +240,7 @@ class _SymptomFormState extends State<SymptomForm> {
                         ),
                 ),
               ),
+              SizedBox(height: 16),
             ],
           ),
         ),

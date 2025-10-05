@@ -36,7 +36,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     {"icon": FontAwesomeIcons.mugHot, "title": "Drink Herbal Teas", "description": "Some teas can help reduce nausea and aid digestion."},
     {"icon": FontAwesomeIcons.bell, "title": "Listen to Soothing Music", "description": "Helps relaxation and bonding with baby."},
     {"icon": FontAwesomeIcons.userMd, "title": "Consult a Doctor", "description": "Seek medical advice for any discomforts."},
-    {"icon": FontAwesomeIcons.smile, "title": "Stay Happy", "description": "Your emotions affect your baby’s development."},
+    {"icon": FontAwesomeIcons.smile, "title": "Stay Happy", "description": "Your emotions affect your baby's development."},
     {"icon": FontAwesomeIcons.dumbbell, "title": "Avoid Heavy Lifting", "description": "Strain can harm both you and your baby."},
     {"icon": FontAwesomeIcons.utensils, "title": "Eat Small Meals", "description": "Prevents nausea and maintains energy levels."},
     {"icon": FontAwesomeIcons.peace, "title": "Practice Mindfulness", "description": "Stay in the moment to reduce anxiety."},
@@ -63,7 +63,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       if (mounted) {
         setState(() {
-          startIndex = (startIndex + 4) % tips.length;
+          startIndex = (startIndex + 8 ) % tips.length;
         });
       }
     });
@@ -74,59 +74,6 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     _timer?.cancel(); // Cancel the timer when the widget is disposed
     super.dispose();
   }
-
-  // void _showUserInfoDialog(BuildContext context) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: Center(child: Text('Profile')),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               Icon(Icons.email),
-  //               SizedBox(width: 10),
-  //               Text(widget.userEmail),
-  //             ],
-  //           ),
-  //           SizedBox(height: 10),
-  //           TextButton(
-  //             onPressed: () async {
-  //               final response = await http.put(
-  //                 Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-  //                 headers: {'Content-Type': 'application/json'},
-  //               );
-
-  //               if (response.statusCode == 200) {
-  //                 final responseData = json.decode(response.body);
-  //                 if (responseData['success']) {
-  //                   Navigator.pushReplacement(
-  //                     context,
-  //                     MaterialPageRoute(builder: (context) => LoginPage()),
-  //                   );
-  //                 } else {
-  //                   _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
-  //                 }
-  //               } else {
-  //                 _showSnackbar(context, "Logout failed: Server error", Colors.red);
-  //               }
-  //             },
-  //             child: Text('Logout', style: TextStyle(color: Colors.red)),
-  //           ),
-  //         ],
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: Text('Close'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
 
   void _showUserInfoDialog(BuildContext context) {
     showDialog(
@@ -206,12 +153,15 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> displayedTips = tips.sublist(startIndex, startIndex + 4);
+    List<Map<String, dynamic>> displayedTips = tips.sublist(
+      startIndex, 
+      startIndex + 4 > tips.length ? tips.length : startIndex + 4
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Pregnancy Wellness Tips",
-         style: TextStyle(
+          style: TextStyle(
             color: Colors.white,
           ),
         ),
@@ -244,12 +194,14 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
         child: Padding(
           padding: EdgeInsets.all(12.0),
           child: GridView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
             itemCount: displayedTips.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.85,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              childAspectRatio: 0.75, // Reduced from 0.85 to fit better
+              crossAxisSpacing: 8, // Reduced spacing
+              mainAxisSpacing: 8, // Reduced spacing
             ),
             itemBuilder: (context, index) {
               var tip = displayedTips[index];
@@ -261,22 +213,34 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
                   elevation: 5,
                   color: Colors.pink[50],
                   child: Padding(
-                    padding: EdgeInsets.all(12.0),
+                    padding: EdgeInsets.all(8.0), // Reduced padding
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(tip["icon"], size: 50, color: Colors.pinkAccent),
-                        SizedBox(height: 10),
+                        Icon(tip["icon"], size: 40, color: Colors.pinkAccent), // Reduced icon size
+                        SizedBox(height: 8), // Reduced spacing
                         Text(
                           tip["title"],
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 14, // Reduced font size
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2, // Limit title to 2 lines
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          tip["description"],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        SizedBox(height: 6), // Reduced spacing
+                        Expanded(
+                          child: Text(
+                            tip["description"],
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12, // Reduced font size
+                              color: Colors.grey[700],
+                            ),
+                            maxLines: 3, // Limit description to 3 lines
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),

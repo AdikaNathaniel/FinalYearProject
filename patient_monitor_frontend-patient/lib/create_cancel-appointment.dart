@@ -20,27 +20,73 @@ class _CreateCancelAppointmentPageState
   final TextEditingController _conditionController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  // Automatically set the current day and time
-  String _currentDay = '';
-  String _currentTime = '';
+  // Changed from automatically set to selectable
+  String _selectedDay = '';
+  String _selectedTime = '';
+  TimeOfDay? _selectedTimeOfDay;
+  DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
-    // Set the current day and time
+    // Set initial values to current date and time
     DateTime now = DateTime.now();
-    _currentDay =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    _currentTime =
-        '${now.hour % 12 == 0 ? 12 : now.hour % 12}:${now.minute.toString().padLeft(2, '0')} ${now.hour >= 12 ? 'PM' : 'AM'}';
+    _selectedDate = now;
+    _selectedTimeOfDay = TimeOfDay.fromDateTime(now);
+    _updateDateTimeStrings();
+  }
+
+  void _updateDateTimeStrings() {
+    if (_selectedDate != null) {
+      _selectedDay =
+          '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+    }
+    if (_selectedTimeOfDay != null) {
+      _selectedTime = _selectedTimeOfDay!.format(context);
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _updateDateTimeStrings();
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTimeOfDay ?? TimeOfDay.now(),
+    );
+    if (picked != null && picked != _selectedTimeOfDay) {
+      setState(() {
+        _selectedTimeOfDay = picked;
+        _updateDateTimeStrings();
+      });
+    }
   }
 
   Future<void> createAppointment() async {
     if (_formKey.currentState!.validate()) {
+      if (_selectedDate == null || _selectedTimeOfDay == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please select both date and time')),
+        );
+        return;
+      }
+
       Map<String, dynamic> appointment = {
         "email": "patient@example.com",
-        "day": _currentDay,
-        "time": _currentTime,
+        "day": _selectedDay,
+        "time": _selectedTime,
         "patient_name": _nameController.text,
         "condition": _conditionController.text.isNotEmpty
             ? _conditionController.text
@@ -92,70 +138,6 @@ class _CreateCancelAppointmentPageState
           content: Text('Failed to delete appointment.')));
     }
   }
-
-  // void _showUserInfoDialog(BuildContext context) {
-  //    String email = widget.userEmail;
-  //   // String role = 'Doctor'; // Hardcoded role
-
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: Center(child: Text('Profile')),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               Icon(Icons.email),
-  //               SizedBox(width: 10),
-  //               Text(widget.userEmail),
-  //             ],
-  //           ),
-  //           SizedBox(height: 10),
-  //           Row(
-  //             children: [
-  //               // Icon(Icons.person),
-  //               SizedBox(width: 10),
-  //               // Text(role),
-  //             ],
-  //           ),
-  //           SizedBox(height: 10),
-  //           TextButton(
-  //             onPressed: () async {
-  //               final response = await http.put(
-  //                 Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-  //                 headers: {'Content-Type': 'application/json'},
-  //               );
-
-  //               if (response.statusCode == 200) {
-  //                 final responseData = json.decode(response.body);
-  //                 if (responseData['success']) {
-  //                   Navigator.pushReplacement(
-  //                     context,
-  //                     MaterialPageRoute(builder: (context) => LoginPage()),
-  //                   );
-  //                 } else {
-  //                   _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
-  //                 }
-  //               } else {
-  //                 _showSnackbar(context, "Logout failed: Server error", Colors.red);
-  //               }
-  //             },
-  //             child: Text('Logout', style: TextStyle(color: Colors.red)),
-  //           ),
-  //         ],
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: Text('Close'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
 
   void _showUserInfoDialog(BuildContext context) {
     showDialog(
@@ -233,6 +215,21 @@ class _CreateCancelAppointmentPageState
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  Widget _buildTimeDatePicker(String label, String value, VoidCallback onTap) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: ListTile(
+        leading: label.contains("Time") 
+            ? Icon(Icons.access_time, color: Colors.blue)
+            : Icon(Icons.calendar_today, color: Colors.blue),
+        title: Text('$label: $value'),
+        trailing: Icon(Icons.arrow_drop_down, color: Colors.grey),
+        onTap: onTap,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,84 +242,68 @@ class _CreateCancelAppointmentPageState
         ),
         elevation: 0,
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-       actions: [
-  IconButton(
-    icon: CircleAvatar(
-      backgroundColor: Colors.white,
-      child: Text(
-        widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
-        style: TextStyle(color: Colors.blue),
-      ),
-    ),
-    onPressed: () {
-      _showUserInfoDialog(context); // Show user info dialog
-    },
-  ),
-],
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+            onPressed: () {
+              _showUserInfoDialog(context);
+            },
+          ),
+        ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Colors.blue,
-              Colors.red,
-            ],
-          ),
-        ),
+        color: Colors.white, // Changed to white background
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0), // Reduced padding
+          padding: EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Ensure space is used properly
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded( // Make form elements take up available space
+              Expanded(
                 child: SingleChildScrollView(
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch, // Make form fields take full width
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _inputField("Patient Name", _nameController, icon: Icons.person_outline),
-                        const SizedBox(height: 40),
-                        _inputField("Condition", _conditionController, icon: Icons.medical_services),
-                        const SizedBox(height: 40),
-                        _inputField("Notes", _notesController, icon: Icons.notes),
-                        const SizedBox(height: 40),
-                        TextFormField(
-                          readOnly: true,
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                            labelText: "Date",
-                            labelStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.1),
-                          ),
-                          initialValue: _currentDay,
+                        _buildTextField(_nameController, "Patient Name", Icons.person),
+                        const SizedBox(height: 16),
+                        _buildTextField(_conditionController, "Condition", Icons.medical_services),
+                        const SizedBox(height: 16),
+                        _buildTextField(_notesController, "Notes", Icons.notes),
+                        const SizedBox(height: 16),
+                        
+                        // Selectable Date
+                        _buildTimeDatePicker(
+                          "Date", 
+                          _selectedDay.isEmpty ? "Select Date" : _selectedDay,
+                          () => _selectDate(context)
                         ),
-                        const SizedBox(height: 40),
-                        TextFormField(
-                          readOnly: true,
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                            labelText: "Time",
-                            labelStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.1),
-                          ),
-                          initialValue: _currentTime,
+                        
+                        // Selectable Time
+                        _buildTimeDatePicker(
+                          "Time", 
+                          _selectedTime.isEmpty ? "Select Time" : _selectedTime,
+                          () => _selectTime(context)
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _commonButton("Create Appointment", Colors.green, createAppointment),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 10),
                   _commonButton("Cancel Appointment", Colors.red, deleteAppointment),
                 ],
               ),
@@ -341,33 +322,36 @@ class _CreateCancelAppointmentPageState
           backgroundColor: color,
           padding: EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Text(text),
+        child: Text(
+          text,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
 
-  Widget _inputField(String labelText, TextEditingController controller, {IconData? icon}) {
+  Widget _buildTextField(
+    TextEditingController controller, 
+    String label, 
+    IconData icon,
+  ) {
     return TextFormField(
-      style: const TextStyle(color: Colors.white),
       controller: controller,
       decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: icon != null ? Icon(icon, color: Colors.white70) : null,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Colors.white),
+        prefixIcon: Icon(icon, color: Colors.blue),
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
         ),
-        floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
+        fillColor: Colors.grey[50],
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {

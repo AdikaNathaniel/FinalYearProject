@@ -37,6 +37,7 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
           setState(() {
             contact = data['result'];
           });
+          _showContactDialog(); // Show dialog instead of displaying below
         } else {
           setState(() {
             errorMessage = data['message'] ?? 'Contact not found';
@@ -56,6 +57,122 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
         isLoading = false;
       });
     }
+  }
+
+  void _showContactDialog() {
+    if (contact == null) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8, // Limit height to 80% of screen
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dialog Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    'Emergency Contact Found',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                
+                // Scrollable Contact Info
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        _buildDialogInfoRow(Icons.person_outline, 'Name', contact!['name']),
+                        const SizedBox(height: 20),
+                        _buildDialogInfoRow(Icons.phone, 'Phone', contact!['phoneNumber']),
+                        const SizedBox(height: 20),
+                        _buildDialogInfoRow(Icons.email, 'Email', contact!['email']),
+                        const SizedBox(height: 20),
+                        _buildDialogInfoRow(Icons.group, 'Relationship', contact!['relationship']),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Close Button
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      minimumSize: Size(double.infinity, 50),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Close'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: Colors.redAccent, size: 28),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildContactInfo() {
@@ -164,19 +281,35 @@ class _EmergencyContactSearchState extends State<EmergencyContactSearch> {
             ),
           ),
           if (isLoading)
-            const Center(child: CircularProgressIndicator())
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            )
           else if (errorMessage.isNotEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  errorMessage,
-                  style: const TextStyle(color: Colors.red),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             )
           else
-            Expanded(child: _buildContactInfo()),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Enter a name to search for emergency contacts',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
         ],
       ),
     );

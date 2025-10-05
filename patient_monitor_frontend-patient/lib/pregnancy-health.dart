@@ -31,7 +31,7 @@ class _PregnancyHealthFormState extends State<PregnancyHealthForm> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.pinkAccent,
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -65,7 +65,7 @@ class _PregnancyHealthFormState extends State<PregnancyHealthForm> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      backgroundColor: Colors.pinkAccent,
+                      backgroundColor: Colors.blue,
                     ),
                   ),
                 ),
@@ -125,7 +125,7 @@ class _PregnancyHealthFormState extends State<PregnancyHealthForm> {
             borderRadius: BorderRadius.circular(10),
           ),
           filled: true,
-          fillColor: Colors.pink[50],
+          fillColor: Colors.blue[50],
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -160,7 +160,7 @@ class _PregnancyHealthFormState extends State<PregnancyHealthForm> {
                 borderRadius: BorderRadius.circular(10),
               ),
               filled: true,
-              fillColor: Colors.pink[50],
+              fillColor: Colors.blue[50],
             ),
             validator: (value) {
               if (value == null) {

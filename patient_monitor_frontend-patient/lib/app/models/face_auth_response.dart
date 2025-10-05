@@ -1,4 +1,4 @@
-import 'package:patient_monitor/app/models/user_model.dart';
+import 'package:Awoapa/app/models/user_model.dart';
 
 class FaceAuthResponse {
   final bool success;

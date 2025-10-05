@@ -604,7 +604,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -612,10 +612,10 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                   child: const Icon(
                     Icons.monitor_heart,
                     color: Colors.white,
-                    size: 32,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,9 +624,11 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                         'Choose Your Preferred Method Of Vitals Capture',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 15.5,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.visible,
                       ),
                     ],
                   ),
@@ -643,7 +645,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             _buildSelectionCard(
               title: "Wearable Device",
               subtitle: "Sync Your Data With Your Smart Device",
-              imageAsset: 'Wearable.jpg', // Update with your actual path
+              imageAsset: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/WearableArm.jpeg',
               onTap: () {
                 // Navigate to HealthDashboard page
                 Navigator.push(
@@ -660,26 +662,14 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             const SizedBox(height: 20),
             
             // Manual Entry Card
-            // _buildSelectionCard(
-            //   title: "Manual Entry",
-            //   subtitle: "Enter Your Vitals Manually",
-            //   imageAsset: 'ManualEntry.jpg', // Update with your actual path
-            //   onTap: () {
-            //     setState(() => inputMethod = "manual");
-            //   },
-            // ),
-
-
-              // Manual Entry Card
             _buildSelectionCard(
-  title: "Manual Entry",
-  subtitle: "Enter Your Vitals Manually",
-  imageAsset: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/ManualEntry.jpg',
-  onTap: () {
-    setState(() => inputMethod = "manual");
-  },
-),
-
+              title: "Manual Entry",
+              subtitle: "Enter Your Vitals Manually",
+              imageAsset: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/ManualEntry.jpg',
+              onTap: () {
+                setState(() => inputMethod = "manual");
+              },
+            ),
           ],
         ),
       ],

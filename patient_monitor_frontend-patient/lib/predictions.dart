@@ -20,16 +20,16 @@ import 'prescriptions-home.dart';
 import 'appointments-home.dart';
 import 'preeclampsia-home.dart';
 import 'map.dart'; 
-import  'preeclampsia-live.dart';
+import 'preeclampsia-live.dart';
 import 'glucose-monitor.dart';
 import 'vitals-input.dart';
 import 'hardware-live-data.dart';
-// import 'anemia-result.dart';
 import 'anemia-home.dart';
 import 'vitals-health-data-list.dart';
 import 'vitals-health-data-get-specific-user.dart';
 import 'csv.dart';
 import 'chart-data.dart';
+import 'notification-list.dart';
 
 
 class PregnancyComplicationsPage extends StatefulWidget {
@@ -210,7 +210,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-ListTile(
+            ListTile(
               leading: Icon(Icons.monitor_heart),
               title: Text('Anemia Predictions'),
               onTap: () {
@@ -226,7 +226,6 @@ ListTile(
               onTap: () {
                 Navigator.push(
                   context,
-                  // MaterialPageRoute(builder: (context) => PreeclampsiaVitals()),
                   MaterialPageRoute(builder: (context) => PreeclampsiaHomePage()),
                 );
               },
@@ -256,34 +255,28 @@ ListTile(
               },
             ),
 
-            // ChartsDataPage
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('View Manually Entered Vitals'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => VitalsHealthDataListPage()),
+                );
+              },
+            ),
 
-
-
-    ListTile(
-      leading: Icon(Icons.edit),
-      title: Text('View Manually Entered Vitals'),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VitalsHealthDataListPage()),
-        );
-      },
-    ),
-
-   
-    ListTile(
-      leading: Icon(Icons.history),
-      title: Text('View Vitals History'),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VitalsHistoryPage()),
-        );
-      },
-    ),
+            ListTile(
+              leading: Icon(Icons.history),
+              title: Text('View Vitals History'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => VitalsHistoryPage()),
+                );
+              },
+            ),
   
-            // LiveVitalsHardwareDataPage 
             ListTile(
               leading: Icon(Icons.monitor_heart),
               title: Text('Live Vitals Data'),
@@ -296,16 +289,15 @@ ListTile(
             ),
 
             ListTile(
-  leading: Icon(Icons.health_and_safety),
-  title: Text('Preeclampsia Prediction Testing'),
-  onTap: () {
-    Navigator.push(
-      context,
-      // MaterialPageRoute(builder: (context) => VitalsInputPage()),
-      MaterialPageRoute(builder: (context) => PreeclampsiaDashboard()),
-    );
-  },
-)
+              leading: Icon(Icons.health_and_safety),
+              title: Text('Preeclampsia Prediction Testing'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PreeclampsiaDashboard()),
+                );
+              },
+            )
           ],
         ),
       ),
@@ -419,73 +411,167 @@ ListTile(
       context: context,
       builder: (context) => AlertDialog(
         title: const Center(child: Text('Profile')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.email, size: 20),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      widget.userEmail,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEmergencyAlertDialog(context);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.email),
-                    SizedBox(height: 20),
-                    Icon(Icons.settings, color: Colors.blue),
-                    SizedBox(height: 20),
-                    Icon(Icons.map, color: Colors.green),
-                  ],
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.userEmail),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'Settings',
-                        style: TextStyle(
-                          color: Colors.blue,
-                        ),
+                    Icon(Icons.warning, color: Colors.red, size: 20),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Send An Emergency Alert',
+                        style: TextStyle(color: Colors.blue),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MapPage(),
-                          ),
-                        );
-                      },
-                      child: const Text(
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.settings, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Settings',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationListPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.notifications_active, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Notifications',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SupportFormPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.chat_bubble_outline, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Need Help?',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MapPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.map, color: Colors.green, size: 18),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
                         'View Location Of PregMama',
-                        style: TextStyle(
-                          color: Colors.green,
-                        ),
+                        style: TextStyle(color: Colors.green, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            TextButton(
-              onPressed: _logout,
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
-            ),
-          ],
+              ),         
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () async {
+                  final response = await http.put(
+                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    final responseData = json.decode(response.body);
+                    if (responseData['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    } else {
+                      _showSnackbarWithColor("Logout failed: ${responseData['message']}", Colors.red);
+                    }
+                  } else {
+                    _showSnackbarWithColor("Logout failed: Server error", Colors.red);
+                  }
+                },
+                child: const Text('Logout', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -497,10 +583,111 @@ ListTile(
     );
   }
 
+  void _showEmergencyAlertDialog(BuildContext context) {
+    final List<String> emergencyMessages = [
+      "I'm pregnant and need help now.",
+      "I feel dizzy",
+      "I need to go to the hospital urgently.",
+      "I'm bleeding",
+      "My water just broke, I need assistance.",
+    ];
+
+    String? selectedMessage;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Emergency Alert'),
+          content: StatefulBuilder(
+            builder: (context, setState) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Select an emergency message:'),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedMessage,
+                  onChanged: (value) => setState(() => selectedMessage = value),
+                  items: emergencyMessages.map((message) {
+                    return DropdownMenuItem<String>(
+                      value: message,
+                      child: Text(
+                        message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  isExpanded: true,
+                  validator: (value) =>
+                      value == null ? 'Please select a message' : null,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (selectedMessage != null && selectedMessage!.isNotEmpty) {
+                  Navigator.pop(context);
+                  _sendEmergencyAlert(selectedMessage!);
+                } else {
+                  _showSnackbarWithColor("Please select an emergency message", Colors.red);
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Send Alert'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _sendEmergencyAlert(String message) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergery/contacts/send'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({"message": message}),
+      );
+
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+        if (responseData['success']) {
+          _showSnackbarWithColor("Emergency alert sent successfully!", Colors.green);
+        } else {
+          _showSnackbarWithColor("Failed to send alert: ${responseData['message']}", Colors.red);
+        }
+      } else {
+        _showSnackbarWithColor("Failed to send alert: Server error", Colors.red);
+      }
+    } catch (e) {
+      _showSnackbarWithColor("Error: ${e.toString()}", Colors.red);
+    }
+  }
+
   void _showSnackbar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
       backgroundColor: Colors.red,
+      duration: Duration(seconds: 2),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _showSnackbarWithColor(String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
       duration: Duration(seconds: 2),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // import 'auth/auth_state.dart';
 // import 'app_routes.dart';
-import 'package:patient_monitor/app/auth/auth_state.dart';
-import 'package:patient_monitor/app/app_routes.dart';
+import 'package:Awoapa/app/auth/auth_state.dart';
+import 'package:Awoapa/app/app_routes.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

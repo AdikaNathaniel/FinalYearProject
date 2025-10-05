@@ -20,7 +20,7 @@ import 'set_profile.dart';
 import 'map.dart';
 import  'hardware_vitals.dart';
 import  'paystack-home.dart';
-import 'hardware-live-data.dart';
+// import 'hardware-live-data.dart';
 import 'anemia-assessment.dart';
 import 'chart-data.dart';
 
@@ -685,16 +685,16 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
 
-            ListTile(
-              leading: Icon(Icons.monitor_heart),
-              title: Text('Live Vitals Data'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LiveVitalsHardwareDataPage()),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.monitor_heart),
+            //   title: Text('Live Vitals Data'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => LiveVitalsHardwareDataPage()),
+            //     );
+            //   },
+            // ),
 
             ListTile(
               leading: const Icon(Icons.info),
@@ -933,11 +933,15 @@ class _HealthDashboardState extends State<HealthDashboard> {
     );
   }
 
-  void _showUserInfoDialog(BuildContext context) {
+  
+
+
+void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Center(child: Text('Profile')),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1059,13 +1063,14 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.map, color: Colors.green, size: 20),
-                    SizedBox(width: 8),
+                    Icon(Icons.map, color: Colors.green, size: 18),
+                    SizedBox(width: 6),
                     Flexible(
                       child: Text(
                         'View Location Of PregMama',
-                        style: TextStyle(color: Colors.green),
+                        style: TextStyle(color: Colors.green, fontSize: 14),
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ],

@@ -81,8 +81,8 @@ class ChartsDataPage extends StatelessWidget {
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // 2 cards per row
-          childAspectRatio: 4 / 3,
+          crossAxisCount: 2,
+          childAspectRatio: 1.1,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),

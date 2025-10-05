@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:patient_monitor/app/auth/auth_state.dart';
-import 'package:patient_monitor/app/app_routes.dart';
-import 'package:patient_monitor/app/auth/auth_service.dart';
+import 'package:Awoapa/app/auth/auth_state.dart';
+import 'package:Awoapa/app/app_routes.dart';
+import 'package:Awoapa/app/auth/auth_service.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
