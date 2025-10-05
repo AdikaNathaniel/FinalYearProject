@@ -6,8 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
 
 import 'view-appointment.dart';
 import 'create_cancel-appointment.dart';
@@ -133,92 +135,110 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(20),
+        insetPadding: const EdgeInsets.all(10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SingleChildScrollView(
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                const Row(
-                  children: [
-                    Icon(Icons.medical_services, color: Colors.blue, size: 28),
-                    SizedBox(width: 10),
-                    Text(
-                      'PATIENT MEDICAL SUMMARY',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                
-                // Patient ID
-                Text(
-                  'Patient ID: ${_patientIdController.text.trim()}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                
-                // Tabs for different data sections
-                DefaultTabController(
-                  length: 4,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+            maxWidth: MediaQuery.of(context).size.width * 0.95,
+          ),
+          child: SingleChildScrollView(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const TabBar(
-                        isScrollable: true,
-                        tabs: [
-                          Tab(text: 'Vitals'),
-                          Tab(text: 'Preeclampsia'),
-                          Tab(text: 'Symptoms'),
-                          Tab(text: 'Anaemia'),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 400,
-                        child: TabBarView(
-                          children: [
-                            _buildVitalsTab(patientData['vitals']),
-                            _buildPreeclampsiaTab(patientData['preeclampsia']),
-                            _buildSymptomsTab(patientData['symptoms']),
-                            _buildAnaemiaTab(patientData['anaemia']),
-                          ],
+                      Icon(Icons.medical_services, color: Colors.blue, size: 24),
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'PATIENT MEDICAL SUMMARY',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Close'),
+                  const SizedBox(height: 16),
+                  
+                  // Patient ID
+                  Text(
+                    'Patient ID: ${_patientIdController.text.trim()}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
                     ),
-                    ElevatedButton(
-                      onPressed: () => _generateAndShowPdfOptions(patientData),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Tabs for different data sections
+                  SizedBox(
+                    height: 500,
+                    child: DefaultTabController(
+                      length: 4,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: const TabBar(
+                              isScrollable: true,
+                              labelStyle: TextStyle(fontSize: 12),
+                              tabs: [
+                                Tab(text: 'Vitals'),
+                                Tab(text: 'Preeclampsia'),
+                                Tab(text: 'Symptoms'),
+                                Tab(text: 'Anaemia'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: TabBarView(
+                              children: [
+                                _buildVitalsTab(patientData['vitals']),
+                                _buildPreeclampsiaTab(patientData['preeclampsia']),
+                                _buildSymptomsTab(patientData['symptoms']),
+                                _buildAnaemiaTab(patientData['anaemia']),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Text('Export PDF'),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _generateAndDownloadPdf(patientData),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
+                        child: const Text('Download PDF'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -291,10 +311,11 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                   Text(
                     'Status: ${status.toUpperCase()}',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: statusColor,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -348,6 +369,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -415,23 +437,24 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                   Text(
                     'Risk Level: $riskClass',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: riskColor,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 5),
                   Text(
                     'Probability: $probability%',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: riskColor,
                     ),
                   ),
                   Text(
                     'Raw Score: ${anaemiaData['rawScore'] ?? 'N/A'}',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: riskColor,
                     ),
                   ),
@@ -466,12 +489,9 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ],
           ),
           
-          // Feature Contributions Section
+          // Feature Contributions Section - Improved Layout
           if (anaemiaData['featureContributions'] != null)
-          _buildDataCard(
-            'Feature Contributions',
-            _buildFeatureContributions(anaemiaData['featureContributions']),
-          ),
+          _buildFeatureContributionsCard(anaemiaData['featureContributions']),
           
           if (anaemiaData['createdAt'] != null)
             Padding(
@@ -486,8 +506,12 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     );
   }
 
-  List<Widget> _buildFeatureContributions(dynamic featureContributions) {
-    if (featureContributions == null) return [const Text('No feature contributions data')];
+  Widget _buildFeatureContributionsCard(dynamic featureContributions) {
+    if (featureContributions == null) {
+      return _buildDataCard('Feature Contributions', [
+        const Text('No feature contributions data')
+      ]);
+    }
     
     final contributions = featureContributions as Map<String, dynamic>;
     final List<Widget> contributionWidgets = [];
@@ -499,37 +523,59 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
         final contribution = value['contribution']?.toStringAsFixed(2) ?? 'N/A';
         
         contributionWidgets.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    _formatFeatureName(key),
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
+                Text(
+                  _formatFeatureName(key),
+                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Input: $input',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Weight: $weight',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Contr: $contribution',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Input: $input',
+                        style: const TextStyle(fontSize: 10, color: Colors.blue),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Weight: $weight',
+                        style: const TextStyle(fontSize: 10, color: Colors.green),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Contribution: $contribution',
+                        style: const TextStyle(fontSize: 10, color: Colors.orange),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -538,7 +584,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       }
     });
     
-    return contributionWidgets;
+    return _buildDataCard('Feature Contributions', contributionWidgets);
   }
 
   String _formatFeatureName(String key) {
@@ -559,7 +605,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -567,11 +613,11 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               title,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 14,
                 color: Colors.blue,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             ...children,
           ],
         ),
@@ -584,20 +630,20 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey),
-          const SizedBox(width: 10),
+          Icon(icon, size: 18, color: Colors.grey),
+          const SizedBox(width: 8),
           Expanded(
             flex: 2,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               value,
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
               textAlign: TextAlign.right,
             ),
           ),
@@ -612,13 +658,13 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: isPresent ? Colors.red : Colors.grey),
-          const SizedBox(width: 10),
+          Icon(icon, size: 18, color: isPresent ? Colors.red : Colors.grey),
+          const SizedBox(width: 8),
           Expanded(
             flex: 2,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
             ),
           ),
           Expanded(
@@ -628,6 +674,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               style: TextStyle(
                 color: isPresent ? Colors.red : Colors.green,
                 fontWeight: FontWeight.w500,
+                fontSize: 12,
               ),
               textAlign: TextAlign.right,
             ),
@@ -675,13 +722,13 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     );
   }
 
-  // Enhanced PDF Generation with Export Options
-  Future<void> _generateAndShowPdfOptions(Map<String, dynamic> patientData) async {
+  // PDF Generation and Download Functionality
+  Future<void> _generateAndDownloadPdf(Map<String, dynamic> patientData) async {
     setState(() => isLoading = true);
     
     try {
       final pdfBytes = await _generatePdfBytes(patientData);
-      _showPdfExportOptions(pdfBytes, patientData);
+      await _saveAndOpenPdf(pdfBytes);
     } catch (e) {
       _showErrorDialog('Error generating PDF: $e');
     } finally {
@@ -695,18 +742,18 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     final formattedDate = dateFormat.format(DateTime.now());
     final patientId = _patientIdController.text.trim();
 
-    final normalTextStyle = pw.TextStyle(fontSize: 12);
-    final boldTextStyle = pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold);
-    final titleTextStyle = pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800);
-    final headerTextStyle = pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.indigo700);
+    final normalTextStyle = pw.TextStyle(fontSize: 10);
+    final boldTextStyle = pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold);
+    final titleTextStyle = pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800);
+    final headerTextStyle = pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.indigo700);
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.all(24),
         header: (pw.Context context) {
           return pw.Container(
-            padding: const pw.EdgeInsets.only(bottom: 16),
+            padding: const pw.EdgeInsets.only(bottom: 12),
             decoration: pw.BoxDecoration(
               border: pw.Border(bottom: pw.BorderSide(width: 1, color: PdfColors.grey300)),
             ),
@@ -719,7 +766,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                     pw.Text(
                       'PATIENT MEDICAL SUMMARY',
                       style: pw.TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                         color: PdfColors.grey600,
                       ),
@@ -727,13 +774,13 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                     pw.Text(
                       formattedDate,
                       style: pw.TextStyle(
-                        fontSize: 10,
+                        fontSize: 8,
                         color: PdfColors.grey600,
                       ),
                     ),
                   ],
                 ),
-                pw.SizedBox(height: 16),
+                pw.SizedBox(height: 12),
                 pw.Center(
                   child: pw.Text(
                     'Patient ID: $patientId',
@@ -747,7 +794,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
         footer: (pw.Context context) {
           return pw.Container(
             alignment: pw.Alignment.centerRight,
-            margin: const pw.EdgeInsets.only(top: 10),
+            margin: const pw.EdgeInsets.only(top: 8),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
@@ -756,7 +803,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                 pw.Text(
                   'Page ${context.pageNumber} of ${context.pagesCount}',
                   style: pw.TextStyle(
-                    fontSize: 10,
+                    fontSize: 8,
                     color: PdfColors.grey600,
                   ),
                 ),
@@ -767,67 +814,67 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
         build: (pw.Context context) {
           return [
             pw.Container(
-              padding: const pw.EdgeInsets.all(16),
+              padding: const pw.EdgeInsets.all(12),
               decoration: pw.BoxDecoration(
                 color: PdfColors.blue50,
-                borderRadius: pw.BorderRadius.circular(8),
+                borderRadius: pw.BorderRadius.circular(6),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text('Vitals', style: titleTextStyle),
-                  pw.SizedBox(height: 12),
+                  pw.SizedBox(height: 8),
                   ..._buildPdfVitalsSection(patientData['vitals'], normalTextStyle, boldTextStyle),
                 ],
               ),
             ),
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 12),
             
             pw.Container(
-              padding: const pw.EdgeInsets.all(16),
+              padding: const pw.EdgeInsets.all(12),
               decoration: pw.BoxDecoration(
                 color: PdfColors.blue50,
-                borderRadius: pw.BorderRadius.circular(8),
+                borderRadius: pw.BorderRadius.circular(6),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text('Preeclampsia Assessment', style: titleTextStyle),
-                  pw.SizedBox(height: 12),
+                  pw.SizedBox(height: 8),
                   ..._buildPdfPreeclampsiaSection(patientData['preeclampsia'], normalTextStyle, boldTextStyle),
                 ],
               ),
             ),
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 12),
             
             pw.Container(
-              padding: const pw.EdgeInsets.all(16),
+              padding: const pw.EdgeInsets.all(12),
               decoration: pw.BoxDecoration(
                 color: PdfColors.blue50,
-                borderRadius: pw.BorderRadius.circular(8),
+                borderRadius: pw.BorderRadius.circular(6),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text('Symptoms', style: titleTextStyle),
-                  pw.SizedBox(height: 12),
+                  pw.SizedBox(height: 8),
                   ..._buildPdfSymptomsSection(patientData['symptoms'], normalTextStyle, boldTextStyle),
                 ],
               ),
             ),
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 12),
             
             pw.Container(
-              padding: const pw.EdgeInsets.all(16),
+              padding: const pw.EdgeInsets.all(12),
               decoration: pw.BoxDecoration(
                 color: PdfColors.blue50,
-                borderRadius: pw.BorderRadius.circular(8),
+                borderRadius: pw.BorderRadius.circular(6),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text('Anaemia Risk Assessment', style: titleTextStyle),
-                  pw.SizedBox(height: 12),
+                  pw.SizedBox(height: 8),
                   ..._buildPdfAnaemiaSection(patientData['anaemia'], normalTextStyle, boldTextStyle),
                 ],
               ),
@@ -847,19 +894,19 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     
     return [
       pw.Text('Core Vitals:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Glucose: ', style: boldTextStyle), pw.Text('${vitalsData['glucose']} mg/dL', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Heart Rate: ', style: boldTextStyle), pw.Text('${vitalsData['heartRate']} bpm', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('SpO2: ', style: boldTextStyle), pw.Text('${vitalsData['spo2']}%', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Body Temp: ', style: boldTextStyle), pw.Text('${vitalsData['bodyTemp']}°C', style: normalTextStyle)]),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Blood Pressure:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Systolic: ', style: boldTextStyle), pw.Text('${vitalsData['systolicBP']} mmHg', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Diastolic: ', style: boldTextStyle), pw.Text('${vitalsData['diastolicBP']} mmHg', style: normalTextStyle)]),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Other Metrics:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Skin Temp: ', style: boldTextStyle), pw.Text('${vitalsData['skinTemp']}°C', style: normalTextStyle)])
     ];
   }
@@ -873,19 +920,19 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     
     return [
       pw.Text('Status: $status', style: boldTextStyle.copyWith(color: PdfColors.orange)),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Blood Pressure:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Systolic: ', style: boldTextStyle), pw.Text('${preeclampsiaData['systolicBP']} mmHg', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Diastolic: ', style: boldTextStyle), pw.Text('${preeclampsiaData['diastolicBP']} mmHg', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('MAP: ', style: boldTextStyle), pw.Text('${preeclampsiaData['map']?.toStringAsFixed(1)} mmHg', style: normalTextStyle)]),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Urine Analysis:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Protein in Urine: ', style: boldTextStyle), pw.Text('${preeclampsiaData['proteinUrine']}', style: normalTextStyle)]),
       if (preeclampsiaData['createdAt'] != null)
         pw.Padding(
-          padding: const pw.EdgeInsets.only(top: 8),
+          padding: const pw.EdgeInsets.only(top: 6),
           child: pw.Text('Last updated: ${_formatDate(preeclampsiaData['createdAt'])}', style: normalTextStyle.copyWith(color: PdfColors.grey)),
         ),
     ];
@@ -898,16 +945,16 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     
     return [
       pw.Text('Patient: ${symptomsData['username'] ?? 'Unknown'}', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Reported Symptoms:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Headache: ', style: boldTextStyle), pw.Text(_formatBoolean(symptomsData['feelingHeadache']), style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Dizziness: ', style: boldTextStyle), pw.Text(_formatBoolean(symptomsData['feelingDizziness']), style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Nausea/Vomiting: ', style: boldTextStyle), pw.Text(_formatBoolean(symptomsData['vomitingAndNausea']), style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Abdominal Pain: ', style: boldTextStyle), pw.Text(_formatBoolean(symptomsData['painAtTopOfTommy']), style: normalTextStyle)]),
       if (symptomsData['createdAt'] != null)
         pw.Padding(
-          padding: const pw.EdgeInsets.only(top: 8),
+          padding: const pw.EdgeInsets.only(top: 6),
           child: pw.Text('Reported on: ${_formatDate(symptomsData['createdAt'])}', style: normalTextStyle.copyWith(color: PdfColors.grey)),
         ),
     ];
@@ -925,14 +972,14 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       pw.Text('Risk Level: $riskClass', style: boldTextStyle.copyWith(color: PdfColors.red)),
       pw.Text('Probability: $probability%', style: normalTextStyle),
       pw.Text('Raw Score: ${anaemiaData['rawScore'] ?? 'N/A'}', style: normalTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Key Metrics:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('BMI Value: ', style: boldTextStyle), pw.Text(anaemiaData['bmiValue']?.toStringAsFixed(1) ?? 'N/A', style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Age ≤35: ', style: boldTextStyle), pw.Text(_formatBoolean(anaemiaData['age35OrLess']), style: normalTextStyle)]),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Text('Risk Factors:', style: boldTextStyle),
-      pw.SizedBox(height: 8),
+      pw.SizedBox(height: 6),
       pw.Row(children: [pw.Text('Excessive Vomiting: ', style: boldTextStyle), pw.Text(_formatBoolean(anaemiaData['excessiveVomiting']), style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Diarrhea: ', style: boldTextStyle), pw.Text(_formatBoolean(anaemiaData['diarrhea']), style: normalTextStyle)]),
       pw.Row(children: [pw.Text('Heavy Menstrual Flow: ', style: boldTextStyle), pw.Text(_formatBoolean(anaemiaData['historyHeavyMenstrualFlow']), style: normalTextStyle)]),
@@ -947,238 +994,51 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       pw.Row(children: [pw.Text('Low Education: ', style: boldTextStyle), pw.Text(_formatBoolean(anaemiaData['education']), style: normalTextStyle)]),
       if (anaemiaData['createdAt'] != null)
         pw.Padding(
-          padding: const pw.EdgeInsets.only(top: 8),
+          padding: const pw.EdgeInsets.only(top: 6),
           child: pw.Text('Assessed on: ${_formatDate(anaemiaData['createdAt'])}', style: normalTextStyle.copyWith(color: PdfColors.grey)),
         ),
     ];
   }
 
-  // Enhanced PDF Export Options Dialog
-  void _showPdfExportOptions(Uint8List pdfBytes, Map<String, dynamic> patientData) {
-    final patientId = _patientIdController.text.trim();
-    final pdfSize = (pdfBytes.length / 1024 / 1024).toStringAsFixed(2); // Size in MB
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.picture_as_pdf, color: Colors.red),
-            SizedBox(width: 8),
-            Text('PDF Export Options'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Patient Summary for: $patientId',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('PDF Size: ${pdfSize} MB'),
-            SizedBox(height: 16),
-            Text(
-              'Choose export method:',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-        actions: [
-          // Copy summary text option
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              _copySummaryToClipboard(patientData);
-            },
-            icon: Icon(Icons.copy, size: 18),
-            label: Text('Copy Summary'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          
-          // Generate and show PDF content
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              _showPdfContent(pdfBytes, patientId);
-            },
-            icon: Icon(Icons.preview, size: 18),
-            label: Text('View PDF Content'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Copy summary text to clipboard
-  void _copySummaryToClipboard(Map<String, dynamic> patientData) {
-    final patientId = _patientIdController.text.trim();
-    final dateFormat = DateFormat('MMMM d, yyyy - h:mm a');
-    final formattedDate = dateFormat.format(DateTime.now());
-    
-    String summaryText = '''
-PATIENT MEDICAL SUMMARY
-Generated: $formattedDate
-Patient ID: $patientId
-
-VITALS:
-${_buildTextVitalsSection(patientData['vitals'])}
-
-PREECLAMPSIA ASSESSMENT:
-${_buildTextPreeclampsiaSection(patientData['preeclampsia'])}
-
-SYMPTOMS:
-${_buildTextSymptomsSection(patientData['symptoms'])}
-
-ANAEMIA RISK ASSESSMENT:
-${_buildTextAnaemiaSection(patientData['anaemia'])}
-''';
-
-    Clipboard.setData(ClipboardData(text: summaryText));
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Patient summary copied to clipboard'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
-  }
-
-  String _buildTextVitalsSection(dynamic vitalsData) {
-    if (vitalsData == null) return 'No vitals data available';
-    
-    return '''
-Glucose: ${vitalsData['glucose']} mg/dL
-Heart Rate: ${vitalsData['heartRate']} bpm
-SpO2: ${vitalsData['spo2']}%
-Body Temp: ${vitalsData['bodyTemp']}°C
-Systolic BP: ${vitalsData['systolicBP']} mmHg
-Diastolic BP: ${vitalsData['diastolicBP']} mmHg
-Skin Temp: ${vitalsData['skinTemp']}°C
-''';
-  }
-
-  String _buildTextPreeclampsiaSection(dynamic preeclampsiaData) {
-    if (preeclampsiaData == null) return 'No preeclampsia data available';
-    
-    return '''
-Status: ${preeclampsiaData['status'] ?? 'Unknown'}
-Systolic BP: ${preeclampsiaData['systolicBP']} mmHg
-Diastolic BP: ${preeclampsiaData['diastolicBP']} mmHg
-MAP: ${preeclampsiaData['map']?.toStringAsFixed(1)} mmHg
-Protein in Urine: ${preeclampsiaData['proteinUrine']}
-Last updated: ${preeclampsiaData['createdAt'] != null ? _formatDate(preeclampsiaData['createdAt']) : 'N/A'}
-''';
-  }
-
-  String _buildTextSymptomsSection(dynamic symptomsData) {
-    if (symptomsData == null) return 'No symptoms data available';
-    
-    return '''
-Patient: ${symptomsData['username'] ?? 'Unknown'}
-Headache: ${_formatBoolean(symptomsData['feelingHeadache'])}
-Dizziness: ${_formatBoolean(symptomsData['feelingDizziness'])}
-Nausea/Vomiting: ${_formatBoolean(symptomsData['vomitingAndNausea'])}
-Abdominal Pain: ${_formatBoolean(symptomsData['painAtTopOfTommy'])}
-Reported on: ${symptomsData['createdAt'] != null ? _formatDate(symptomsData['createdAt']) : 'N/A'}
-''';
-  }
-
-  String _buildTextAnaemiaSection(dynamic anaemiaData) {
-    if (anaemiaData == null) return 'No anaemia assessment available';
-    
-    return '''
-Risk Level: ${anaemiaData['riskClass'] ?? 'Unknown'}
-Probability: ${anaemiaData['probability']?.toStringAsFixed(1) ?? 'N/A'}%
-Raw Score: ${anaemiaData['rawScore'] ?? 'N/A'}
-BMI Value: ${anaemiaData['bmiValue']?.toStringAsFixed(1) ?? 'N/A'}
-Age ≤35: ${_formatBoolean(anaemiaData['age35OrLess'])}
-Assessed on: ${anaemiaData['createdAt'] != null ? _formatDate(anaemiaData['createdAt']) : 'N/A'}
-''';
-  }
-
-  // Show PDF content in a dialog
-  void _showPdfContent(Uint8List pdfBytes, String patientId) {
-    final pdfSize = pdfBytes.length;
-    final pdfSizeText = pdfSize > 1024 * 1024 
-        ? '${(pdfSize / 1024 / 1024).toStringAsFixed(2)} MB'
-        : '${(pdfSize / 1024).toStringAsFixed(2)} KB';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.picture_as_pdf, color: Colors.red),
-            SizedBox(width: 8),
-            Text('PDF Generated Successfully'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Patient: $patientId'),
-            SizedBox(height: 8),
-            Text('PDF Size: $pdfSizeText'),
-            SizedBox(height: 8),
-            Text('Pages: 1'),
-            SizedBox(height: 16),
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'PDF is ready! You can:',
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  SizedBox(height: 8),
-                  Text('• Copy summary text to clipboard'),
-                  Text('• Save this information manually'),
-                  Text('• Share the text content'),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _copySummaryToClipboard(_currentPatientData!);
-            },
-            child: Text('Copy Summary Text'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
-          ),
-        ],
-      ),
-    );
+  // Save and Open PDF functionality for mobile
+  Future<void> _saveAndOpenPdf(Uint8List pdfBytes) async {
+    try {
+      // Get the directory for saving the file
+      final directory = await getExternalStorageDirectory();
+      final downloadsDirectory = Directory('/storage/emulated/0/Download');
+      
+      // Use Downloads directory if available, otherwise use app directory
+      final saveDir = downloadsDirectory.existsSync() ? downloadsDirectory : directory!;
+      
+      // Create filename with timestamp
+      final fileName = 'patient_summary_${_patientIdController.text.trim()}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+      final filePath = '${saveDir.path}/$fileName';
+      
+      // Save the file
+      final file = File(filePath);
+      await file.writeAsBytes(pdfBytes);
+      
+      // Open the file
+      await OpenFile.open(filePath);
+      
+      _showSuccessDialog('PDF downloaded successfully!\nFile: $fileName');
+      
+    } catch (e) {
+      // Fallback: Use getApplicationDocumentsDirectory if external storage fails
+      try {
+        final directory = await getApplicationDocumentsDirectory();
+        final fileName = 'patient_summary_${_patientIdController.text.trim()}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+        final filePath = '${directory.path}/$fileName';
+        
+        final file = File(filePath);
+        await file.writeAsBytes(pdfBytes);
+        await OpenFile.open(filePath);
+        
+        _showSuccessDialog('PDF saved to app documents!\nFile: $fileName');
+      } catch (e) {
+        _showErrorDialog('Failed to save PDF: $e');
+      }
+    }
   }
 
   void _showUserInfoDialog(BuildContext context) {
@@ -1514,6 +1374,7 @@ Assessed on: ${anaemiaData['createdAt'] != null ? _formatDate(anaemiaData['creat
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
