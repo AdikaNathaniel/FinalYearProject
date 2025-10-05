@@ -23,6 +23,7 @@ import  'paystack-home.dart';
 // import 'hardware-live-data.dart';
 import 'anemia-assessment.dart';
 import 'chart-data.dart';
+import 'appointment-schedule-by-medic.dart';
 
 void main() {
   runApp(const MyApp());
@@ -77,7 +78,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
     super.initState();
     _isOnDashboardPage = true; // Set to true when dashboard loads
     _fetchVitalData();
-    Timer.periodic(const Duration(seconds: 30), (Timer t) => _fetchVitalData());
+    Timer.periodic(const Duration(seconds: 120), (Timer t) => _fetchVitalData());
     
     // Changed to 3 minutes and only checks when on dashboard
     _alertTimer = Timer.periodic(const Duration(minutes: 3), (Timer t) {
@@ -660,18 +661,32 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 ),
               ),
             ),
+            // ListTile(
+            //   leading: const Icon(Icons.calendar_today),
+            //   title: const Text('Create-Cancel Appointment'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) =>
+            //               CreateCancelAppointmentPage(userEmail: widget.userEmail)),
+            //     );
+            //   },
+            // ),
+
             ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('Create-Cancel Appointment'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          CreateCancelAppointmentPage(userEmail: widget.userEmail)),
-                );
-              },
-            ),
+  leading: const Icon(Icons.calendar_today),
+  title: const Text('Schedule Appointment'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppointmentScheduleByMedicPage(),
+      ),
+    );
+  },
+),
+
             ListTile(
               leading: const Icon(Icons.health_and_safety),
               title: const Text('Pregnancy Tips'),

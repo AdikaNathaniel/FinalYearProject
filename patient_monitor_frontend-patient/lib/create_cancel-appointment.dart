@@ -33,7 +33,21 @@ class _CreateCancelAppointmentPageState
     DateTime now = DateTime.now();
     _selectedDate = now;
     _selectedTimeOfDay = TimeOfDay.fromDateTime(now);
-    _updateDateTimeStrings();
+    
+    // Format the date immediately (doesn't need context)
+    _selectedDay =
+        '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+    
+    // Don't format time here - will be done in build when context is available
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Now context is available, format the time
+    if (_selectedTimeOfDay != null && _selectedTime.isEmpty) {
+      _selectedTime = _selectedTimeOfDay!.format(context);
+    }
   }
 
   void _updateDateTimeStrings() {
@@ -235,7 +249,7 @@ class _CreateCancelAppointmentPageState
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Appointment Management',
+          'Manage Appointment',
           style: TextStyle(
             color: Colors.white,
           ),

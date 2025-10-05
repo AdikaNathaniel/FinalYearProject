@@ -52,6 +52,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
 
   int startIndex = 0;
   Timer? _timer; // Store the timer
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -63,7 +64,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       if (mounted) {
         setState(() {
-          startIndex = (startIndex + 8 ) % tips.length;
+          startIndex = (startIndex + 8) % tips.length;
         });
       }
     });
@@ -72,6 +73,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
   @override
   void dispose() {
     _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -153,14 +155,16 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> displayedTips = tips.sublist(
-      startIndex, 
-      startIndex + 4 > tips.length ? tips.length : startIndex + 4
-    );
+    // Get 8 tips starting from startIndex
+    List<Map<String, dynamic>> displayedTips = [];
+    for (int i = 0; i < 8; i++) {
+      int tipIndex = (startIndex + i) % tips.length;
+      displayedTips.add(tips[tipIndex]);
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pregnancy Wellness Tips",
+        title: Text("Pregnancy Tips",
           style: TextStyle(
             color: Colors.white,
           ),
@@ -193,68 +197,71 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
         ),
         child: Padding(
           padding: EdgeInsets.all(12.0),
-          child: GridView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: displayedTips.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75, // Reduced from 0.85 to fit better
-              crossAxisSpacing: 8, // Reduced spacing
-              mainAxisSpacing: 8, // Reduced spacing
-            ),
-            itemBuilder: (context, index) {
-              var tip = displayedTips[index];
-              return AnimatedSwitcher(
-                duration: Duration(milliseconds: 800),
-                child: Card(
-                  key: ValueKey(tip["title"]),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 5,
-                  color: Colors.pink[50],
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0), // Reduced padding
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(tip["icon"], size: 40, color: Colors.pinkAccent), // Reduced icon size
-                        SizedBox(height: 8), // Reduced spacing
-                        Text(
-                          tip["title"],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14, // Reduced font size
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2, // Limit title to 2 lines
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 6), // Reduced spacing
-                        Expanded(
-                          child: Text(
-                            tip["description"],
+          child: Scrollbar(
+            controller: _scrollController,
+            child: GridView.builder(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              shrinkWrap: false,
+              itemCount: displayedTips.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75, // Reduced from 0.85 to fit better
+                crossAxisSpacing: 8, // Reduced spacing
+                mainAxisSpacing: 8, // Reduced spacing
+              ),
+              itemBuilder: (context, index) {
+                var tip = displayedTips[index];
+                return AnimatedSwitcher(
+                  duration: Duration(milliseconds: 800),
+                  child: Card(
+                    key: ValueKey(tip["title"]),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 5,
+                    color: Colors.pink[50],
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0), // Reduced padding
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(tip["icon"], size: 40, color: Colors.pinkAccent), // Reduced icon size
+                          SizedBox(height: 8), // Reduced spacing
+                          Text(
+                            tip["title"],
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 12, // Reduced font size
-                              color: Colors.grey[700],
+                              fontSize: 14, // Reduced font size
+                              fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 3, // Limit description to 3 lines
+                            maxLines: 2, // Limit title to 2 lines
                             overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 6), // Reduced spacing
+                          Expanded(
+                            child: Text(
+                              tip["description"],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12, // Reduced font size
+                                color: Colors.grey[700],
+                              ),
+                              maxLines: 3, // Limit description to 3 lines
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
     );
   }
 }
-
 
 // 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
 
