@@ -190,9 +190,8 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              // Colors.blue,
-              // Colors.red,
-              Colors.white
+              Colors.blue,
+               Colors.red,           
             ],
           ),
         ),

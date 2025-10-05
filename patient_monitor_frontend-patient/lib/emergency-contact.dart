@@ -57,7 +57,7 @@ class EmergencyContactsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Emergency Contacts Management'),
+        title: const Text('Manage Contacts'),
         centerTitle: true,
         backgroundColor: Colors.redAccent,
         foregroundColor: Colors.white,
