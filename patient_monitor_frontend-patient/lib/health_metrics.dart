@@ -70,21 +70,27 @@ class _HealthDashboardState extends State<HealthDashboard> {
   Timer? _alertTimer;
   bool _showAlertDialog = false;
   bool _hasPostedInitialData = false;
+  bool _isOnDashboardPage = false; // Track if user is on dashboard
 
   @override
   void initState() {
     super.initState();
+    _isOnDashboardPage = true; // Set to true when dashboard loads
     _fetchVitalData();
     Timer.periodic(const Duration(seconds: 30), (Timer t) => _fetchVitalData());
     
-    _alertTimer = Timer.periodic(const Duration(minutes: 2), (Timer t) {
-      _checkAlarmingValues();
-      _sendPredictionData();
+    // Changed to 3 minutes and only checks when on dashboard
+    _alertTimer = Timer.periodic(const Duration(minutes: 3), (Timer t) {
+      if (_isOnDashboardPage && mounted) {
+        _checkAlarmingValues();
+        _sendPredictionData();
+      }
     });
   }
 
   @override
   void dispose() {
+    _isOnDashboardPage = false; // Set to false when leaving dashboard
     _alertTimer?.cancel();
     super.dispose();
   }
@@ -103,7 +109,9 @@ class _HealthDashboardState extends State<HealthDashboard> {
             vitalData = responseData['result'];
             isLoading = false;
           });
-          _checkAlarmingValues();
+          if (_isOnDashboardPage && mounted) {
+            _checkAlarmingValues();
+          }
         } else {
           setState(() {
             errorMessage = responseData['message'] ?? 'Failed to fetch data';
@@ -124,18 +132,10 @@ class _HealthDashboardState extends State<HealthDashboard> {
     }
   }
 
-  // Helper method to scale protein level from 0-9 to 0-4
-  // double _scaleProteinLevel(double rawLevel) {
-  //   final scaled = rawLevel / 1;
-  //   return scaled.clamp(0.0, 4.0);
-  // }
-
   double _scaleProteinLevel(double rawLevel) {
-  return rawLevel;
-}
+    return rawLevel;
+  }
 
-
-  // Fixed method to send prediction data
   Future<void> _sendPredictionData() async {
     try {
       final systolicBP = vitalData?['systolicBP']?.toDouble() ?? 0.0;
@@ -145,7 +145,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
 
       print('Sending prediction data - Systolic: $systolicBP, Diastolic: $diastolicBP, Protein: $proteinUrine');
 
-      // Always use PUT method since POST doesn't work properly
       final response = await http.put(
         Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-esp32-predictions/patient/001'),
         headers: {'Content-Type': 'application/json'},
@@ -176,7 +175,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
   }
 
   void _checkAlarmingValues() {
-    if (vitalData == null) return;
+    if (vitalData == null || !_isOnDashboardPage || !mounted) return;
     
     final systolicBP = vitalData?['systolicBP']?.toDouble();
     final diastolicBP = vitalData?['diastolicBP']?.toDouble();
@@ -211,13 +210,15 @@ class _HealthDashboardState extends State<HealthDashboard> {
       alerts.add('Please check in with your clinical care team for guidance on your temperature monitoring.');
     }
 
-    if (alerts.isNotEmpty && !_showAlertDialog) {
+    if (alerts.isNotEmpty && !_showAlertDialog && _isOnDashboardPage && mounted) {
       _showAlertDialog = true;
       _showAlarmingValuesAlert(alerts);
     }
   }
 
   void _showAlarmingValuesAlert(List<String> alerts) {
+    if (!mounted || !_isOnDashboardPage) return;
+    
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -250,7 +251,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       color: Colors.teal, size: 28),
                 ),
                 const SizedBox(width: 12),
-                const Center(
+                const Expanded(
                   child: Text(
                     "Health Alerts",
                     style: TextStyle(
@@ -280,24 +281,20 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       children: [
                         CircleAvatar(
                           backgroundColor: Colors.teal.shade100,
+                          radius: 16,
                           child: Text(
                             "$index",
                             style: const TextStyle(
-                                color: Colors.teal, fontWeight: FontWeight.bold),
+                                color: Colors.teal, 
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  msg,
-                                  style: const TextStyle(fontSize: 15, height: 1.3),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            msg,
+                            style: const TextStyle(fontSize: 15, height: 1.3),
                           ),
                         ),
                       ],
@@ -363,11 +360,11 @@ class _HealthDashboardState extends State<HealthDashboard> {
       final difference = now.difference(createdAt);
       
       if (difference.inMinutes < 1) return 'Just now';
-      if (difference.inMinutes < 60) return '${difference.inMinutes} minutes ago';
-      if (difference.inHours < 24) return '${difference.inHours} hours ago';
-      return '${difference.inDays} days ago';
+      if (difference.inMinutes < 60) return '${difference.inMinutes} min ago';
+      if (difference.inHours < 24) return '${difference.inHours}h ago';
+      return '${difference.inDays}d ago';
     } catch (e) {
-      return 'Unknown time';
+      return 'Unknown';
     }
   }
 
@@ -465,16 +462,16 @@ class _HealthDashboardState extends State<HealthDashboard> {
 
   void _showUrineStripDialog(BuildContext context) {
     final List<Color> colors = [
-      Color(0xFF00C2C7), // Cyan Blue
-      Color(0xFFE5B7A5), // Light Pink
-      Color(0xFFB794C0), // Light Purple
-      Color(0xFFD8D8D8), // Light Gray
-      Color(0xFFF0D56D), // Light Yellow
-      Color(0xFFF5C243), // Yellow
-      Color(0xFFFFA500), // Orange
-      Color(0xFFFFD700), // Gold Yellow
-      Color(0xFFD2B48C), // Tan
-      Color(0xFF8B5A2B), // Dark Brown
+      Color(0xFF00C2C7), 
+      Color(0xFFE5B7A5), 
+      Color(0xFFB794C0), 
+      Color(0xFFD8D8D8), 
+      Color(0xFFF0D56D), 
+      Color(0xFFF5C243), 
+      Color(0xFFFFA500), 
+      Color(0xFFFFD700), 
+      Color(0xFFD2B48C), 
+      Color(0xFF8B5A2B), 
     ];
 
     int? selectedIndex = selectedProteinLevel;
@@ -486,35 +483,26 @@ class _HealthDashboardState extends State<HealthDashboard> {
           insetPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Center(
-                  child: Text(
-                    'Select Urine Strip Color',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                const Text(
+                  'Select Urine Strip Color',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 12.0),
                 
-                Text(
+                const Text(
                   'Tap on the color that matches your urine strip',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14.0),
+                  style: TextStyle(fontSize: 13.0),
                 ),
-                SizedBox(height: 8.0),
-                
-                // Text(
-                //   'Levels 0-9 will be scaled to 0-4 for analysis',
-                //   textAlign: TextAlign.center,
-                //   style: TextStyle(fontSize: 12.0, color: Colors.grey),
-                // ),
-                // SizedBox(height: 12.0),
+                SizedBox(height: 12.0),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -533,8 +521,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
                             Navigator.pop(context);
                           },
                           child: Container(
-                            width: 50.0,
-                            height: 50.0,
+                            width: 45.0,
+                            height: 45.0,
                             decoration: BoxDecoration(
                               color: colors[index],
                               shape: BoxShape.circle,
@@ -546,14 +534,14 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           ),
                         ),
                         SizedBox(height: 4.0),
-                        Text('$index\n($scaledLevel)', 
+                        Text('$index', 
                              textAlign: TextAlign.center, 
-                             style: TextStyle(fontSize: 10.0)),
+                             style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold)),
                       ],
                     );
                   }),
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 12.0),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -573,8 +561,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
                             Navigator.pop(context);
                           },
                           child: Container(
-                            width: 50.0,
-                            height: 50.0,
+                            width: 45.0,
+                            height: 45.0,
                             decoration: BoxDecoration(
                               color: colors[actualIndex],
                               shape: BoxShape.circle,
@@ -586,14 +574,14 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           ),
                         ),
                         SizedBox(height: 4.0),
-                        Text('$actualIndex\n($scaledLevel)', 
+                        Text('$actualIndex', 
                              textAlign: TextAlign.center, 
-                             style: TextStyle(fontSize: 10.0)),
+                             style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold)),
                       ],
                     );
                   }),
                 ),
-                SizedBox(height: 24.0),
+                SizedBox(height: 16.0),
                 
                 SizedBox(
                   width: double.infinity,
@@ -631,6 +619,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
           'Health Metrics Dashboard',
           style: TextStyle(
             color: Colors.white,
+            fontSize: 18,
           ),
         ),
         elevation: 0,
@@ -639,9 +628,10 @@ class _HealthDashboardState extends State<HealthDashboard> {
         actions: [
           IconButton(
             icon: CircleAvatar(
+              radius: 16,
               child: Text(
                 widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
-                style: const TextStyle(color: Colors.blue),
+                style: const TextStyle(color: Colors.blue, fontSize: 16),
               ),
               backgroundColor: Colors.white,
             ),
@@ -830,7 +820,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -853,9 +843,9 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   children: [
                     GridView.count(
                       crossAxisCount: 2,
-                      childAspectRatio: 1.3,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.95,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
@@ -924,13 +914,10 @@ class _HealthDashboardState extends State<HealthDashboard> {
                     ),
 
                     if (selectedProteinLevel != null) ...[
-                      SizedBox(height: 16),
-                      Container(
-                        width: double.infinity,
-                        child: ProteinCard( 
-                          proteinLevel: selectedProteinLevel!,
-                          color: selectedProteinColor!,
-                        ),
+                      SizedBox(height: 12),
+                      ProteinCard( 
+                        proteinLevel: selectedProteinLevel!,
+                        color: selectedProteinColor!,
                       ),
                     ],
                   ],
@@ -951,169 +938,171 @@ class _HealthDashboardState extends State<HealthDashboard> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Center(child: Text('Profile')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.email),
-                const SizedBox(width: 10),
-                Text(widget.userEmail),
-              ],
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context);
-                _showEmergencyAlertDialog(context);
-              },
-              child: Row(
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.warning, color: Colors.red),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Send An Emergency Alert',
-                    style: TextStyle(
-                      color: Colors.blue,
+                  const Icon(Icons.email, size: 20),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      widget.userEmail,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                  ),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.settings, color: Colors.blue),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Settings',
-                    style: TextStyle(
-                      color: Colors.blue,
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEmergencyAlertDialog(context);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.warning, color: Colors.red, size: 20),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Send An Emergency Alert',
+                        style: TextStyle(color: Colors.blue),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NotificationListPage(),
-                  ),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.notifications_active, color: Colors.blue),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Notifications',
-                    style: TextStyle(
-                      color: Colors.blue,
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SetProfilePage(userEmail: widget.userEmail),
                     ),
-                  ),
-                ],
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.settings, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Settings',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationListPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.notifications_active, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Notifications',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ],
+                ),
+              ),
 
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SupportFormPage(),
-                  ),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.chat_bubble_outline, color: Colors.blue),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Need Help?',
-                    style: TextStyle(
-                      color: Colors.blue,
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SupportFormPage(),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MapPage(),
-                  ),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.map, color: Colors.green),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'View Location Of PregMama',
-                    style: TextStyle(
-                      color: Colors.green,
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.chat_bubble_outline, color: Colors.blue, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Need Help?',
+                      style: TextStyle(color: Colors.blue),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),         
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () async {
-                final response = await http.put(
-                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-                  headers: {'Content-Type': 'application/json'},
-                );
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MapPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.map, color: Colors.green, size: 20),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'View Location Of PregMama',
+                        style: TextStyle(color: Colors.green),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),         
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () async {
+                  final response = await http.put(
+                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    headers: {'Content-Type': 'application/json'},
+                  );
 
-                if (response.statusCode == 200) {
-                  final responseData = json.decode(response.body);
-                  if (responseData['success']) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
+                  if (response.statusCode == 200) {
+                    final responseData = json.decode(response.body);
+                    if (responseData['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: ${responseData['message']}",
+                          Colors.red);
+                    }
                   } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: ${responseData['message']}",
-                        Colors.red);
+                      _showSnackbar(
+                          context,
+                          "Logout failed: Server error",
+                          Colors.red);
                   }
-                } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: Server error",
-                        Colors.red);
-                }
-              },
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
-            ),
-          ],
+                },
+                child: const Text('Logout', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -1155,20 +1144,20 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 8,
+      elevation: 6,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: color.withOpacity(0.2),
@@ -1176,37 +1165,44 @@ class MetricCard extends StatelessWidget {
               child: Icon(
                 icon,
                 color: color,
-                size: 36,
+                size: 28,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 13,
                 color: Colors.grey[700],
               ),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
             Text(
-              'Last updated: $lastUpdated',
+              lastUpdated,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1232,111 +1228,128 @@ class AccelerometerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 8,
+      elevation: 6,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.green.withOpacity(0.2),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.directions,
                 color: Colors.green,
-                size: 36,
+                size: 28,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               'Accelerometer',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 13,
                 color: Colors.grey[700],
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Column(
-                  children: [
-                    Text(
-                      'X',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'X',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    Text(
-                      x,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          x,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  children: [
-                    Text(
-                      'Y',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Y',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    Text(
-                      y,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          y,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  children: [
-                    Text(
-                      'Z',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Z',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    Text(
-                      z,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          z,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
             Text(
-              'Last updated: $lastUpdated',
+              lastUpdated,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1362,111 +1375,128 @@ class GyroscopeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 8,
+      elevation: 6,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.teal.withOpacity(0.2),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.cached,
                 color: Colors.teal,
-                size: 36,
+                size: 28,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               'Gyroscope',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 13,
                 color: Colors.grey[700],
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Column(
-                  children: [
-                    Text(
-                      'X',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'X',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    Text(
-                      x,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          x,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  children: [
-                    Text(
-                      'Y',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Y',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    Text(
-                      y,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          y,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  children: [
-                    Text(
-                      'Z',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Z',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    Text(
-                      z,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          z,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
             Text(
-              'Last updated: $lastUpdated',
+              lastUpdated,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1485,102 +1515,87 @@ class ProteinCard extends StatelessWidget {
     required this.color,
   }) : super(key: key);
 
-  // double _scaleProteinLevel(double rawLevel) {
-  //   final scaled = rawLevel / 1;
-  //   return scaled.clamp(0.0, 4.0);
-  // }
-
-   double _scaleProteinLevel(double rawLevel) {
-  return rawLevel;
-}
-
+  double _scaleProteinLevel(double rawLevel) {
+    return rawLevel;
+  }
 
   @override
   Widget build(BuildContext context) {
     final scaledLevel = _scaleProteinLevel(proteinLevel.toDouble());
     
-    return Container(
-      width: double.infinity,
-      child: Card(
-        elevation: 8,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color.withOpacity(0.2),
-                ),
-                child: Icon(
-                  Icons.science,
-                  color: color,
-                  size: 40,
-                ),
+    return Card(
+      elevation: 6,
+      color: Colors.white,
+      margin: const EdgeInsets.symmetric(horizontal: 0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.2),
               ),
-              const SizedBox(width: 20),
-              
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Protein in Urine',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Raw Level: $proteinLevel',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    // Text(
-                    //   'Scaled Level: ${scaledLevel.toStringAsFixed(1)}',
-                    //   style: const TextStyle(
-                    //     fontSize: 16,
-                    //     color: Colors.blue,
-                    //   ),
-                    // ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Last updated: Just now',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
+              child: Icon(
+                Icons.science,
+                color: color,
+                size: 32,
               ),
-              
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.grey.shade300,
-                    width: 2,
+            ),
+            const SizedBox(width: 16),
+            
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Protein in Urine',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Level: $proteinLevel',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Last updated: Just now',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 2,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

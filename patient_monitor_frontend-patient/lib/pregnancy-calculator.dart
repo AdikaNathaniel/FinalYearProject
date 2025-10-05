@@ -118,7 +118,7 @@ class _PregnancyCalculatorScreenState extends State<PregnancyCalculatorScreen> {
 
               // Instruction Text
               Text(
-                "Select the first day of your last menstrual period (LMP)",
+                "Select the first day of your Last Menstrual Period ",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),

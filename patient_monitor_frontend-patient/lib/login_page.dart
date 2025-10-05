@@ -576,8 +576,7 @@ class _LoginPageState extends State<LoginPage> {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 16,
-          color: Colors.white,
-          decoration: TextDecoration.underline,
+          color: Colors.white
         ),
       ),
     );
@@ -704,8 +703,7 @@ class _LoginPageState extends State<LoginPage> {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 16,
-          color: Colors.white,
-          decoration: TextDecoration.underline,
+          color: Colors.white
         ),
       ),
     );

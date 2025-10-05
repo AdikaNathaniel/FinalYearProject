@@ -660,14 +660,26 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             const SizedBox(height: 20),
             
             // Manual Entry Card
+            // _buildSelectionCard(
+            //   title: "Manual Entry",
+            //   subtitle: "Enter Your Vitals Manually",
+            //   imageAsset: 'ManualEntry.jpg', // Update with your actual path
+            //   onTap: () {
+            //     setState(() => inputMethod = "manual");
+            //   },
+            // ),
+
+
+              // Manual Entry Card
             _buildSelectionCard(
-              title: "Manual Entry",
-              subtitle: "Enter Your Vitals Manually",
-              imageAsset: 'ManualEntry.jpg', // Update with your actual path
-              onTap: () {
-                setState(() => inputMethod = "manual");
-              },
-            ),
+  title: "Manual Entry",
+  subtitle: "Enter Your Vitals Manually",
+  imageAsset: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/ManualEntry.jpg',
+  onTap: () {
+    setState(() => inputMethod = "manual");
+  },
+),
+
           ],
         ),
       ],

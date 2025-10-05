@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -93,7 +92,6 @@ class _LoginPinPageState extends State<LoginPinPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          // builder: (context) => PregnancyComplicationsPage(userEmail: widget.userEmail),
           builder: (context) => AWOPASummarisedPage(userEmail: widget.userEmail),
         ),
       );
@@ -122,13 +120,11 @@ class _LoginPinPageState extends State<LoginPinPage> {
     } else if (userType == 'admin') {
       Navigator.pushReplacement(
         context,
-    MaterialPageRoute(
-  // builder: (context) => UserListPage(userEmail: widget.userEmail),
-   builder: (context) => AdminHomePage(userEmail: widget.userEmail)
-),
+        MaterialPageRoute(
+          builder: (context) => AdminHomePage(userEmail: widget.userEmail)
+        ),
       );
     } else {
-      // Fallback for unknown user types
       _showErrorDialog("Unknown user type: $userType");
     }
   }
@@ -142,48 +138,90 @@ class _LoginPinPageState extends State<LoginPinPage> {
       builder: (context) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.verified, color: Colors.green, size: 30),
+            Icon(Icons.verified, color: Colors.green, size: 28),
             SizedBox(width: 10),
-            Text("Success", style: TextStyle(fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(
+                "Success",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 60),
-            const SizedBox(height: 16),
-            Text(
-              message ?? "PIN verified successfully",
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Logged in as: ${widget.userType}",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 60),
+              const SizedBox(height: 16),
+              Text(
+                message ?? "PIN verified successfully",
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 15),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Logged in as:",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.userType,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Use the custom callback if provided, otherwise use default routing
-                if (widget.onSuccess != null) {
-                  widget.onSuccess!();
-                } else {
-                  _navigateBasedOnUserType();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (widget.onSuccess != null) {
+                    widget.onSuccess!();
+                  } else {
+                    _navigateBasedOnUserType();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              child: const Text("Continue", style: TextStyle(color: Colors.white)),
             ),
           ),
         ],
@@ -199,16 +237,44 @@ class _LoginPinPageState extends State<LoginPinPage> {
       builder: (context) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 30),
+            Icon(Icons.error_outline, color: Colors.red, size: 28),
             SizedBox(width: 10),
-            Text("Error", style: TextStyle(fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(
+                "Error",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
           ],
         ),
-        content: Text(message),
+        content: SingleChildScrollView(
+          child: Text(
+            message,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("OK", style: TextStyle(color: Colors.red)),
+          Center(
+            child: SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  "OK",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -256,21 +322,93 @@ class _LoginPinPageState extends State<LoginPinPage> {
                     child: Icon(Icons.lock, size: 60, color: Colors.blueAccent),
                   ),
                   const SizedBox(height: 30),
-                  ListTile(
-                    title: Text(
-                      "User: ${widget.userEmail}",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.account_circle,
+                                size: 24,
+                                color: Colors.blueAccent,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "User",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Text(
+                                        widget.userEmail,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.badge,
+                                size: 24,
+                                color: Colors.blueAccent,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Role",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      widget.userType,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    subtitle: Text(
-                      "Role: ${widget.userType}",
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    leading: const Icon(Icons.account_circle),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: pinController,
                     obscureText: true,
