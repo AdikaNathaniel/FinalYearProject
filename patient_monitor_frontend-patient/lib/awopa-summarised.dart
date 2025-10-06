@@ -1041,88 +1041,151 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     }
   }
 
-  void _showUserInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Center(child: Text('Profile')),
-        content: Column(
+
+void _showUserInfoDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        padding: const EdgeInsets.all(20),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  children: const [
-                    Icon(Icons.email),
-                    SizedBox(height: 20),
-                    Icon(Icons.settings, color: Colors.blue),
-                    SizedBox(height: 20),
-                    Icon(Icons.map, color: Colors.green),
-                  ],
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.userEmail),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'Settings',
-                        style: TextStyle(
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MapPage(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'View Location Of PregMama',
-                        style: TextStyle(
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            // Title
+            const Text(
+              'Profile',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
+            
+            // Email row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.email, size: 20),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      widget.userEmail,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Settings row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.settings, size: 20, color: Colors.black),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Settings',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Map row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MapPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.map, size: 20, color: Colors.black),
+                    const SizedBox(width: 12),
+                    const Flexible(
+                      child: Text(
+                        'View Location Of PregMama',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Logout button
             TextButton(
               onPressed: _logout,
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            
+            // Close button
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+
+
 
   void _showSnackbar(String message) {
     final snackBar = SnackBar(

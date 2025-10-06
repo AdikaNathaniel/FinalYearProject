@@ -949,8 +949,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
   }
 
   
-
-
 void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
