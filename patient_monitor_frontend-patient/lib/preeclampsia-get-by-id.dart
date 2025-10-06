@@ -146,7 +146,7 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Get Record by Patient ID'),
-        backgroundColor: const Color(0xFF2E7D9A),
+        backgroundColor: const Color(0xFF2196F3),
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -169,7 +169,7 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
                       const Icon(
                         Icons.search,
                         size: 48,
-                        color: Color(0xFF2E7D9A),
+                        color: Color(0xFF2196F3),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -198,7 +198,7 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : fetchRecord,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E7D9A),
+                            backgroundColor: const Color(0xFF2196F3),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

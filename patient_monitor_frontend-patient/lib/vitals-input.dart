@@ -27,38 +27,7 @@ class PreeclampsiaDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.favorite,
-                    color: Colors.white,
-                    size: 40,
-                  )              
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 30),
-            
-            // Dashboard Cards
+            // Dashboard Cards - Start directly with Create New Record
             _buildDashboardCard(
               context,
               title: 'Create New Record',

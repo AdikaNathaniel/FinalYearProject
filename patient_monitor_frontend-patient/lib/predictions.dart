@@ -290,7 +290,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 
             ListTile(
               leading: Icon(Icons.health_and_safety),
-              title: Text('Preeclampsia Prediction Testing'),
+              title: Text('Preeclampsia Testing'),
               onTap: () {
                 Navigator.push(
                   context,

@@ -68,7 +68,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                Icon(Icons.check_circle, color: Colors.green, size: 60),
+                Icon(Icons.check_circle, color: Color(0xFF2196F3), size: 60),
                 SizedBox(height: 20),
                 Text('Preeclampsia record updated successfully!'),
               ],
@@ -98,10 +98,10 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update Preeclampsia Record'),
+        title: const Text('Edit Record'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF2E7D9A),
+        backgroundColor: Color(0xFF2196F3),
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -148,13 +148,13 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
-                    colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
+                    colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF2E7D9A).withOpacity(0.3),
+                      color: Color(0xFF2196F3).withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -184,7 +184,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              "UPDATE RECORD",
+                              "Update Record",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -193,50 +193,6 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
                             ),
                           ],
                         ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Info Card
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.warning_amber_outlined,
-                            color: Color(0xFF2E7D9A),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Update Guidelines',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      )            
-                      // const SizedBox(height: 12),
-                      // const Text(
-                      //   'Only Enter The Vital Signs That Need To Be Modified.',
-                      //   style: TextStyle(
-                      //     color: Colors.grey,
-                      //     fontSize: 14,
-                      //     height: 1.5,
-                      //   ),
-                      // ),
-                    ],
-                  ),
                 ),
               ),
 
@@ -253,7 +209,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
 //                     //     children: [
 //                     //       Icon(
 //                     //         Icons.list_alt,
-//                     //         color: Color(0xFF2E7D9A),
+//                     //         color: Color(0xFF2196F3),
 //                     //         size: 24,
 //                     //       ),
 //                     //       const SizedBox(width: 12),
@@ -291,14 +247,14 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: Color(0xFF2E7D9A).withOpacity(0.1),
+              color: Color(0xFF2196F3).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Text(
                 step,
                 style: TextStyle(
-                  color: Color(0xFF2E7D9A),
+                  color: Color(0xFF2196F3),
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -315,7 +271,8 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
               ),
             ),
           ),
-        ],
+      
+        ],  
       ),
     );
   }
@@ -337,12 +294,12 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Color(0xFF2E7D9A).withOpacity(0.1),
+              color: Color(0xFF2196F3).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: Color(0xFF2E7D9A),
+              color: Color(0xFF2196F3),
               size: 20,
             ),
           ),
@@ -358,7 +315,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFF2E7D9A), width: 2),
+            borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),

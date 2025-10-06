@@ -54,7 +54,7 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                Icon(Icons.check_circle, color: Colors.green, size: 60),
+                Icon(Icons.check_circle, color: Color(0xFF2196F3), size: 60),
                 SizedBox(height: 20),
                 Text('Preeclampsia record deleted successfully!'),
               ],
@@ -86,7 +86,7 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
         title: const Text('Delete Record'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF2E7D9A),
+        backgroundColor: Color(0xFF2196F3),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -108,7 +108,7 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
                       const Icon(
                         Icons.delete,
                         size: 48,
-                        color: Color(0xFF2E7D9A),
+                        color: Color(0xFF2196F3),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -137,7 +137,7 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : deleteRecord,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E7D9A),
+                            backgroundColor: const Color(0xFF2196F3),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -154,33 +154,7 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              // Warning Card
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.warning_amber,
-                            color: Colors.orange[600],
-                            size: 24,
-                          )
-        
-                        ],
-                      )
-                     
-                    ],
-                  ),
-                ),
-              ),
+              )
             ],
           ),
         ),

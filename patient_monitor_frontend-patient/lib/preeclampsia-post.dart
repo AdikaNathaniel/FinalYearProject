@@ -201,7 +201,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D9A),
+                      backgroundColor: const Color(0xFF2196F3),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -236,12 +236,12 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D9A).withOpacity(0.1),
+              color: const Color(0xFF2196F3).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF2E7D9A),
+              color: const Color(0xFF2196F3),
               size: 20,
             ),
           ),
@@ -262,7 +262,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
               value,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2E7D9A),
+                color: Color(0xFF2196F3),
               ),
               textAlign: TextAlign.right,
             ),
@@ -292,7 +292,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
         title: const Text('Create Record'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF2E7D9A),
+        backgroundColor: Color(0xFF2196F3),
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -302,66 +302,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header Card
-              Card(
-                elevation: 4,
-                margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.medical_services,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Patient Vitals',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Enter patient vital signs for preeclampsia assessment',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
+              const SizedBox(height: 16),
               // Form Fields - Patient ID is now the first field
               _buildTextField(
                 patientIdController,
@@ -399,13 +340,13 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
-                    colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
+                    colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF2E7D9A).withOpacity(0.3),
+                      color: Color(0xFF2196F3).withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -435,7 +376,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              "CREATE RECORD",
+                              "Create Record",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -447,49 +388,6 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                 ),
               ),
 
-              const SizedBox(height: 24),
-
-              // Info Card
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Color(0xFF2E7D9A),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Important Information',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Please Ensure All Vital Signs are Accurately Measured and Recorded',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -514,12 +412,12 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Color(0xFF2E7D9A).withOpacity(0.1),
+              color: Color(0xFF2196F3).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: Color(0xFF2E7D9A),
+              color: Color(0xFF2196F3),
               size: 20,
             ),
           ),
@@ -535,7 +433,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFF2E7D9A), width: 2),
+            borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
