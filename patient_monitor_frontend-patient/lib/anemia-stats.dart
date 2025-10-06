@@ -257,8 +257,8 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
 
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 20,
-      runSpacing: 12,
+      spacing: 16,
+      runSpacing: 8,
       children: legendItems
           .where((item) => (riskDist[item['key']] ?? 0) > 0)
           .map((item) => _buildLegendItem(
@@ -270,37 +270,41 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
   }
 
   Widget _buildLegendItem(Color color, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.4),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.4),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            overflow: TextOverflow.visible,
           ),
-        ),
-      ],
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -315,7 +319,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 1.0,
+          childAspectRatio: 1.1, // Increased to provide more vertical space
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           children: [
@@ -362,39 +366,40 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
             end: Alignment.bottomRight,
           ),
         ),
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0), // Reduced padding
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10), // Reduced padding
               decoration: BoxDecoration(
                 color: color.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: color),
+              child: Icon(icon, size: 28, color: color), // Smaller icon
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12), // Reduced spacing
             Text(
               value,
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 24, // Smaller font
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6), // Reduced spacing
             Flexible(
               child: Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 12, // Smaller font
                   color: Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
-                overflow: TextOverflow.visible,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -483,7 +488,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
 
   Widget _buildAnalysisMetric(String title, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14), // Reduced padding
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -495,7 +500,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18, // Smaller font
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -504,11 +509,13 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           Text(
             title,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 11, // Smaller font
               color: Colors.grey,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -545,7 +552,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20), // Reduced spacing
               Row(
                 children: [
                   Expanded(
@@ -558,7 +565,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                   ),
                   Container(
                     width: 2,
-                    height: 50,
+                    height: 40, // Reduced height
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Colors.blue.shade400, Colors.green.shade400],
@@ -589,32 +596,36 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10), // Reduced padding
           decoration: BoxDecoration(
             color: color.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: Icon(icon, color: color, size: 20), // Smaller icon
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8), // Reduced spacing
         Text(
           title,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 12, // Smaller font
             color: Colors.grey,
             fontWeight: FontWeight.w500,
-            ),
+          ),
           textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(
           date,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14, // Smaller font
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
           textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -651,13 +662,13 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16), // Reduced spacing
               ..._interpretations!.asMap().entries.map((entry) {
                 final index = entry.key;
                 final interpretation = entry.value.toString();
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 12), // Reduced margin
+                  padding: const EdgeInsets.all(12), // Reduced padding
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(12),
@@ -673,8 +684,8 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                     children: [
                       Container(
                         margin: const EdgeInsets.only(top: 2),
-                        width: 24,
-                        height: 24,
+                        width: 20, // Smaller container
+                        height: 20, // Smaller container
                         decoration: BoxDecoration(
                           color: Colors.amber.shade600,
                           shape: BoxShape.circle,
@@ -684,19 +695,19 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                             '${index + 1}',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 10, // Smaller font
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10), // Reduced spacing
                       Expanded(
                         child: Text(
                           interpretation,
                           style: const TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
+                            fontSize: 13, // Smaller font
+                            height: 1.4, // Reduced line height
                             color: Colors.black87,
                           ),
                         ),
@@ -841,22 +852,17 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                       ),
                     )
                   : SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: MediaQuery.of(context).size.height,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildHeaderCard(),
-                            _buildPieChart(),
-                            _buildStatisticsGrid(),
-                            _buildRiskAnalysisCard(),
-                            _buildTimelineCard(),
-                            _buildInsightsCard(),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildHeaderCard(),
+                          _buildPieChart(),
+                          _buildStatisticsGrid(),
+                          _buildRiskAnalysisCard(),
+                          _buildTimelineCard(),
+                          _buildInsightsCard(),
+                          const SizedBox(height: 32),
+                        ],
                       ),
                     ),
     );
