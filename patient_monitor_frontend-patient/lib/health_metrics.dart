@@ -836,21 +836,14 @@ class _HealthDashboardState extends State<HealthDashboard> {
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.blue,
-                Colors.red,
-              ],
-            ),
-          ),
+          // REMOVED the gradient background to use default theme background
           child: isLoading 
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
             : errorMessage.isNotEmpty
               ? Center(
                   child: Text(
                     errorMessage,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style: const TextStyle(color: Colors.red, fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 )
@@ -949,51 +942,87 @@ class _HealthDashboardState extends State<HealthDashboard> {
   }
 
   
-void _showUserInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Center(child: Text('Profile')),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+
+  void _showUserInfoDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Title
+            const Text(
+              'Profile',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Email row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
                 children: [
                   const Icon(Icons.email, size: 20),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Flexible(
                     child: Text(
                       widget.userEmail,
-                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              InkWell(
+            ),
+            const SizedBox(height: 12),
+            
+            // Emergency Alert row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
                   _showEmergencyAlertDialog(context);
                 },
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.warning, color: Colors.red, size: 20),
-                    SizedBox(width: 8),
-                    Flexible(
+                  children: [
+                    const Icon(Icons.warning, size: 20, color: Colors.red),
+                    const SizedBox(width: 12),
+                    const Flexible(
                       child: Text(
                         'Send An Emergency Alert',
-                        style: TextStyle(color: Colors.blue),
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              InkWell(
+            ),
+            const SizedBox(height: 12),
+            
+            // Settings row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -1004,19 +1033,28 @@ void _showUserInfoDialog(BuildContext context) {
                   );
                 },
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.settings, color: Colors.blue, size: 20),
-                    SizedBox(width: 8),
-                    Text(
+                  children: [
+                    const Icon(Icons.settings, size: 20, color: Colors.black),
+                    const SizedBox(width: 12),
+                    const Text(
                       'Settings',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
                     ),
+                    const Spacer(),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              InkWell(
+            ),
+            const SizedBox(height: 12),
+            
+            // Notifications row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -1027,20 +1065,28 @@ void _showUserInfoDialog(BuildContext context) {
                   );
                 },
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.notifications_active, color: Colors.blue, size: 20),
-                    SizedBox(width: 8),
-                    Text(
+                  children: [
+                    const Icon(Icons.notifications_active, size: 20, color: Colors.black),
+                    const SizedBox(width: 12),
+                    const Text(
                       'Notifications',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
                     ),
+                    const Spacer(),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 10),
-              InkWell(
+            ),
+            const SizedBox(height: 12),
+            
+            // Need Help row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -1051,19 +1097,28 @@ void _showUserInfoDialog(BuildContext context) {
                   );
                 },
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.chat_bubble_outline, color: Colors.blue, size: 20),
-                    SizedBox(width: 8),
-                    Text(
+                  children: [
+                    const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.black),
+                    const SizedBox(width: 12),
+                    const Text(
                       'Need Help?',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
                     ),
+                    const Spacer(),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              InkWell(
+            ),
+            const SizedBox(height: 12),
+            
+            // Map row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -1074,73 +1129,101 @@ void _showUserInfoDialog(BuildContext context) {
                   );
                 },
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.map, color: Colors.green, size: 18),
-                    SizedBox(width: 6),
-                    Flexible(
+                  children: [
+                    const Icon(Icons.map, size: 20, color: Colors.black),
+                    const SizedBox(width: 12),
+                    const Flexible(
                       child: Text(
                         'View Location Of PregMama',
-                        style: TextStyle(color: Colors.green, fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
-              ),         
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () async {
-                  final response = await http.put(
-                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-                    headers: {'Content-Type': 'application/json'},
-                  );
-
-                  if (response.statusCode == 200) {
-                    final responseData = json.decode(response.body);
-                    if (responseData['success']) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
-                    } else {
-                      _showSnackbar(
-                          context,
-                          "Logout failed: ${responseData['message']}",
-                          Colors.red);
-                    }
-                  } else {
-                      _showSnackbar(
-                          context,
-                          "Logout failed: Server error",
-                          Colors.red);
-                  }
-                },
-                child: const Text('Logout', style: TextStyle(color: Colors.red)),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Logout button
+            TextButton(
+              onPressed: () async {
+                final response = await http.put(
+                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    _showSnackbar(
+                        context,
+                        "Logout failed: ${responseData['message']}",
+                        Colors.red);
+                  }
+                } else {
+                    _showSnackbar(
+                        context,
+                        "Logout failed: Server error",
+                        Colors.red);
+                }
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            
+            // Close button
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  void _showSnackbar(BuildContext context, String message, Color color) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: color,
-      duration: const Duration(seconds: 2),
-    );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
+void _showSnackbar(BuildContext context, String message, Color color) {
+  final snackBar = SnackBar(
+    content: Text(message),
+    backgroundColor: color,
+    duration: const Duration(seconds: 2),
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
+
+  // void _showSnackbar(BuildContext context, String message, Color color) {
+  //   final snackBar = SnackBar(
+  //     content: Text(message),
+  //     backgroundColor: color,
+  //     duration: const Duration(seconds: 2),
+  //   );
+
+  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  // }
 }
 
 class MetricCard extends StatelessWidget {
@@ -1162,7 +1245,7 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 6,
+      elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -1246,7 +1329,7 @@ class AccelerometerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 6,
+      elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -1393,7 +1476,7 @@ class GyroscopeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 6,
+      elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -1542,7 +1625,7 @@ class ProteinCard extends StatelessWidget {
     final scaledLevel = _scaleProteinLevel(proteinLevel.toDouble());
     
     return Card(
-      elevation: 6,
+      elevation: 0,
       color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 0),
       shape: RoundedRectangleBorder(
