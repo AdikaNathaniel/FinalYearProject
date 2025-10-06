@@ -308,50 +308,50 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
     );
   }
 
-  Widget _buildStatisticsGrid() {
-    if (_statistics == null) return const SizedBox();
+  // Widget _buildStatisticsGrid() {
+  //   if (_statistics == null) return const SizedBox();
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 1.1, // Increased to provide more vertical space
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          children: [
-            _buildStatCard(
-              "High Risk Cases",
-              _statistics!["highRiskCount"].toString(),
-              Icons.warning,
-              const Color(0xFFE53E3E),
-            ),
-            _buildStatCard(
-              "Moderate Risk",
-              _statistics!["moderateRiskCount"].toString(),
-              Icons.info,
-              const Color(0xFFDD6B20),
-            ),
-            _buildStatCard(
-              "Mild Risk",
-              _statistics!["mildRiskCount"].toString(),
-              Icons.lightbulb_outline,
-              const Color(0xFFD69E2E),
-            ),
-            _buildStatCard(
-              "Low Risk Cases",
-              _statistics!["lowRiskCount"].toString(),
-              Icons.check_circle,
-              const Color(0xFF38A169),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return FadeTransition(
+  //     opacity: _fadeAnimation,
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16.0),
+  //       child: GridView.count(
+  //         crossAxisCount: 2,
+  //         shrinkWrap: true,
+  //         physics: const NeverScrollableScrollPhysics(),
+  //         childAspectRatio: 1.1, // Increased to provide more vertical space
+  //         mainAxisSpacing: 12,
+  //         crossAxisSpacing: 12,
+  //         children: [
+  //           _buildStatCard(
+  //             "High Risk Cases",
+  //             _statistics!["highRiskCount"].toString(),
+  //             Icons.warning,
+  //             const Color(0xFFE53E3E),
+  //           ),
+  //           _buildStatCard(
+  //             "Moderate Risk",
+  //             _statistics!["moderateRiskCount"].toString(),
+  //             Icons.info,
+  //             const Color(0xFFDD6B20),
+  //           ),
+  //           _buildStatCard(
+  //             "Mild Risk",
+  //             _statistics!["mildRiskCount"].toString(),
+  //             Icons.lightbulb_outline,
+  //             const Color(0xFFD69E2E),
+  //           ),
+  //           _buildStatCard(
+  //             "Low Risk Cases",
+  //             _statistics!["lowRiskCount"].toString(),
+  //             Icons.check_circle,
+  //             const Color(0xFF38A169),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Card(
@@ -857,7 +857,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                         children: [
                           _buildHeaderCard(),
                           _buildPieChart(),
-                          _buildStatisticsGrid(),
+                          // _buildStatisticsGrid(),
                           _buildRiskAnalysisCard(),
                           _buildTimelineCard(),
                           _buildInsightsCard(),
