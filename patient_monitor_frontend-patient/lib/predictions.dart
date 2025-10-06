@@ -411,7 +411,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Center(child: Text('Profile')),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -443,7 +443,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                     Flexible(
                       child: Text(
                         'Send An Emergency Alert',
-                        style: TextStyle(color: Colors.blue),
+                        style: TextStyle(color: Colors.black),
                       ),
                     ),
                   ],
@@ -463,11 +463,11 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.settings, color: Colors.blue, size: 20),
+                    Icon(Icons.settings, color: Colors.black, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Settings',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ],
                 ),
@@ -486,11 +486,11 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.notifications_active, color: Colors.blue, size: 20),
+                    Icon(Icons.notifications_active, color: Colors.black, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Notifications',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ],
                 ),
@@ -510,11 +510,11 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.chat_bubble_outline, color: Colors.blue, size: 20),
+                    Icon(Icons.chat_bubble_outline, color: Colors.black, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Need Help?',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ],
                 ),
@@ -533,12 +533,12 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.map, color: Colors.green, size: 18),
+                    Icon(Icons.map, color: Colors.black, size: 18),
                     SizedBox(width: 6),
                     Flexible(
                       child: Text(
                         'View Location Of PregMama',
-                        style: TextStyle(color: Colors.green, fontSize: 14),
+                        style: TextStyle(color: Colors.black, fontSize: 14),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
