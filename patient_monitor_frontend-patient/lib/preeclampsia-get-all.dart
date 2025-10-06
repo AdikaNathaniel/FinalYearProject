@@ -35,14 +35,18 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
   }
 
   Future<List<dynamic>> fetchRecords() async {
-    final response = await http.get(
-      Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/preeclampsia-vitals'),
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['result'];
-    } else {
-      throw Exception('Failed to load records');
+    try {
+      final response = await http.get(
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/preeclampsia-vitals'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['result'] ?? [];
+      } else {
+        throw Exception('Failed to load records: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
     }
   }
 
@@ -55,7 +59,7 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
       case 'severe preeclampsia':
         return const Color(0xFFF44336);
       default:
-        return const Color(0xFF9E9E9E);
+        return const Color(0xFF2196F3); // Blue for unknown/default
     }
   }
 
@@ -67,6 +71,28 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
     } else {
       return Icons.check_circle_outline;
     }
+  }
+
+  // Safe conversion methods to handle different data types
+  int safeToInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.round();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  double safeToDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  String safeToString(dynamic value) {
+    if (value == null) return 'N/A';
+    return value.toString();
   }
 
   Widget _buildVitalRow(IconData icon, String label, String value, Color iconColor) {
@@ -114,7 +140,7 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF26C6DA), Color(0xFF00BCD4)],
+              colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -152,7 +178,7 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                       ],
                     ),
                     child: const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF26C6DA)),
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -160,7 +186,7 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                     'Loading records...',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Color(0xFF26C6DA),
+                      color: Color(0xFF2196F3),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -199,6 +225,17 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                         fontSize: 16,
                         color: Colors.red,
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {});
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2196F3),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
@@ -251,8 +288,17 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 final record = snapshot.data![index];
-                final statusColor = getStatusColor(record['status']);
-                final bpIcon = getBPIcon(record['systolicBP'], record['diastolicBP']);
+                
+                // Safe data extraction with type conversion
+                final patientId = safeToString(record['patientId']);
+                final systolicBP = safeToInt(record['systolicBP']);
+                final diastolicBP = safeToInt(record['diastolicBP']);
+                final proteinUrine = safeToDouble(record['proteinUrine']);
+                final mapValue = safeToDouble(record['map']);
+                final status = safeToString(record['status']);
+                
+                final statusColor = getStatusColor(status);
+                final bpIcon = getBPIcon(systolicBP, diastolicBP);
 
                 return AnimatedBuilder(
                   animation: _slideController,
@@ -293,10 +339,9 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
                               onTap: () {
-                                // Add tap animation or navigation
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Tapped on Patient ${record['patientId']}'),
+                                    content: Text('Tapped on Patient $patientId'),
                                     backgroundColor: statusColor,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
@@ -342,16 +387,16 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                                               vertical: 8,
                                             ),
                                             decoration: BoxDecoration(
-                                              gradient: LinearGradient(
+                                              gradient: const LinearGradient(
                                                 colors: [
-                                                  statusColor,
-                                                  statusColor.withOpacity(0.8),
+                                                  Color(0xFF2196F3),
+                                                  Color(0xFF1976D2),
                                                 ],
                                               ),
                                               borderRadius: BorderRadius.circular(20),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: statusColor.withOpacity(0.3),
+                                                  color: Colors.blue.withOpacity(0.3),
                                                   blurRadius: 8,
                                                   offset: const Offset(0, 4),
                                                 ),
@@ -360,14 +405,14 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Icon(
+                                                const Icon(
                                                   Icons.person,
                                                   color: Colors.white,
                                                   size: 18,
                                                 ),
                                                 const SizedBox(width: 8),
                                                 Text(
-                                                  'Patient ${record['patientId']}',
+                                                  'Patient $patientId',
                                                   style: const TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,
@@ -385,19 +430,19 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                                       _buildVitalRow(
                                         Icons.monitor_heart,
                                         'Blood Pressure',
-                                        '${record['systolicBP']}/${record['diastolicBP']} mmHg',
+                                        '$systolicBP/$diastolicBP mmHg',
                                         Colors.red[600]!,
                                       ),
                                       _buildVitalRow(
                                         Icons.water_drop,
                                         'Protein in Urine',
-                                        record['proteinUrine'].toString(),
+                                        proteinUrine.toStringAsFixed(1),
                                         Colors.blue[600]!,
                                       ),
                                       _buildVitalRow(
                                         Icons.speed,
                                         'Mean Arterial Pressure',
-                                        '${record['map']?.toStringAsFixed(1) ?? 'N/A'}',
+                                        '${mapValue.toStringAsFixed(1)}',
                                         Colors.purple[600]!,
                                       ),
                                       
@@ -433,7 +478,7 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
                                               ),
                                             ),
                                             child: Text(
-                                              record['status'].toString().toUpperCase(),
+                                              status.toUpperCase(),
                                               style: TextStyle(
                                                 color: statusColor,
                                                 fontWeight: FontWeight.bold,

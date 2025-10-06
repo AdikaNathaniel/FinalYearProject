@@ -29,7 +29,7 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
     );
 
     // Create staggered animations for each card
-    _cardAnimations = List.generate(5, (index) {
+    _cardAnimations = List.generate(4, (index) {
       return Tween<double>(
         begin: 0.0,
         end: 1.0,
@@ -56,8 +56,6 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
   Widget _buildCard({
     required IconData icon,
     required String title,
-    required String subtitle,
-    required Color color,
     required VoidCallback onTap,
     required Animation<double> animation,
   }) {
@@ -70,106 +68,88 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
             opacity: animation.value,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(25),
-              splashColor: color.withOpacity(0.3),
-              highlightColor: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              splashColor: Colors.blue.withOpacity(0.3),
+              highlightColor: Colors.blue.withOpacity(0.1),
               child: Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                elevation: 8,
-                shadowColor: color.withOpacity(0.4),
+                elevation: 6,
+                shadowColor: Colors.blue.withOpacity(0.3),
                 child: Container(
-                  padding: const EdgeInsets.all(24),
-                  height: 150,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  height: 80,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(20),
                     gradient: LinearGradient(
                       colors: [
-                        color.withOpacity(0.85),
-                        color,
-                        color.withOpacity(0.9),
+                        Colors.blue.shade600,
+                        Colors.blue.shade700,
+                        Colors.blue.shade800,
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      stops: const [0.0, 0.5, 1.0],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
+                        color: Colors.blue.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Hero(
-                        tag: title,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
+                      Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.transparent,
+                              radius: 20,
+                              child: Icon(
+                                icon,
+                                size: 24,
+                                color: Colors.blue.shade700,
                               ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            backgroundColor: Colors.transparent,
-                            radius: 35,
-                            child: Icon(
-                              icon,
-                              size: 42,
-                              color: color,
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 16),
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              subtitle,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.arrow_forward_ios,
                           color: Colors.white,
-                          size: 20,
+                          size: 16,
                         ),
                       ),
                     ],
@@ -186,7 +166,7 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFE),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -210,16 +190,7 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
         centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFFF8FAFE),
-              Colors.blue.withOpacity(0.05),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: SingleChildScrollView(
@@ -228,69 +199,10 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
               children: [
                 const SizedBox(height: 10),
                 
-                // Welcome Section
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white,
-                        Colors.blue.withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.1),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  // child: const Row(
-                  //   children: [
-                  //     Icon(
-                  //       Icons.health_and_safety,
-                  //       size: 30,
-                  //       color: Colors.blue,
-                  //     ),
-                  //     SizedBox(width: 15),
-                  //     // Expanded(
-                  //     //   child: Column(
-                  //     //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     //     // children: [
-                  //     //     //   // Text(
-                  //     //     //   //   'Welcome to Preeclampsia Care',
-                  //     //     //   //   style: TextStyle(
-                  //     //     //   //     fontSize: 18,
-                  //     //     //   //     fontWeight: FontWeight.bold,
-                  //     //     //   //     color: Colors.blue,
-                  //     //     //   //   ),
-                  //     //     //   // ),
-                  //     //     //   // SizedBox(height: 4),
-                  //     //     //   // Text(
-                  //     //     //   //   'Comprehensive maternal health monitoring',
-                  //     //     //   //   style: TextStyle(
-                  //     //     //   //     fontSize: 14,
-                  //     //     //   //     color: Colors.grey,
-                  //     //     //   //   ),
-                  //     //     //   // ),
-                  //     //     // ],
-                  //     //   ),
-                  //     // ),
-                  //   ],
-                  // ),
-                ),
-
                 // Cards Section
                 _buildCard(
                   icon: Icons.note_add,
                   title: "Create New Record",
-                  subtitle: "Add a new patient preeclampsia record",
-                  color: const Color(0xFF4CAF50),
                   animation: _cardAnimations[0],
                   onTap: () {
                     Navigator.push(
@@ -300,13 +212,11 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
                   },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 _buildCard(
                   icon: Icons.medical_services,
                   title: "Symptom Management",
-                  subtitle: "Manage and monitor preeclampsia symptoms",
-                  color: const Color(0xFFFF9800),
                   animation: _cardAnimations[1],
                   onTap: () {
                     Navigator.push(
@@ -316,13 +226,11 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
                   },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 _buildCard(
                   icon: Icons.person_search,
                   title: "Find Patient Symptoms",
-                  subtitle: "Search symptoms by patient name or ID",
-                  color: const Color(0xFF9C27B0),
                   animation: _cardAnimations[2],
                   onTap: () {
                     Navigator.push(
@@ -332,30 +240,12 @@ class _PreeclampsiaHomePageState extends State<PreeclampsiaHomePage>
                   },
                 ),
 
-                const SizedBox(height: 16),
-
-                _buildCard(
-                  icon: Icons.watch,
-                  title: "Wearable Device Predictions",
-                  subtitle: "Real-time predictions from wearable devices",
-                  color: const Color(0xFF00BCD4),
-                  animation: _cardAnimations[3],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => PreeclampsiaVitals()),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 _buildCard(
                   icon: Icons.local_hospital,
-                  title: "Medical Staff Predictions",
-                  subtitle: "Manual predictions by healthcare professionals",
-                  color: const Color(0xFFF44336),
-                  animation: _cardAnimations[4],
+                  title: "Manual Predictions",
+                  animation: _cardAnimations[3],
                   onTap: () {
                     Navigator.push(
                       context,

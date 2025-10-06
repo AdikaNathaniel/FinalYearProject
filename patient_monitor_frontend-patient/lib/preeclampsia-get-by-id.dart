@@ -27,87 +27,118 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
       );
       
       if (response.statusCode == 200) {
-        // Parse the full JSON response
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         
-        // Check if the response contains the result array
         if (jsonResponse.containsKey('result') && jsonResponse['result'] is List) {
           final List<dynamic> result = jsonResponse['result'];
           
           if (result.isNotEmpty) {
-            setState(() => record = result[0]);
+            _showRecordDialog(result[0]);
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No record found for this ID'),
-                backgroundColor: Colors.orange,
-              ),
-            );
+            _showErrorDialog('No record found for this ID');
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid response format from server'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          _showErrorDialog('Invalid response format from server');
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to fetch record'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showErrorDialog('Failed to fetch record (Status: ${response.statusCode})');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorDialog('Error: $e');
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-  Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'no_preeclampsia':
-        return Colors.green;
-      case 'high risk':
-        return Colors.red;
-      case 'moderate risk':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
+  void _showRecordDialog(Map<String, dynamic> record) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Center(child: Text('Patient Record')),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailRow('Patient ID:', record['patientId']?.toString() ?? 'N/A'),
+              const Divider(),
+              _buildDetailRow('Systolic BP:', '${record['systolicBP']} mmHg'),
+              const Divider(),
+              _buildDetailRow('Diastolic BP:', '${record['diastolicBP']} mmHg'),
+              const Divider(),
+              _buildDetailRow('Protein in Urine:', '${record['proteinUrine']} mg/dL'),
+              const Divider(),
+              _buildDetailRow('Mean Arterial Pressure:', '${record['map']?.toStringAsFixed(1) ?? 'N/A'} mmHg'),
+              const Divider(),
+              _buildDetailRow('Status:', record['status']?.toString().replaceAll('_', ' ').toUpperCase() ?? 'UNKNOWN'),
+              const Divider(),
+              _buildDetailRow('Created:', _formatDate(record['createdAt']?.toString())),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    ).then((_) {
+      idController.clear();
+    });
   }
 
-  IconData _getVitalIcon(String type) {
-    switch (type) {
-      case 'patient':
-        return Icons.person;
-      case 'systolic':
-        return Icons.favorite;
-      case 'diastolic':
-        return Icons.favorite_border;
-      case 'protein':
-        return Icons.water_drop;
-      case 'map':
-        return Icons.trending_up;
-      case 'status':
-        return Icons.health_and_safety;
-      default:
-        return Icons.info;
-    }
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
-  @override
-  void dispose() {
-    idController.dispose();
-    super.dispose();
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) return 'N/A';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
   }
 
   @override
@@ -115,305 +146,70 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Get Record by Patient ID'),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF2E7D9A),
         foregroundColor: Colors.white,
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Header Card
               Card(
                 elevation: 4,
-                margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [const Color(0xFF4CAF50), const Color(0xFF66BB6A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Find Patient Record',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Search and view patient data',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Form Field
-              _buildTextField(
-                idController,
-                "Patient ID",
-                Icons.search,
-                "Enter patient ID to search",
-              ),
-
-              const SizedBox(height: 32),
-
-              // Search Button
-              Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF4CAF50).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: isLoading ? null : fetchRecord,
-                  child: isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.search,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              "SEARCH RECORD",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-
-              // Record Display
-              if (record != null) ...[
-                const SizedBox(height: 32),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      gradient: LinearGradient(
-                        colors: [Colors.white, Colors.grey[50]!],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF4CAF50).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.medical_services,
-                                color: Color(0xFF4CAF50),
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              'Patient Record Found',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Patient Info
-                        _buildRecordItem(
-                          'Patient ID',
-                          record!['patientId']?.toString() ?? 'N/A',
-                          'patient',
-                        ),
-                        _buildRecordItem(
-                          'Systolic Blood Pressure',
-                          '${record!['systolicBP']} mmHg',
-                          'systolic',
-                        ),
-                        _buildRecordItem(
-                          'Diastolic Blood Pressure',
-                          '${record!['diastolicBP']} mmHg',
-                          'diastolic',
-                        ),
-                        _buildRecordItem(
-                          'Protein in Urine',
-                          '${record!['proteinUrine']} mg/dL',
-                          'protein',
-                        ),
-                        _buildRecordItem(
-                          'Mean Arterial Pressure',
-                          '${record!['map']?.toStringAsFixed(1) ?? 'N/A'} mmHg',
-                          'map',
-                        ),
-
-                        // Status with special styling
-                        Container(
-                          margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(record!['status']).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _getStatusColor(record!['status']).withOpacity(0.3),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.health_and_safety,
-                                color: _getStatusColor(record!['status']),
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Health Status',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    record!['status']?.toString().replaceAll('_', ' ').toUpperCase() ?? 'UNKNOWN',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: _getStatusColor(record!['status']),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 24),
-
-              // Info Card
-              Card(
-                elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: const Color(0xFF4CAF50),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Search Information',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                      const Icon(
+                        Icons.search,
+                        size: 48,
+                        color: Color(0xFF2E7D9A),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter Patient ID',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: idController,
+                        decoration: const InputDecoration(
+                          labelText: 'Patient ID',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'Enter patient ID',
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Please enter a Patient ID' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : fetchRecord,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7D9A),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Enter a valid Patient ID to retrieve their preeclampsia record from the database.',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          height: 1.5,
+                          child: isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'Search Record',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
                     ],
@@ -427,118 +223,9 @@ class _GetRecordByIdPageState extends State<GetRecordByIdPage> {
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-    String hint,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF4CAF50),
-              size: 20,
-            ),
-          ),
-          labelText: label,
-          hintText: hint,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-          filled: true,
-          fillColor: Colors.grey[50],
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: TextStyle(color: Colors.grey[700]),
-          hintStyle: TextStyle(color: Colors.grey[500]),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Patient ID is required';
-          }
-          return null;
-        },
-      ),
-    );
-  }
-
-  Widget _buildRecordItem(String label, String value, String type) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              _getVitalIcon(type),
-              color: const Color(0xFF4CAF50),
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  @override
+  void dispose() {
+    idController.dispose();
+    super.dispose();
   }
 }

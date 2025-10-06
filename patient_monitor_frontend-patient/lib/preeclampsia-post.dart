@@ -88,12 +88,12 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade50,
+                      color: Colors.blue.shade50,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.check_circle,
-                      color: Colors.green.shade700,
+                      color: Colors.blue.shade700,
                       size: 48,
                     ),
                   ),
@@ -154,7 +154,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                   decoration: BoxDecoration(
                     color: responseData['result']['status'] == 'preeclampsia' 
                         ? Colors.orange.shade100 
-                        : Colors.green.shade100,
+                        : Colors.blue.shade100,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -166,7 +166,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                             : Icons.check_circle,
                         color: responseData['result']['status'] == 'preeclampsia' 
                             ? Colors.orange.shade700 
-                            : Colors.green.shade700,
+                            : Colors.blue.shade700,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -176,7 +176,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                           fontWeight: FontWeight.bold,
                           color: responseData['result']['status'] == 'preeclampsia' 
                               ? Colors.orange.shade700 
-                              : Colors.green.shade700,
+                              : Colors.blue.shade700,
                         ),
                       ),
                     ],
@@ -289,7 +289,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Preeclampsia Record'),
+        title: const Text('Create Record'),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Color(0xFF2E7D9A),
@@ -337,21 +337,21 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
-                              'New Patient Record',
+                              'Patient Vitals',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Enter vital signs and health data',
+                              'Enter patient vital signs for preeclampsia assessment',
                               style: TextStyle(
-                                color: Colors.white70,
                                 fontSize: 14,
+                                color: Colors.white.withOpacity(0.9),
                               ),
                             ),
                           ],
@@ -362,7 +362,7 @@ class _CreateRecordPageState extends State<CreateRecordPage> {
                 ),
               ),
 
-              // Form Fields
+              // Form Fields - Patient ID is now the first field
               _buildTextField(
                 patientIdController,
                 "Patient ID",

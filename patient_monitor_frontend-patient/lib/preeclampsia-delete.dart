@@ -83,145 +83,79 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Delete Preeclampsia Record'),
+        title: const Text('Delete Record'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.red[600],
+        backgroundColor: Color(0xFF2E7D9A),
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Header Card
               Card(
                 elevation: 4,
-                margin: const EdgeInsets.only(bottom: 24),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.red[600]!, Colors.red[400]!],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                          size: 32,
+                      const Icon(
+                        Icons.delete,
+                        size: 48,
+                        color: Color(0xFF2E7D9A),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter Patient ID',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Delete Patient Record',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: idController,
+                        decoration: const InputDecoration(
+                          labelText: 'Patient ID',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'Enter patient ID to delete',
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Please enter a Patient ID' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : deleteRecord,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7D9A),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Remove record from database',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                          ),
+                          child: isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'Delete Record',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-
-              // Form Field
-              _buildTextField(
-                idController,
-                "Patient ID",
-                Icons.person_remove,
-                "Enter patient ID to delete",
-              ),
-
-              const SizedBox(height: 32),
-
-              // Delete Button
-              Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    colors: [Colors.red[600]!, Colors.red[400]!],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.red[600]!.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: isLoading ? null : deleteRecord,
-                  child: isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.delete_forever,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              "DELETE RECORD",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-
               const SizedBox(height: 24),
-
               // Warning Card
               Card(
                 elevation: 2,
@@ -238,27 +172,11 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
                             Icons.warning_amber,
                             color: Colors.orange[600],
                             size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Warning',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
+                          )
+        
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'This action cannot be undone. Please ensure you have the correct Patient ID before proceeding with deletion.',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
+                      )
+                     
                     ],
                   ),
                 ),
@@ -266,68 +184,6 @@ class _DeleteRecordPageState extends State<DeleteRecordPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-    String hint,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.red[600]!.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: Colors.red[600],
-              size: 20,
-            ),
-          ),
-          labelText: label,
-          hintText: hint,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.red[600]!, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-          filled: true,
-          fillColor: Colors.grey[50],
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: TextStyle(color: Colors.grey[700]),
-          hintStyle: TextStyle(color: Colors.grey[500]),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Patient ID is required';
-          }
-          return null;
-        },
       ),
     );
   }

@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class CsvPage extends StatefulWidget {
@@ -50,10 +53,10 @@ class _CsvPageState extends State<CsvPage> {
     }
   }
 
-  // --- Download CSV (Cross-platform without share_plus) ---
+  // --- Enhanced Download CSV (Works on Mobile & Web) ---
   Future<void> downloadCsv(String id) async {
     setState(() {
-      downloadMessage = "Downloading...";
+      downloadMessage = "Downloading CSV...";
     });
     
     try {
@@ -63,11 +66,16 @@ class _CsvPageState extends State<CsvPage> {
         final bytes = response.bodyBytes;
         final csvContent = utf8.decode(bytes);
         
-        // For all platforms, show CSV preview with enhanced options
-        _showEnhancedCsvPreviewDialog(id, csvContent, bytes.length);
+        // For mobile: Save as file and open
+        if (!kIsWeb) {
+          await _saveAndOpenCsvFile(id, csvContent);
+        } else {
+          // For web: Show preview dialog
+          _showEnhancedCsvPreviewDialog(id, csvContent, bytes.length);
+        }
         
         setState(() {
-          downloadMessage = "CSV content loaded successfully!";
+          downloadMessage = "CSV downloaded successfully!";
         });
         
         // Clear message after 5 seconds
@@ -90,6 +98,125 @@ class _CsvPageState extends State<CsvPage> {
       });
     }
   }
+
+  // --- Save and Open CSV File (Mobile Only) ---
+  // Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
+  //   try {
+  //     // Get directory for saving file
+  //     final directory = await getApplicationDocumentsDirectory();
+  //     final filePath = '${directory.path}/$id.csv';
+  //     final file = File(filePath);
+      
+  //     // Write CSV content to file
+  //     await file.writeAsString(csvContent);
+      
+  //     // Open the file with appropriate app
+  //     await OpenFile.open(filePath);
+      
+  //     // Also show preview dialog for mobile users
+  //     _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+      
+  //   } catch (e) {
+  //     // If file opening fails, fall back to preview dialog
+  //     _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+      
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('File saved! Use a file manager to open it.'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //   }
+  // }
+
+
+
+// --- Save and Open CSV File (Mobile Only) ---
+Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
+  try {
+    // Try to get Downloads directory first (works on newer Android versions)
+    final directory = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/$id.csv';
+    final file = File(filePath);
+    
+    // Write CSV content to file
+    await file.writeAsString(csvContent);
+    
+    // Show success message with file path
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('CSV saved successfully!'),
+            SizedBox(height: 4),
+            Text(
+              'Location: ${directory.path}',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 5),
+      ),
+    );
+    
+    // Try to open the file with appropriate app
+    try {
+      await OpenFile.open(filePath);
+    } catch (e) {
+      print('Could not open file automatically: $e');
+      // File is still saved, user can access it manually
+    }
+    
+    // Also show preview dialog
+    _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+    
+  } catch (e) {
+    // Fallback: If saving to Downloads fails, try application directory
+    try {
+      final fallbackDir = await getApplicationDocumentsDirectory();
+      final fallbackPath = '${fallbackDir.path}/$id.csv';
+      final fallbackFile = File(fallbackPath);
+      await fallbackFile.writeAsString(csvContent);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('CSV saved to app storage!'),
+              SizedBox(height: 4),
+              Text(
+                'Use a file manager to access: Android/data/<your.app>/files/',
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 6),
+        ),
+      );
+      
+      _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+      
+    } catch (fallbackError) {
+      // If everything fails, just show the preview
+      _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save file. Showing preview instead.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+
 
   // Enhanced CSV preview dialog with multiple export options
   void _showEnhancedCsvPreviewDialog(String id, String content, int fileSize) {
@@ -176,6 +303,22 @@ class _CsvPageState extends State<CsvPage> {
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
           ),
+          
+          // Save file button (mobile) / Download button (web)
+          if (!kIsWeb)
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _saveAndOpenCsvFile(id, content);
+              },
+              icon: Icon(Icons.save, size: 18),
+              label: Text('Save File'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
           
           // View full content button
           ElevatedButton.icon(
@@ -687,6 +830,11 @@ class _CsvPageState extends State<CsvPage> {
                     SizedBox(height: 4),
                     Text(
                       "• Use 'View Full' to see complete file content",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "• On mobile: Files are saved and can be opened with Excel/Sheets",
                       style: TextStyle(fontSize: 14),
                     ),
                     SizedBox(height: 4),

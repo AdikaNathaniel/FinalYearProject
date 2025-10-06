@@ -101,7 +101,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
         title: const Text('Update Preeclampsia Record'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF9C27B0),
+        backgroundColor: Color(0xFF2E7D9A),
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -111,66 +111,6 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header Card
-              Card(
-                elevation: 4,
-                margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Update Patient Record',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Modify existing vital signs data',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
               // Form Fields
               _buildTextField(
                 idController,
@@ -208,13 +148,13 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
-                    colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+                    colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF9C27B0).withOpacity(0.3),
+                      color: Color(0xFF2E7D9A).withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -272,7 +212,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
                         children: [
                           Icon(
                             Icons.warning_amber_outlined,
-                            color: Color(0xFF9C27B0),
+                            color: Color(0xFF2E7D9A),
                             size: 24,
                           ),
                           const SizedBox(width: 12),
@@ -285,16 +225,16 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Only Enter The Vital Signs That Need To Be Modified.',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
+                      )            
+                      // const SizedBox(height: 12),
+                      // const Text(
+                      //   'Only Enter The Vital Signs That Need To Be Modified.',
+                      //   style: TextStyle(
+                      //     color: Colors.grey,
+                      //     fontSize: 14,
+                      //     height: 1.5,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -313,7 +253,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
 //                     //     children: [
 //                     //       Icon(
 //                     //         Icons.list_alt,
-//                     //         color: Color(0xFF9C27B0),
+//                     //         color: Color(0xFF2E7D9A),
 //                     //         size: 24,
 //                     //       ),
 //                     //       const SizedBox(width: 12),
@@ -351,14 +291,14 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: Color(0xFF9C27B0).withOpacity(0.1),
+              color: Color(0xFF2E7D9A).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Text(
                 step,
                 style: TextStyle(
-                  color: Color(0xFF9C27B0),
+                  color: Color(0xFF2E7D9A),
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -397,12 +337,12 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Color(0xFF9C27B0).withOpacity(0.1),
+              color: Color(0xFF2E7D9A).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: Color(0xFF9C27B0),
+              color: Color(0xFF2E7D9A),
               size: 20,
             ),
           ),
@@ -418,7 +358,7 @@ class _UpdateRecordPageState extends State<UpdateRecordPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFF9C27B0), width: 2),
+            borderSide: BorderSide(color: Color(0xFF2E7D9A), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),

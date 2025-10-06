@@ -1157,7 +1157,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       appBar: AppBar(
         title: const Center(
           child: Text(
-            'Patient Medical Summary',
+            'Medical Summary',
             style: TextStyle(color: Colors.white),
           ),
         ),

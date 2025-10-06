@@ -11,7 +11,7 @@ class LiveVitalsHardwareDataPage extends StatefulWidget {
 }
 
 class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage> with SingleTickerProviderStateMixin {
-  List<Map<String, dynamic>> vitals = [];
+  Map<String, dynamic>? vitalData;
   bool isLoading = true;
   String errorMessage = '';
   late AnimationController _animationController;
@@ -45,14 +45,17 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
       errorMessage = '';
     });
     
-    final url = Uri.parse('http://192.168.43.64:3100/api/v1/vitals');
     try {
-      final response = await http.get(url);
+      final response = await http.get(
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-live-vitals/latest'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['success'] == true) {
           setState(() {
-            vitals = List<Map<String, dynamic>>.from(data['result']);
+            vitalData = data['result'];
             isLoading = false;
           });
           _animationController.reset();
@@ -72,127 +75,38 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
     }
   }
 
-  String formatDateTime(String isoDate) {
+  String _getTimeAgo(String timestamp) {
     try {
-      final dateTime = DateTime.parse(isoDate).toLocal();
-      return DateFormat("d'th' MMMM, yyyy 'at' h:mm a").format(dateTime);
+      final createdAt = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(createdAt);
+      
+      if (difference.inMinutes < 1) return 'Just now';
+      if (difference.inMinutes < 60) return '${difference.inMinutes} min ago';
+      if (difference.inHours < 24) return '${difference.inHours}h ago';
+      return '${difference.inDays}d ago';
     } catch (e) {
-      return 'Date not available';
+      return 'Unknown';
     }
   }
 
-  String formatMapValue(dynamic mapValue) {
-    if (mapValue == null) return 'N/A';
-    if (mapValue is double) {
-      return mapValue.toStringAsFixed(2);
-    }
-    if (mapValue is int) {
-      return mapValue.toString();
-    }
-    return mapValue.toString();
-  }
-
-  Widget buildVitalCard(Map<String, dynamic> vital) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-            Text(
-  '${vital["patientId"] ?? "N/A"}',
-  style: const TextStyle(
-    fontWeight: FontWeight.bold,
-    fontSize: 16,
-    color: Colors.blueGrey,
-  ),
-  textAlign: TextAlign.center,
-),
-              const SizedBox(height: 16),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 3,
-                childAspectRatio: 0.9,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                children: [
-                  _vitalIconTile(Icons.favorite, 'HR', '${vital['heartRate']?.toString() ?? 'N/A'}', Colors.red),
-                  _vitalIconTile(Icons.local_hospital, 'BP', 
-                    '${vital['systolic']?.toString() ?? 'N/A'}/${vital['diastolic']?.toString() ?? 'N/A'}', Colors.blue),
-                  _vitalIconTile(Icons.device_thermostat, 'Temp', 
-                    '${vital['temperature']?.toString() ?? 'N/A'}°C', Colors.orange),
-                  _vitalIconTile(Icons.water_drop, 'SpO₂', 
-                    '${vital['spo2']?.toString() ?? 'N/A'}%', Colors.green),
-                  _vitalIconTile(Icons.bloodtype, 'Glucose', 
-                    '${vital['glucose']?.toString() ?? 'N/A'} mg/dL', Colors.purple),
-                  _vitalIconTile(Icons.speed, 'MAP', 
-                    formatMapValue(vital['map']), Colors.teal),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                formatDateTime(vital['createdAt']?.toString() ?? ''),
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _vitalIconTile(IconData icon, String label, String value, Color color) {
-    return ScaleTransition(
-      scale: _fadeAnimation,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 28, color: color),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: color,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Color _getProteinColor(int? proteinLevel) {
+    if (proteinLevel == null) return Colors.grey;
+    
+    final colors = [
+      Color(0xFF00C2C7), 
+      Color(0xFFE5B7A5), 
+      Color(0xFFB794C0), 
+      Color(0xFFD8D8D8), 
+      Color(0xFFF0D56D), 
+      Color(0xFFF5C243), 
+      Color(0xFFFFA500), 
+      Color(0xFFFFD700), 
+      Color(0xFFD2B48C), 
+      Color(0xFF8B5A2B), 
+    ];
+    
+    return proteinLevel < colors.length ? colors[proteinLevel] : Colors.grey;
   }
 
   @override
@@ -200,7 +114,7 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text("Live Vitals Monitor"),
-        backgroundColor: Colors.cyan[600],
+        backgroundColor: Colors.blueAccent,
         centerTitle: true,
         actions: [
           IconButton(
@@ -212,13 +126,13 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
       ),
       body: RefreshIndicator(
         onRefresh: fetchVitals,
-        color: Colors.cyan[600],
+        color: Colors.blueAccent,
         child: Builder(
           builder: (context) {
             if (isLoading) {
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.cyan),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
                 ),
               );
             }
@@ -238,7 +152,7 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
                     const SizedBox(height: 20),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyan[600],
+                        backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -250,7 +164,7 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
                 ),
               );
             }
-            if (vitals.isEmpty) {
+            if (vitalData == null) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -262,7 +176,7 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
                     const SizedBox(height: 20),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyan[600],
+                        backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -274,12 +188,566 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
                 ),
               );
             }
-            return ListView.builder(
-              padding: const EdgeInsets.only(bottom: 20),
-              itemCount: vitals.length,
-              itemBuilder: (context, index) => buildVitalCard(vitals[index]),
+            
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  GridView.count(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.95,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      MetricCard(
+                        title: 'Blood Glucose',
+                        value: '${vitalData?['glucose']?.toStringAsFixed(1) ?? 'N/A'} mg/dL',
+                        icon: Icons.water_drop,
+                        color: Colors.purple,
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      MetricCard(
+                        title: 'Blood Pressure',
+                        value: '${vitalData?['systolicBP']?.toStringAsFixed(0) ?? 'N/A'}/${vitalData?['diastolicBP']?.toStringAsFixed(0) ?? 'N/A'} mmHg',
+                        icon: Icons.favorite,
+                        color: Colors.pink,
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      MetricCard(
+                        title: 'Heart Rate',
+                        value: '${vitalData?['heartRate']?.toStringAsFixed(0) ?? 'N/A'} BPM',
+                        icon: Icons.monitor_heart,
+                        color: Colors.red,
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      MetricCard(
+                        title: 'Oxygen Saturation',
+                        value: '${vitalData?['spo2']?.toStringAsFixed(0) ?? 'N/A'}%',
+                        icon: Icons.air,
+                        color: Colors.blue,
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      MetricCard(
+                        title: 'Body Temperature',
+                        value: '${vitalData?['bodyTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
+                        icon: Icons.thermostat,
+                        color: Colors.orange,
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      AccelerometerCard(
+                        x: vitalData?['accelX']?.toStringAsFixed(2) ?? 'N/A',
+                        y: vitalData?['accelY']?.toStringAsFixed(2) ?? 'N/A',
+                        z: vitalData?['accelZ']?.toStringAsFixed(2) ?? 'N/A',
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      GyroscopeCard(
+                        x: vitalData?['gyroX']?.toStringAsFixed(2) ?? 'N/A',
+                        y: vitalData?['gyroY']?.toStringAsFixed(2) ?? 'N/A',
+                        z: vitalData?['gyroZ']?.toStringAsFixed(2) ?? 'N/A',
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                      
+                      MetricCard(
+                        title: 'Skin Temperature',
+                        value: '${vitalData?['skinTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
+                        icon: Icons.thermostat_outlined,
+                        color: Colors.deepPurple,
+                        lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                      ),
+                    ],
+                  ),
+
+                  // Protein Card (if protein level exists)
+                  if (vitalData?['proteinLevel'] != null) ...[
+                    const SizedBox(height: 12),
+                    ProteinCard( 
+                      proteinLevel: vitalData?['proteinLevel'] ?? 0,
+                      color: _getProteinColor(vitalData?['proteinLevel']),
+                    ),
+                  ],
+                ],
+              ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class MetricCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final String lastUpdated;
+
+  const MetricCard({
+    Key? key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.lastUpdated,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.2),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              lastUpdated,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AccelerometerCard extends StatelessWidget {
+  final String x;
+  final String y;
+  final String z;
+  final String lastUpdated;
+
+  const AccelerometerCard({
+    Key? key,
+    required this.x,
+    required this.y,
+    required this.z,
+    required this.lastUpdated,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.green.withOpacity(0.2),
+              ),
+              child: const Icon(
+                Icons.directions,
+                color: Colors.green,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Accelerometer',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'X',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          x,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Y',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          y,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Z',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          z,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              lastUpdated,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GyroscopeCard extends StatelessWidget {
+  final String x;
+  final String y;
+  final String z;
+  final String lastUpdated;
+
+  const GyroscopeCard({
+    Key? key,
+    required this.x,
+    required this.y,
+    required this.z,
+    required this.lastUpdated,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.teal.withOpacity(0.2),
+              ),
+              child: const Icon(
+                Icons.cached,
+                color: Colors.teal,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Gyroscope',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'X',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          x,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Y',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          y,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Z',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          z,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              lastUpdated,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProteinCard extends StatelessWidget {
+  final int proteinLevel;
+  final Color color;
+
+  const ProteinCard({
+    Key? key,
+    required this.proteinLevel,
+    required this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6,
+      color: Colors.white,
+      margin: const EdgeInsets.symmetric(horizontal: 0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.2),
+              ),
+              child: Icon(
+                Icons.science,
+                color: color,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Protein in Urine',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Level: $proteinLevel',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Last updated: Just now',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 2,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
