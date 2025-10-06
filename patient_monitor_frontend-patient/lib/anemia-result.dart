@@ -233,7 +233,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
             children: [
               // Header with risk assessment and patient ID
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [riskColor.withOpacity(0.1), riskColor.withOpacity(0.05)],
@@ -250,7 +250,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                   children: [
                     // Patient ID at the top
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
                         borderRadius: BorderRadius.circular(20),
@@ -259,31 +259,34 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.person, size: 16, color: Colors.blue[600]),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Patient ID: $patientId',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
+                          Icon(Icons.person, size: 14, color: Colors.blue[600]),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Patient ID: $patientId',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue[700],
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: riskColor,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(riskIcon, color: Colors.white, size: 24),
+                          child: Icon(riskIcon, color: Colors.white, size: 20),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,28 +294,31 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                               Text(
                                 'ANAEMIA RISK ASSESSMENT',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey[600],
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  Text(
-                                    riskClass.toUpperCase(),
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: riskColor,
+                                  Flexible(
+                                    child: Text(
+                                      riskClass.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: riskColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Text(
                                     'RISK',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.grey[700],
                                     ),
@@ -323,7 +329,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -332,7 +338,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                           child: Text(
                             '${calculatedRisk.toStringAsFixed(1)}%',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: riskColor,
                             ),
@@ -341,17 +347,20 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                       ],
                     ),
                     if (assessmentDate != null) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Assessed: ${_formatDate(assessmentDate)}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                          Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Assessed: ${_formatDate(assessmentDate)}',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -363,34 +372,34 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
 
               // Risk factors section
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.assessment, color: Colors.grey[700], size: 20),
-                        const SizedBox(width: 8),
+                        Icon(Icons.assessment, color: Colors.grey[700], size: 18),
+                        const SizedBox(width: 6),
                         Text(
                           'CLINICAL FINDINGS',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 14,
                             color: Colors.grey[800],
-                            letterSpacing: 0.5,
+                            letterSpacing: 0.3,
                           ),
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            '${_countPositiveFactors(assessment)} of ${_getTotalFactors(assessment)} factors',
+                            '${_countPositiveFactors(assessment)} of ${_getTotalFactors(assessment)}',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[700],
                             ),
@@ -398,11 +407,11 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildRiskFactorsList(assessment),
                     const SizedBox(height: 12),
+                    _buildRiskFactorsList(assessment),
+                    const SizedBox(height: 10),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
                         borderRadius: BorderRadius.circular(8),
@@ -410,19 +419,19 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
-                          const SizedBox(width: 8),
+                          Icon(Icons.info_outline, color: Colors.blue[600], size: 18),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               'Tap for detailed assessment breakdown',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 12,
                                 color: Colors.blue[700],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
-                          Icon(Icons.arrow_forward_ios, color: Colors.blue[600], size: 16),
+                          Icon(Icons.arrow_forward_ios, color: Colors.blue[600], size: 14),
                         ],
                       ),
                     ),
@@ -510,12 +519,12 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
 
   Widget _buildFactorItem(String label, bool isPresent) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
           Container(
-            width: 24,
-            height: 24,
+            width: 20,
+            height: 20,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isPresent ? const Color(0xFFE53E3E) : const Color(0xFF38A169),
@@ -523,25 +532,26 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
             child: Icon(
               isPresent ? Icons.close : Icons.check,
               color: Colors.white,
-              size: 16,
+              size: 14,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 11,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey[800],
               ),
             ),
           ),
+          const SizedBox(width: 6),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
             decoration: BoxDecoration(
               color: isPresent ? Colors.red[50] : Colors.green[50],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isPresent ? Colors.red[200]! : Colors.green[200]!,
               ),
@@ -549,7 +559,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
             child: Text(
               isPresent ? 'PRESENT' : 'ABSENT',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 9,
                 fontWeight: FontWeight.bold,
                 color: isPresent ? Colors.red[700] : Colors.green[700],
               ),
@@ -581,7 +591,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [riskColor.withOpacity(0.1), riskColor.withOpacity(0.05)],
@@ -598,7 +608,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                     // Patient ID at the top
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
                         borderRadius: BorderRadius.circular(12),
@@ -608,25 +618,28 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         child: Row(
                           mainAxisSize: MainAxisSize.min, // Row wraps content
                           children: [
-                            Icon(Icons.person, size: 20, color: Colors.blue[600]),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Patient ID: $patientId',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[700],
+                            Icon(Icons.person, size: 18, color: Colors.blue[600]),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'Patient ID: $patientId',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: riskColor,
                             shape: BoxShape.circle,
@@ -634,10 +647,10 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                           child: Icon(
                             isHighRisk ? Icons.warning : Icons.check_circle,
                             color: Colors.white,
-                            size: 28,
+                            size: 24,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,35 +658,38 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                               const Text(
                                 'DETAILED ASSESSMENT',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey,
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$riskClass RISK',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: riskColor,
+                              const SizedBox(height: 2),
+                              Flexible(
+                                child: Text(
+                                  '$riskClass RISK',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: riskColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: riskColor, width: 2),
                           ),
                           child: Text(
                             '${calculatedRisk.toStringAsFixed(1)}%',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: riskColor,
                             ),
@@ -688,7 +704,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
               // Content
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -708,7 +724,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         ],
                       ),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       
                       // Patient Information
                       _buildDetailSection(
@@ -726,7 +742,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         ],
                       ),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       
                       // Clinical Risk Factors
                       _buildDetailSection(
@@ -735,7 +751,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         _buildClinicalFactors(assessment),
                       ),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       
                       // Social & Environmental Factors
                       _buildDetailSection(
@@ -746,7 +762,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
 
                       // Feature Contributions (if available)
                       if (assessment['featureContributions'] != null) ...[
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         _buildFeatureContributionsSection(assessment['featureContributions']),
                       ],
                     ],
@@ -756,7 +772,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
               
               // Actions
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.grey[50],
                   borderRadius: const BorderRadius.only(
@@ -772,11 +788,11 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         icon: const Icon(Icons.download),
                         label: const Text('Export'),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () => Navigator.of(context).pop(),
@@ -785,7 +801,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey[600],
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
                     ),
@@ -842,21 +858,21 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
       children: [
         Row(
           children: [
-            Icon(icon, color: Colors.grey[700], size: 22),
-            const SizedBox(width: 8),
+            Icon(icon, color: Colors.grey[700], size: 20),
+            const SizedBox(width: 6),
             Text(
               title,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[800],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
@@ -867,8 +883,8 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
               ? [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.grey[400], size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.info_outline, color: Colors.grey[400], size: 18),
+                      const SizedBox(width: 6),
                       Text(
                         'No data available',
                         style: TextStyle(
@@ -893,23 +909,23 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 110,
             child: Text(
               label,
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 color: Colors.grey[700],
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               value,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ),
@@ -975,12 +991,12 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
 
   Widget _buildFactorDetailRow(String label, bool isPresent) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
           Container(
-            width: 20,
-            height: 20,
+            width: 18,
+            height: 18,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isPresent ? Colors.red[400] : Colors.green[400],
@@ -988,24 +1004,25 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
             child: Icon(
               isPresent ? Icons.close : Icons.check,
               color: Colors.white,
-              size: 14,
+              size: 12,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               label,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
+          const SizedBox(width: 6),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
             decoration: BoxDecoration(
               color: isPresent ? Colors.red[50] : Colors.green[50],
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isPresent ? Colors.red[200]! : Colors.green[200]!,
                 width: 1,
@@ -1014,7 +1031,7 @@ class _AnaemiaResultsScreenState extends State<AnaemiaResultsScreen>
             child: Text(
               isPresent ? 'PRESENT' : 'ABSENT',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: FontWeight.bold,
                 color: isPresent ? Colors.red[700] : Colors.green[700],
               ),
@@ -1386,7 +1403,7 @@ Report Generated: ${DateTime.now().toString()}
       backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
         title: const Text(
-          "Anaemia Risk Assessment Results",
+          "Anaemia Results",
           style: TextStyle(
             color: Colors.white,
           ),
@@ -1458,7 +1475,7 @@ Report Generated: ${DateTime.now().toString()}
                         : RefreshIndicator(
                             onRefresh: _fetchAnaemiaAssessments,
                             child: ListView.builder(
-                              padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                               itemCount: _anaemiaAssessments.length,
                               itemBuilder: (context, index) =>
                                   _buildAnaemiaAssessmentCard(_anaemiaAssessments[index], index),

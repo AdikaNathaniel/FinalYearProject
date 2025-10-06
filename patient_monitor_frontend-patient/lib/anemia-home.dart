@@ -8,68 +8,63 @@ import 'anemia-get-by-id.dart';
 class AnaemiaHomePage extends StatelessWidget {
   const AnaemiaHomePage({super.key});
 
-  Widget _buildCard({
-    required IconData icon,
+  Widget _buildDashboardCard(
+    BuildContext context, {
     required String title,
-    required String subtitle,
+    required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        elevation: 6,
-        shadowColor: color.withOpacity(0.4),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          height: 140,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.8), color],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
+          ],
+          border: Border.all(
+            color: Colors.grey.shade200,
+            width: 1,
           ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Colors.white,
-                radius: 35,
-                child: Icon(icon, size: 40, color: color),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ],
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios,
-                  color: Colors.white, size: 20),
-            ],
-          ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey.shade400,
+              size: 18,
+            ),
+          ],
         ),
       ),
     );
@@ -78,78 +73,86 @@ class AnaemiaHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: AppBar(
-  title: const Text(
-    "Anaemia Risk Home",
-    style: TextStyle(
-      color: Colors.white, // set title text color to white
-    ),
-  ),
-  backgroundColor: Colors.teal,
-  centerTitle: true,
-),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildCard(
-                icon: Icons.health_and_safety,
-                title: "Risk Assessment",
-                subtitle: "Perform a new assessment",
-                color: Colors.orange,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AnaemiaAssessmentScreen()),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildCard(
-                icon: Icons.assignment,
-                title: "Results",
-                subtitle: "View patient risk results",
-                color: Colors.redAccent,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AnaemiaResultsScreen()),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildCard(
-                icon: Icons.assignment_ind,
-                title: "Get Anemia Risk By Patient ID",
-                subtitle: "View patient-specific risk results",
-                color: Colors.purpleAccent,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const GetAnaemiaByIdPage()),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildCard(
-                icon: Icons.pie_chart,
-                title: "Statistics",
-                subtitle: "View overall anaemia risk data",
-                color: Colors.blue,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AnaemiaRiskStatisticsPage()),
-                  );
-                },
-              ),
-            ],
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: const Text(
+          "Anaemia Risk Home",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
+        ),
+        backgroundColor: const Color(0xFF2196F3),
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDashboardCard(
+              context,
+              title: "Risk Assessment",
+              icon: Icons.health_and_safety,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AnaemiaAssessmentScreen()),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: "Anemia Results",
+              icon: Icons.assignment,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AnaemiaResultsScreen()),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: "Find Patient",
+              icon: Icons.assignment_ind,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const GetAnaemiaByIdPage()),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: "Anaemia Statistics",
+              icon: Icons.pie_chart,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AnaemiaRiskStatisticsPage()),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

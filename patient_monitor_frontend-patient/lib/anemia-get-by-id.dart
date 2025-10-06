@@ -302,7 +302,7 @@ class _GetAnaemiaByIdPageState extends State<GetAnaemiaByIdPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Get Anaemia Assessment by ID'),
+        title: const Text('Assessment by ID'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,

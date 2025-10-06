@@ -96,11 +96,12 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.analytics, size: 48, color: Colors.white),
               const SizedBox(height: 16),
               const Text(
-                "Risk Assessment Overview",
+                "Assessment Overview",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -133,6 +134,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
 
   Widget _buildHeaderStat(String title, String value, IconData icon) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: Colors.white70, size: 24),
         const SizedBox(height: 8),
@@ -168,6 +170,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -286,12 +289,15 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
+        Flexible(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+            overflow: TextOverflow.visible,
           ),
         ),
       ],
@@ -359,6 +365,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
@@ -378,14 +385,17 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.visible,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -408,6 +418,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -433,6 +444,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                       Colors.green.shade400,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildAnalysisMetric(
                       "Max Risk",
@@ -452,6 +464,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                       Colors.blue.shade400,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildAnalysisMetric(
                       "Variance",
@@ -471,13 +484,13 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
   Widget _buildAnalysisMetric(String title, String value, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             value,
@@ -516,6 +529,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -572,6 +586,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
 
   Widget _buildTimelineItem(String title, String date, IconData icon, Color color) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           padding: const EdgeInsets.all(12),
@@ -620,6 +635,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -712,10 +728,10 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text(
-          'Anaemia Risk Analytics',
+          'Risk Analytics',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: const Color(0xFF2196F3),
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
@@ -731,6 +747,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
@@ -751,6 +768,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(24),
@@ -804,13 +822,14 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                   ),
                 )
               : _statistics == null
-                  ? const Center(
+                  ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.data_usage, size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
+                          const SizedBox(height: 16),
+                          const Text(
                             "No assessment data available",
                             style: TextStyle(
                               fontSize: 18,
@@ -822,16 +841,22 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
                       ),
                     )
                   : SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          _buildHeaderCard(),
-                          _buildPieChart(),
-                          _buildStatisticsGrid(),
-                          _buildRiskAnalysisCard(),
-                          _buildTimelineCard(),
-                          _buildInsightsCard(),
-                          const SizedBox(height: 32),
-                        ],
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildHeaderCard(),
+                            _buildPieChart(),
+                            _buildStatisticsGrid(),
+                            _buildRiskAnalysisCard(),
+                            _buildTimelineCard(),
+                            _buildInsightsCard(),
+                            const SizedBox(height: 32),
+                          ],
+                        ),
                       ),
                     ),
     );

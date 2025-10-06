@@ -4,6 +4,8 @@ import 'preeclampsia-get-by-id.dart';
 import 'preeclampsia-update.dart';
 import 'preeclampsia-delete.dart';
 import 'preeclampsia-post.dart';
+import 'symptom-list.dart';
+import 'symptom-by-name.dart';
 
 class PreeclampsiaDashboard extends StatelessWidget {
   @override
@@ -90,6 +92,39 @@ class PreeclampsiaDashboard extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => DeleteRecordPage()),
               ),
             ),
+
+
+             const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: "Symptoms By ID",
+              icon: Icons.person_search,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FindSymptomPage()),
+                );
+              },
+            ),
+
+
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: "All Symptoms",
+              icon: Icons.medical_services,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => SymptomListPage()),
+                );
+              },
+            ),
+
           ],
         ),
       ),

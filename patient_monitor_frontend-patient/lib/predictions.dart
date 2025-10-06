@@ -190,16 +190,10 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.monitor_heart),
-              title: Text('Preeclampsia Symptoms'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PreeclampsiaHomePage()),
-                );
-              },
-            ),
+
+           
+
+
             ListTile(
               leading: Icon(Icons.calendar_today),
               title: Text('Appointments'),
@@ -220,16 +214,8 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.monitor_heart),
-              title: Text('Live Preeclampsia Predictions'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PreeclampsiaHomePage()),
-                );
-              },
-            ),
+
+            
 
 
              ListTile(
@@ -290,7 +276,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 
             ListTile(
               leading: Icon(Icons.health_and_safety),
-              title: Text('Preeclampsia Testing'),
+              title: Text('Preeclampsia Dashboard'),
               onTap: () {
                 Navigator.push(
                   context,

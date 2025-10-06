@@ -173,14 +173,14 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
           ),
           const SizedBox(height: 12),
           
-          // Symptoms Grid
+          // Symptoms Grid - Fixed overflow by reducing childAspectRatio and font sizes
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 3.5,
-            mainAxisSpacing: 6,
-            crossAxisSpacing: 6,
+            childAspectRatio: 3.0, // Reduced from 3.5 to fit better
+            mainAxisSpacing: 4, // Reduced spacing
+            crossAxisSpacing: 4, // Reduced spacing
             children: [
               _buildSymptomChip(
                 Icons.headset, 
@@ -208,18 +208,18 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8), // Reduced spacing
           
-          // Date
+          // Date - Fixed overflow by using Flexible
           Row(
             children: [
-              Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-              const SizedBox(width: 6),
-              Expanded(
+              Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]), // Smaller icon
+              const SizedBox(width: 4), // Reduced spacing
+              Flexible( // Added Flexible to prevent overflow
                 child: Text(
                   'Recorded: ${_formatDateTime(symptom['createdAt'])}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11, // Smaller font
                     color: Colors.grey[600],
                   ),
                   maxLines: 1,
@@ -237,14 +237,14 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
     return Container(
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6), // Smaller border radius
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4), // Reduced padding
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 6),
+          Icon(icon, size: 14, color: color), // Smaller icon
+          const SizedBox(width: 4), // Reduced spacing
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,8 +253,9 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9, // Smaller font
                     color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -262,7 +263,7 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 10, // Smaller font
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
@@ -312,7 +313,7 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: Padding( // Changed from SingleChildScrollView to Padding for better layout
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -322,27 +323,27 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12), // Matches the doctor page
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(16.0), // Matches the doctor page padding
                   child: Column(
                     children: [
                       const Icon(
                         Icons.search,
-                        size: 40,
+                        size: 48, // Matches the doctor page icon size
                         color: Colors.blue,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       const Text(
                         'Search Patient Records',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500, // Matches the doctor page style
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8), // Adjusted spacing
                       const Text(
                         'Enter patient name or ID to search',
                         style: TextStyle(color: Colors.grey, fontSize: 14),
@@ -364,14 +365,14 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height: 50, // Matches the doctor page button height
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _fetchAndShowSymptoms,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Colors.blue, // Using blue instead of pink
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8), // Matches doctor page
                             ),
                           ),
                           child: isLoading
@@ -390,7 +391,6 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),

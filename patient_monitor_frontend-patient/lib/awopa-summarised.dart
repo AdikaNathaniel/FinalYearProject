@@ -1247,18 +1247,20 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.monitor_heart),
-              title: const Text('Preeclampsia Symptoms'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PreeclampsiaHomePage(),
-                  ),
-                );
-              },
-            ),
+
+            // ListTile(
+            //   leading: const Icon(Icons.monitor_heart),
+            //   title: const Text('Preeclampsia Symptoms'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => const PreeclampsiaHomePage(),
+            //       ),
+            //     );
+            //   },
+            // ),
+
             ListTile(
               leading: const Icon(Icons.calendar_today),
               title: const Text('Appointments'),
@@ -1269,9 +1271,10 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                 );
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.monitor_heart),
-              title: const Text('Anemia Predictions'),
+              title: const Text('Anaemia Prediction'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1279,18 +1282,19 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.monitor_heart),
-              title: const Text('Live Preeclampsia Predictions'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PreeclampsiaHomePage(),
-                  ),
-                );
-              },
-            ),
+
+            // ListTile(
+            //   leading: const Icon(Icons.monitor_heart),
+            //   title: const Text('Live Preeclampsia Predictions'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => const PreeclampsiaHomePage(),
+            //       ),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.bloodtype),
               title: const Text('Glucose Monitoring'),
@@ -1335,7 +1339,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
             ListTile(
               leading: const Icon(Icons.health_and_safety),
-              title: const Text('Preeclampsia Prediction Testing'),
+              title: const Text('Preeclampsia Prediction'),
               onTap: () {
                 Navigator.push(
                   context,
