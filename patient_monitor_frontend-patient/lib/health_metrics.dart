@@ -24,6 +24,8 @@ import  'paystack-home.dart';
 import 'anemia-assessment.dart';
 import 'chart-data.dart';
 import 'appointment-schedule-by-medic.dart';
+import 'bluetooth-wearable.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -941,9 +943,8 @@ class _HealthDashboardState extends State<HealthDashboard> {
     );
   }
 
-  
 
-  void _showUserInfoDialog(BuildContext context) {
+void _showUserInfoDialog(BuildContext context) {
   showDialog(
     context: context,
     builder: (context) => Dialog(
@@ -974,7 +975,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.email, size: 20),
+                  const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
                   const SizedBox(width: 12),
                   Flexible(
                     child: Text(
@@ -1000,7 +1001,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 },
                 child: Row(
                   children: [
-                    const Icon(Icons.warning, size: 20, color: Colors.red),
+                    const Icon(Icons.emergency, size: 20, color: Colors.red),
                     const SizedBox(width: 12),
                     const Flexible(
                       child: Text(
@@ -1012,7 +1013,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
@@ -1034,7 +1034,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 },
                 child: Row(
                   children: [
-                    const Icon(Icons.settings, size: 20, color: Colors.black),
+                    const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
                     const SizedBox(width: 12),
                     const Text(
                       'Settings',
@@ -1044,11 +1044,44 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       ),
                     ),
                     const Spacer(),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+
+          
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WearableDevicePairingPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    const Flexible(
+                      child: Text(
+                        'Pair With Bluetooth Device',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              ),
+            ),
+
             const SizedBox(height: 12),
             
             // Notifications row
@@ -1066,7 +1099,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 },
                 child: Row(
                   children: [
-                    const Icon(Icons.notifications_active, size: 20, color: Colors.black),
+                    const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
                     const SizedBox(width: 12),
                     const Text(
                       'Notifications',
@@ -1076,7 +1109,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       ),
                     ),
                     const Spacer(),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
@@ -1098,7 +1130,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 },
                 child: Row(
                   children: [
-                    const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.black),
+                    const Icon(Icons.help_outline, size: 20, color: Colors.purple),
                     const SizedBox(width: 12),
                     const Text(
                       'Need Help?',
@@ -1108,14 +1140,13 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       ),
                     ),
                     const Spacer(),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
             
-            // Map row
+            // Map row - FIXED ICON
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: GestureDetector(
@@ -1130,7 +1161,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 },
                 child: Row(
                   children: [
-                    const Icon(Icons.map, size: 20, color: Colors.black),
+                    const Icon(Icons.location_on, size: 20, color: Colors.green),
                     const SizedBox(width: 12),
                     const Flexible(
                       child: Text(
@@ -1142,7 +1173,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
                   ],
                 ),
               ),
@@ -1202,7 +1232,9 @@ class _HealthDashboardState extends State<HealthDashboard> {
     ),
   );
 }
+  
 
+  
 
 void _showSnackbar(BuildContext context, String message, Color color) {
   final snackBar = SnackBar(

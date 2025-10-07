@@ -77,6 +77,7 @@ dependencies:
   webview_flutter_platform_interface: ^2.14.0
   flutter_launcher_icons: ^0.14.4
   country_codes: ^3.3.0
+  flutter_blue_plus: ^1.32.11 
   # libphonenumber: ^2.0.2
   
 

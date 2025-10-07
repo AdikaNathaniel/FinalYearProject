@@ -1088,6 +1088,9 @@ void _showUserInfoDialog(BuildContext context) {
               ),
             ),
             const SizedBox(height: 12),
+
+
+            
             
             // Settings row
             Padding(
@@ -1154,7 +1157,7 @@ void _showUserInfoDialog(BuildContext context) {
               ),
             ),
             const SizedBox(height: 20),
-            
+      
             // Logout button
             TextButton(
               onPressed: _logout,
