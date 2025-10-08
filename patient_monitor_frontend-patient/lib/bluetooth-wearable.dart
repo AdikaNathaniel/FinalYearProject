@@ -7,7 +7,8 @@ import 'dart:io';
 import 'dart:convert';
 
 class WearableDevicePairingPage extends StatefulWidget {
-  const WearableDevicePairingPage({super.key});
+  final String userEmail;
+  const WearableDevicePairingPage({super.key, required this.userEmail});
 
   @override
   State<WearableDevicePairingPage> createState() => _WearableDevicePairingPageState();

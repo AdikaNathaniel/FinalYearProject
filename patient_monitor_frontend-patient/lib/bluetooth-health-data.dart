@@ -26,46 +26,24 @@ import 'chart-data.dart';
 import 'appointment-schedule-by-medic.dart';
 import 'bluetooth-wearable.dart';
 
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Health Metrics Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
-        cardTheme: CardTheme(
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ),
-      home: const HealthDashboard(userEmail: 'user@example.com'),
-    );
-  }
-}
-
-class HealthDashboard extends StatefulWidget {
+class BluetoothHealthMetricsPage extends StatefulWidget {
   final String userEmail;
+  final Map<String, dynamic>? initialBluetoothData;
 
-  const HealthDashboard({Key? key, required this.userEmail}) : super(key: key);
+  const BluetoothHealthMetricsPage({
+    Key? key, 
+    required this.userEmail,
+    this.initialBluetoothData
+  }) : super(key: key);
 
   @override
-  _HealthDashboardState createState() => _HealthDashboardState();
+  _BluetoothHealthMetricsPageState createState() => _BluetoothHealthMetricsPageState();
 }
 
-class _HealthDashboardState extends State<HealthDashboard> {
+class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage> {
   final TextEditingController _emergencyMessageController = TextEditingController();
   Map<String, dynamic>? vitalData;
+  Map<String, dynamic>? bluetoothVitalData;
   bool isLoading = true;
   String errorMessage = '';
   int? selectedProteinLevel;
@@ -73,16 +51,29 @@ class _HealthDashboardState extends State<HealthDashboard> {
   Timer? _alertTimer;
   bool _showAlertDialog = false;
   bool _hasPostedInitialData = false;
-  bool _isOnDashboardPage = false; // Track if user is on dashboard
+  bool _isOnDashboardPage = false;
+
+  // Bluetooth data
+  String? lastReceivedData;
 
   @override
   void initState() {
     super.initState();
-    _isOnDashboardPage = true; // Set to true when dashboard loads
-    _fetchVitalData();
+    _isOnDashboardPage = true;
+    
+    // Initialize with initial Bluetooth data if provided
+    if (widget.initialBluetoothData != null) {
+      setState(() {
+        bluetoothVitalData = widget.initialBluetoothData;
+        vitalData = _convertBluetoothData(widget.initialBluetoothData!);
+        isLoading = false;
+      });
+    } else {
+      _fetchVitalData();
+    }
+    
     Timer.periodic(const Duration(seconds: 120), (Timer t) => _fetchVitalData());
     
-    // Changed to 3 minutes and only checks when on dashboard
     _alertTimer = Timer.periodic(const Duration(minutes: 3), (Timer t) {
       if (_isOnDashboardPage && mounted) {
         _checkAlarmingValues();
@@ -91,11 +82,37 @@ class _HealthDashboardState extends State<HealthDashboard> {
     });
   }
 
+  // Helper method to convert Bluetooth data format
+  Map<String, dynamic> _convertBluetoothData(Map<String, dynamic> data) {
+    return {
+      'glucose': data['glucose']?.toDouble(),
+      'systolicBP': data['systolic_bp']?.toDouble(),
+      'diastolicBP': data['diastolic_bp']?.toDouble(),
+      'heartRate': data['heart_rate']?.toDouble(),
+      'spo2': data['spo2']?.toDouble(),
+      'skinTemp': data['skin_temp']?.toDouble(),
+      'bodyTemp': data['body_temp']?.toDouble(),
+      'updatedAt': DateTime.now().toIso8601String(),
+    };
+  }
+
   @override
   void dispose() {
-    _isOnDashboardPage = false; // Set to false when leaving dashboard
+    _isOnDashboardPage = false;
     _alertTimer?.cancel();
     super.dispose();
+  }
+
+  // Method to receive Bluetooth data from WearableDevicePairingPage
+  void updateBluetoothData(Map<String, dynamic> data) {
+    if (mounted) {
+      setState(() {
+        bluetoothVitalData = data;
+        vitalData = _convertBluetoothData(data);
+        isLoading = false;
+      });
+      _checkAlarmingValues();
+    }
   }
 
   Future<void> _fetchVitalData() async {
@@ -605,6 +622,83 @@ class _HealthDashboardState extends State<HealthDashboard> {
     );
   }
 
+  // Method to show Bluetooth data dialog (same as in WearableDevicePairingPage)
+  void _showBluetoothDataDialog() {
+    if (bluetoothVitalData == null) {
+      _showErrorDialog('No Bluetooth data received yet');
+      return;
+    }
+    
+    try {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Latest Bluetooth Vitals Data'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildVitalRow('Glucose', '${bluetoothVitalData!['glucose']} mg/dL'),
+                _buildVitalRow('Systolic BP', '${bluetoothVitalData!['systolic_bp']} mmHg'),
+                _buildVitalRow('Diastolic BP', '${bluetoothVitalData!['diastolic_bp']} mmHg'),
+                _buildVitalRow('Heart Rate', '${bluetoothVitalData!['heart_rate']} bpm'),
+                _buildVitalRow('SpO2', '${bluetoothVitalData!['spo2']} %'),
+                _buildVitalRow('Skin Temp', '${bluetoothVitalData!['skin_temp']} °C'),
+                _buildVitalRow('Body Temp', '${bluetoothVitalData!['body_temp']} °C'),
+                const SizedBox(height: 8),
+                Text('Timestamp: ${bluetoothVitalData!['timestamp'] ?? 'N/A'}', style: const TextStyle(fontSize: 11)),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      _showErrorDialog('Error displaying Bluetooth data: $e');
+    }
+  }
+
+  Widget _buildVitalRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Error'),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double? mapValue;
@@ -629,6 +723,12 @@ class _HealthDashboardState extends State<HealthDashboard> {
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         actions: [
+          if (bluetoothVitalData != null) 
+            // IconButton(
+            //   icon: const Icon(Icons.bluetooth_connected, color: Colors.white),
+            //   onPressed: _showBluetoothDataDialog,
+            //   tooltip: 'View Bluetooth Data',
+            // ),
           IconButton(
             icon: CircleAvatar(
               radius: 16,
@@ -654,7 +754,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               ),
               child: Center(
                 child: Text(
-                  'PREGNANT WOMAN',
+                  'HEALTH METRICS',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -663,32 +763,18 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 ),
               ),
             ),
-            // ListTile(
-            //   leading: const Icon(Icons.calendar_today),
-            //   title: const Text('Create-Cancel Appointment'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) =>
-            //               CreateCancelAppointmentPage(userEmail: widget.userEmail)),
-            //     );
-            //   },
-            // ),
-
             ListTile(
-  leading: const Icon(Icons.calendar_today),
-  title: const Text('Schedule Appointment'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AppointmentScheduleByMedicPage(),
-      ),
-    );
-  },
-),
-
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Schedule Appointment'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AppointmentScheduleByMedicPage(),
+                  ),
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.health_and_safety),
               title: const Text('Pregnancy Tips'),
@@ -701,18 +787,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
-            // ListTile(
-            //   leading: Icon(Icons.monitor_heart),
-            //   title: Text('Live Vitals Data'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => LiveVitalsHardwareDataPage()),
-            //     );
-            //   },
-            // ),
-
             ListTile(
               leading: const Icon(Icons.info),
               title: const Text('Pregnancy InfoDesk'),
@@ -749,7 +823,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.attach_money, color: Colors.teal),
               title: const Text('Make Payment'), 
@@ -762,7 +835,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.medical_services, color: Colors.blue),
               title: const Text('View All Medics Profile'), 
@@ -799,8 +871,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
-             ListTile(
+            ListTile(
               leading: Icon(Icons.bloodtype),
               title: Text('Charts Data'),
               onTap: () {
@@ -810,7 +881,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.search, color: Colors.blue),
               title: const Text(
@@ -838,7 +908,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(12),
-          // REMOVED the gradient background to use default theme background
           child: isLoading 
             ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
             : errorMessage.isNotEmpty
@@ -859,7 +928,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        // Row 1: Blood Glucose and Blood Pressure
                         MetricCard(
                           title: 'Blood Glucose',
                           value: '${vitalData?['glucose']?.toStringAsFixed(1) ?? 'N/A'} mg/dL',
@@ -876,7 +944,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        // Row 2: Heart Rate and Oxygen Saturation
                         MetricCard(
                           title: 'Heart Rate',
                           value: '${vitalData?['heartRate']?.toStringAsFixed(0) ?? 'N/A'} BPM',
@@ -893,109 +960,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        // Row 3: Body Temperature and Protein in Urine
-                        MetricCard(
-                          title: 'Body Temperature',
-                          value: '${vitalData?['bodyTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
-                          icon: Icons.thermostat,
-                          color: Colors.orange,
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
-                        ),
-                        
-                        // Protein in Urine Card - Click to update
-                        GestureDetector(
-                          onTap: () => _showUrineStripDialog(context),
-                          child: Card(
-                            elevation: 0,
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.indigo.withOpacity(0.2),
-                                    ),
-                                    child: Icon(
-                                      Icons.science,
-                                      color: selectedProteinLevel != null 
-                                          ? selectedProteinColor ?? Colors.indigo
-                                          : Colors.indigo,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Protein in Urine',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: Colors.grey[700],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      selectedProteinLevel != null 
-                                          ? 'Level: $selectedProteinLevel'
-                                          : 'Tap to Test',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: selectedProteinLevel != null 
-                                            ? Colors.black87 
-                                            : Colors.blue,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    selectedProteinLevel != null 
-                                        ? 'Last updated: Just now'
-                                        : 'Click me to test',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey[600],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        // Commented out cards:
-                        /*
-                        AccelerometerCard(
-                          x: vitalData?['accelX']?.toStringAsFixed(2) ?? 'N/A',
-                          y: vitalData?['accelY']?.toStringAsFixed(2) ?? 'N/A',
-                          z: vitalData?['accelZ']?.toStringAsFixed(2) ?? 'N/A',
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
-                        ),
-                        
-                        GyroscopeCard(
-                          x: vitalData?['gyroX']?.toStringAsFixed(2) ?? 'N/A',
-                          y: vitalData?['gyroY']?.toStringAsFixed(2) ?? 'N/A',
-                          z: vitalData?['gyroZ']?.toStringAsFixed(2) ?? 'N/A',
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
-                        ),
-                        
                         MetricCard(
                           title: 'Skin Temperature',
                           value: '${vitalData?['skinTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
@@ -1003,9 +967,24 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           color: Colors.deepPurple,
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
-                        */
+                        
+                        MetricCard(
+                          title: 'Health Status',
+                          value: mapValue != null ? 'MAP: ${mapValue.toStringAsFixed(1)}' : 'Calculating...',
+                          icon: Icons.health_and_safety,
+                          color: Colors.green,
+                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                        ),
                       ],
                     ),
+
+                    if (selectedProteinLevel != null) ...[
+                      SizedBox(height: 12),
+                      ProteinCard( 
+                        proteinLevel: selectedProteinLevel!,
+                        color: selectedProteinColor!,
+                      ),
+                    ],
                   ],
                 ),
         ),
@@ -1019,320 +998,297 @@ class _HealthDashboardState extends State<HealthDashboard> {
     );
   }
 
-
-void _showUserInfoDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Title
-            const Text(
-              'Profile',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Email row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      widget.userEmail,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Emergency Alert row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  _showEmergencyAlertDialog(context);
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.emergency, size: 20, color: Colors.red),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'Send An Emergency Alert',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Settings row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-          
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'Pair With Bluetooth Device',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-            
-            // Notifications row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NotificationListPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Notifications',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Need Help row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SupportFormPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.help_outline, size: 20, color: Colors.purple),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Need Help?',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Map row - FIXED ICON
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MapPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 20, color: Colors.green),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'View Location Of PregMama',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Logout button
-            TextButton(
-              onPressed: () async {
-                final response = await http.put(
-                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-                  headers: {'Content-Type': 'application/json'},
-                );
-
-                if (response.statusCode == 200) {
-                  final responseData = json.decode(response.body);
-                  if (responseData['success']) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: ${responseData['message']}",
-                        Colors.red);
-                  }
-                } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: Server error",
-                        Colors.red);
-                }
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text(
-                'Logout',
+  void _showUserInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Profile',
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            
-            // Close button
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
+              const SizedBox(height: 20),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        widget.userEmail,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showEmergencyAlertDialog(context);
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.emergency, size: 20, color: Colors.red),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'Send An Emergency Alert',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'Pair With Bluetooth Device',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NotificationListPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SupportFormPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.help_outline, size: 20, color: Colors.purple),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Need Help?',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 20, color: Colors.green),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'View Location Of PregMama',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              TextButton(
+                onPressed: () async {
+                  final response = await http.put(
+                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    final responseData = json.decode(response.body);
+                    if (responseData['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: ${responseData['message']}",
+                          Colors.red);
+                    }
+                  } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: Server error",
+                          Colors.red);
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-  
+    );
+  }
 
-  
+  void _showSnackbar(BuildContext context, String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 2),
+    );
 
-void _showSnackbar(BuildContext context, String message, Color color) {
-  final snackBar = SnackBar(
-    content: Text(message),
-    backgroundColor: color,
-    duration: const Duration(seconds: 2),
-  );
-
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 }
 
-
-  // void _showSnackbar(BuildContext context, String message, Color color) {
-  //   final snackBar = SnackBar(
-  //     content: Text(message),
-  //     backgroundColor: color,
-  //     duration: const Duration(seconds: 2),
-  //   );
-
-  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  // }
-}
+// Add the missing widget classes here:
 
 class MetricCard extends StatelessWidget {
   final String title;
@@ -1353,364 +1309,48 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0,
-      color: Colors.white,
+      elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.2),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              lastUpdated,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Commented out AccelerometerCard class
-/*
-class AccelerometerCard extends StatelessWidget {
-  final String x;
-  final String y;
-  final String z;
-  final String lastUpdated;
-
-  const AccelerometerCard({
-    Key? key,
-    required this.x,
-    required this.y,
-    required this.z,
-    required this.lastUpdated,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.green.withOpacity(0.2),
-              ),
-              child: const Icon(
-                Icons.directions,
-                color: Colors.green,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Accelerometer',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'X',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          x,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Y',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          y,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Z',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          z,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              lastUpdated,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-*/
-
-// Commented out GyroscopeCard class
-/*
-class GyroscopeCard extends StatelessWidget {
-  final String x;
-  final String y;
-  final String z;
-  final String lastUpdated;
-
-  const GyroscopeCard({
-    Key? key,
-    required this.x,
-    required this.y,
-    required this.z,
-    required this.lastUpdated,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.teal.withOpacity(0.2),
-              ),
-              child: const Icon(
-                Icons.cached,
-                color: Colors.teal,
-                size: 28,
-              ),
-            ),
             const SizedBox(height: 8),
             Text(
-              'Gyroscope',
-              style: TextStyle(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.grey[700],
+                color: Colors.blueGrey,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'X',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          x,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Y',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          y,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Z',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          z,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
             const SizedBox(height: 4),
             Text(
               lastUpdated,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
-                color: Colors.grey[600],
+                color: Colors.grey,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1718,10 +1358,7 @@ class GyroscopeCard extends StatelessWidget {
     );
   }
 }
-*/
 
-// Commented out ProteinCard class as it's now integrated into the main grid
-/*
 class ProteinCard extends StatelessWidget {
   final int proteinLevel;
   final Color color;
@@ -1732,85 +1369,51 @@ class ProteinCard extends StatelessWidget {
     required this.color,
   }) : super(key: key);
 
-  double _scaleProteinLevel(double rawLevel) {
-    return rawLevel;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final scaledLevel = _scaleProteinLevel(proteinLevel.toDouble());
-    
     return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 0),
+      elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.2),
-              ),
-              child: Icon(
-                Icons.science,
-                color: color,
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 16),
-            
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Protein in Urine',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
+            Row(
+              children: [
+                Icon(Icons.bloodtype, color: Colors.red),
+                const SizedBox(width: 8),
+                const Text(
+                  'Protein Level',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Level: $proteinLevel',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Last updated: Just now',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                  width: 2,
                 ),
-              ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Level: $proteinLevel',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1818,4 +1421,3 @@ class ProteinCard extends StatelessWidget {
     );
   }
 }
-*/
