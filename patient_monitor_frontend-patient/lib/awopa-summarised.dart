@@ -1273,7 +1273,7 @@ void _showUserInfoDialog(BuildContext context) {
             ),
             ListTile(
               leading: const Icon(Icons.show_chart, color: Colors.cyan),
-              title: const Text('Retrieve Patient Vitals Readings'),
+              title: const Text('Retrieve Readings'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1375,7 +1375,7 @@ void _showUserInfoDialog(BuildContext context) {
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('View Manually Entered Vitals'),
+              title: const Text('Manual Vitals'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1395,7 +1395,7 @@ void _showUserInfoDialog(BuildContext context) {
             ),
             ListTile(
               leading: const Icon(Icons.monitor_heart),
-              title: const Text('Live Vitals Data'),
+              title: const Text('Live Vitals'),
               onTap: () {
                 Navigator.push(
                   context,

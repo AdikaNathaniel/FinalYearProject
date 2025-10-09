@@ -113,155 +113,164 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.9,
-            height: MediaQuery.of(context).size.height * 0.7,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Dialog Header
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today, color: Colors.blue),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Appointment Results',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            Text(
-                              appointments.isEmpty 
-                                  ? 'No appointments found'
-                                  : 'Found ${appointments.length} appointment${appointments.length == 1 ? '' : 's'}',
-                              style: TextStyle(
-                                color: Colors.grey[700],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close),
-                        color: Colors.grey[600],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Search Summary
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.search, size: 16, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Search Criteria:',
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Doctor: ${doctorNameController.text}'),
-                      Text('Status: ${selectedStatus.toUpperCase()}'),
-                      if (startDate != null && endDate != null)
-                        Text('Date Range: ${dateFormatter.format(startDate!)} to ${dateFormatter.format(endDate!)}'),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Appointments List
-                Expanded(
-                  child: appointments.isEmpty
-                      ? Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dialog Header
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today, color: Colors.blue),
+                        const SizedBox(width: 12),
+                        Expanded(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 48,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No appointments found',
+                              const Text(
+                                'Appointment Results',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
                                 ),
                               ),
-                              const SizedBox(height: 8),
                               Text(
-                                'Try adjusting your search criteria',
+                                appointments.isEmpty 
+                                    ? 'No appointments found'
+                                    : 'Found ${appointments.length} appointment${appointments.length == 1 ? '' : 's'}',
                                 style: TextStyle(
-                                  color: Colors.grey[500],
+                                  color: Colors.grey[700],
                                   fontSize: 14,
                                 ),
                               ),
                             ],
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: appointments.length,
-                          itemBuilder: (context, index) {
-                            final appointment = appointments[index];
-                            return _buildDialogAppointmentCard(appointment);
-                          },
                         ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Dialog Actions
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Close'),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close),
+                          color: Colors.grey[600],
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _fetchAppointments(); // Refresh search
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('Refresh'),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Search Summary
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                ),
-              ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.search, size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Search Criteria:',
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Doctor: ${doctorNameController.text}'),
+                        Text('Status: ${selectedStatus.toUpperCase()}'),
+                        if (startDate != null && endDate != null)
+                          Text('Date Range: ${dateFormatter.format(startDate!)} to ${dateFormatter.format(endDate!)}'),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Appointments List
+                  Expanded(
+                    child: appointments.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No appointments found',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Try adjusting your search criteria',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: appointments.length,
+                            itemBuilder: (context, index) {
+                              final appointment = appointments[index];
+                              return _buildDialogAppointmentCard(appointment);
+                            },
+                          ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Dialog Actions
+                  Container(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _fetchAppointments(); // Refresh search
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Refresh'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -400,209 +409,192 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: Column(
-        children: [
-          // Filter controls
-          Card(
-            margin: const EdgeInsets.all(16),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Doctor name text field
-                  TextFormField(
-                    controller: doctorNameController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.person),
-                      labelText: 'Doctor Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    validator: (value) => value == null || value.isEmpty 
-                        ? 'Doctor name is required' 
-                        : null,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Status dropdown
-                  DropdownButtonFormField<String>(
-                    value: selectedStatus,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.filter_alt),
-                      labelText: 'Appointment Status',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                      DropdownMenuItem(value: 'confirmed', child: Text('Confirmed')),
-                      DropdownMenuItem(value: 'canceled', child: Text('Canceled')),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStatus = value!;
-                      });
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Start date text field with picker
-                  TextFormField(
-                    readOnly: true,
-                    controller: TextEditingController(
-                      text: startDate != null ? dateFormatter.format(startDate!) : '',
-                    ),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.calendar_today),
-                      labelText: 'Start Date',
-                      hintText: 'Select start date',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    onTap: () => _selectStartDate(context),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // End date text field with picker
-                  TextFormField(
-                    readOnly: true,
-                    controller: TextEditingController(
-                      text: endDate != null ? dateFormatter.format(endDate!) : '',
-                    ),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.calendar_today),
-                      labelText: 'End Date',
-                      hintText: 'Select end date',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    onTap: () => _selectEndDate(context),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Date range display
-                  if (startDate != null && endDate != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
+                  // Filter controls
+                  Card(
+                    margin: const EdgeInsets.all(16),
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
                         children: [
-                          const Icon(Icons.date_range, color: Colors.blue),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Selected Range: ${dateFormatter.format(startDate!)} to ${dateFormatter.format(endDate!)}',
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w500,
+                          // Doctor name text field
+                          TextFormField(
+                            controller: doctorNameController,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.person),
+                              labelText: 'Doctor Name',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                            ),
+                            validator: (value) => value == null || value.isEmpty 
+                                ? 'Doctor name is required' 
+                                : null,
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Status dropdown
+                          DropdownButtonFormField<String>(
+                            value: selectedStatus,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.filter_alt),
+                              labelText: 'Appointment Status',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                              DropdownMenuItem(value: 'confirmed', child: Text('Confirmed')),
+                              DropdownMenuItem(value: 'canceled', child: Text('Canceled')),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                selectedStatus = value!;
+                              });
+                            },
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Start date text field with picker
+                          TextFormField(
+                            readOnly: true,
+                            controller: TextEditingController(
+                              text: startDate != null ? dateFormatter.format(startDate!) : '',
+                            ),
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.calendar_today),
+                              labelText: 'Start Date',
+                              hintText: 'Select start date',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                            ),
+                            onTap: () => _selectStartDate(context),
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // End date text field with picker
+                          TextFormField(
+                            readOnly: true,
+                            controller: TextEditingController(
+                              text: endDate != null ? dateFormatter.format(endDate!) : '',
+                            ),
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.calendar_today),
+                              labelText: 'End Date',
+                              hintText: 'Select end date',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                            ),
+                            onTap: () => _selectEndDate(context),
+                          ),
+                          
+                          // const SizedBox(height: 16),
+                          
+                          // // Date range display
+                          // if (startDate != null && endDate != null)
+                          //   Container(
+                          //     padding: const EdgeInsets.all(12),
+                          //     decoration: BoxDecoration(
+                          //       color: Colors.blue.withOpacity(0.1),
+                          //       borderRadius: BorderRadius.circular(8),
+                          //     ),
+                          //     // child: Row(
+                          //     //   children: [
+                          //     //     const Icon(Icons.date_range, color: Colors.blue),
+                          //     //     // const SizedBox(width: 8),
+                          //     //     // Text(
+                          //     //     //   'Selected Range: ${dateFormatter.format(startDate!)} to ${dateFormatter.format(endDate!)}',
+                          //     //     //   style: const TextStyle(
+                          //     //     //     color: Colors.blue,
+                          //     //     //     fontWeight: FontWeight.w500,
+                          //     //     //   ),
+                          //     //     // ),
+                          //     //   ],
+                          //     // ),
+                          //   ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Search button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: isLoading ? null : _fetchAppointments,
+                              child: isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Search Appointments",
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Search button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: isLoading ? null : _fetchAppointments,
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              "SEARCH APPOINTMENTS",
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                    ),
                   ),
+                  
+                  // Add flexible space at the bottom if needed
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-          ),
-          
-                  // Empty space since results will show in dialog
-          const Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                  // SizedBox(height: 16),
-                  // Text(
-                  //   'Enter search criteria and click "Search Appointments"',
-                  //   style: TextStyle(
-                  //     fontSize: 16,
-                  //     color: Colors.grey,
-                  //   ),
-                  //   textAlign: TextAlign.center,
-                  // ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Results will be displayed in a dialog box',
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

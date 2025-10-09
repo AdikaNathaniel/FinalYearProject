@@ -34,14 +34,13 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill the user ID with the email as a suggestion only
     userIdController.text = widget.userEmail;
   }
 
   Widget _buildSelectionCard({
     required String title,
     required String subtitle,
-    required String imageAsset,
+    required String imageUrl,
     required VoidCallback onTap,
   }) {
     return Card(
@@ -55,12 +54,12 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
-          height: 180, // Fixed height for consistency
-          width: double.infinity, // Make card take full width
+          height: 180,
+          width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
-              colors: [Color(0xFF2E7D9A).withOpacity(0.1), Color(0xFF4A9BC2).withOpacity(0.1)],
+              colors: [Color(0xFF2196F3).withOpacity(0.1), Color(0xFF64B5F6).withOpacity(0.1)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -68,34 +67,54 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Rounded image at the top
               Container(
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Color(0xFF2E7D9A),
+                    color: Color(0xFF2196F3),
                     width: 2,
                   ),
                 ),
                 child: ClipOval(
-                  child: Image.asset(
-                    imageAsset,
+                  child: Image.network(
+                    imageUrl,
                     fit: BoxFit.cover,
                     width: 65,
                     height: 65,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / 
+                                loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: Color(0xFF2196F3),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Color(0xFF2196F3).withOpacity(0.1),
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: Color(0xFF2196F3),
+                          size: 30,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
               const SizedBox(height: 12),
-              // Text content
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E7D9A),
+                  color: Color(0xFF2196F3),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
@@ -131,7 +150,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
     );
   }
 
-  // Validation methods
   String? _validateHeartRate(String? value) {
     if (value == null || value.isEmpty) {
       return 'Heart rate is required';
@@ -201,7 +219,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
   }
 
   Future<void> submitVitalsData() async {
-    // Clear previous validation errors
     setState(() {
       _heartRateError = _validateHeartRate(heartRateController.text);
       _systolicError = _validateSystolic(systolicController.text);
@@ -209,7 +226,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
       _bloodGlucoseError = _validateBloodGlucose(bloodGlucoseController.text);
     });
 
-    // Check if any validation errors exist
     if (_heartRateError != null || 
         _systolicError != null || 
         _diastolicError != null || 
@@ -224,10 +240,9 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
     });
 
     try {
-      // Log the data being sent
       final requestData = {
         "userId": userIdController.text,
-        "inputMethod": inputMethod, // Automatically set based on navigation
+        "inputMethod": inputMethod,
         "bloodPressure": {
           "systolic": int.parse(systolicController.text),
           "diastolic": int.parse(diastolicController.text),
@@ -238,7 +253,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
       
       logger.d('Sending vitals data: $requestData');
       
-      // Replace with your actual API endpoint
       final response = await http.post(
         Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/vitals-health-data'),
         headers: {'Content-Type': 'application/json'},
@@ -300,7 +314,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with success icon
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -318,7 +331,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                   
                   const SizedBox(height: 16),
                   
-                  // Title
                   const Center(
                     child: Text(
                       'Vitals Data Submitted Successfully!',
@@ -332,7 +344,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                   
                   const SizedBox(height: 24),
                   
-                  // Response data
                   _buildResponseItem(
                     Icons.person,
                     'User ID',
@@ -371,7 +382,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                   
                   const SizedBox(height: 24),
                   
-                  // Timestamp
                   Text(
                     'Submitted: ${_formatDateTime(responseData['result']['createdAt'])}',
                     style: const TextStyle(
@@ -382,12 +392,11 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                   
                   const SizedBox(height: 16),
                   
-                  // OK Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D9A),
+                        backgroundColor: const Color(0xFF2196F3),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -423,12 +432,12 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D9A).withOpacity(0.1),
+              color: const Color(0xFF2196F3).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF2E7D9A),
+              color: const Color(0xFF2196F3),
               size: 20,
             ),
           ),
@@ -449,7 +458,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
               value,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2E7D9A),
+                color: Color(0xFF2196F3),
               ),
               textAlign: TextAlign.right,
             ),
@@ -466,14 +475,12 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
 
   void _resetForm() {
     _formKey.currentState?.reset();
-    // Keep the user ID field populated with the email as a suggestion
     userIdController.text = widget.userEmail;
     heartRateController.clear();
     systolicController.clear();
     diastolicController.clear();
     bloodGlucoseController.clear();
     
-    // Clear validation errors
     setState(() {
       _heartRateError = null;
       _systolicError = null;
@@ -503,12 +510,12 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Color(0xFF2E7D9A).withOpacity(0.1),
+              color: Color(0xFF2196F3).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: Color(0xFF2E7D9A),
+              color: Color(0xFF2196F3),
               size: 20,
             ),
           ),
@@ -525,7 +532,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Color(0xFF2E7D9A), width: 2),
+            borderSide: BorderSide(color: Color(0xFF2196F3), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -543,7 +550,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
         ),
         onChanged: onChanged,
         validator: (value) {
-          // Validation is handled by the separate validation methods
           return null;
         },
       ),
@@ -557,7 +563,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
         title: const Text('Mode of Vitals Recording'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF2E7D9A),
+        backgroundColor: Color(0xFF2196F3),
         foregroundColor: Colors.white,
         leading: inputMethod == "manual"
             ? IconButton(
@@ -583,7 +589,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header Card
         Card(
           elevation: 4,
           margin: const EdgeInsets.only(bottom: 24),
@@ -591,11 +596,11 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             borderRadius: BorderRadius.circular(15),
           ),
           child: Container(
-            width: double.infinity, // Make card take full width
+            width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
+                colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -638,16 +643,13 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
           ),
         ),
 
-        // Selection Cards - now using images
         Column(
           children: [
-            // Wearable Device Card
             _buildSelectionCard(
               title: "Wearable Device",
               subtitle: "Sync Your Data With Your Smart Device",
-              imageAsset: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/WearableArm.jpeg',
+              imageUrl: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/WearableArm.jpeg',
               onTap: () {
-                // Navigate to HealthDashboard page
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -661,11 +663,10 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             
             const SizedBox(height: 20),
             
-            // Manual Entry Card
             _buildSelectionCard(
               title: "Manual Entry",
               subtitle: "Enter Your Vitals Manually",
-              imageAsset: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/ManualEntry.jpg',
+              imageUrl: 'https://raw.githubusercontent.com/AdikaNathaniel/FinalYearProject/awopa/AppScreenshots/ManualEntry.jpg',
               onTap: () {
                 setState(() => inputMethod = "manual");
               },
@@ -682,7 +683,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Card
           Card(
             elevation: 4,
             margin: const EdgeInsets.only(bottom: 24),
@@ -690,11 +690,11 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
               borderRadius: BorderRadius.circular(15),
             ),
             child: Container(
-              width: double.infinity, // Make card take full width
+              width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
+                  colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -743,7 +743,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             ),
           ),
 
-          // Form Fields
           _buildTextField(
             userIdController,
             "User ID",
@@ -765,7 +764,6 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
             },
           ),
           
-          // Blood Pressure Fields (Systolic and Diastolic)
           Row(
             children: [
               Expanded(
@@ -818,19 +816,18 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
 
           const SizedBox(height: 32),
 
-          // Submit Button
           Container(
             height: 56,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               gradient: LinearGradient(
-                colors: [Color(0xFF2E7D9A), Color(0xFF4A9BC2)],
+                colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF2E7D9A).withOpacity(0.3),
+                  color: Color(0xFF2196F3).withOpacity(0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

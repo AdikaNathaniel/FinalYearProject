@@ -8,116 +8,116 @@ class PrescriptionHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
-  title: const Text(
-    'Prescriptions Manager',
-    style: TextStyle(color: Colors.white),
-  ),
-  centerTitle: true,
-  backgroundColor: Colors.blueAccent,
-),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          _buildOptionCard(
-            context,
-            icon: Icons.add_circle_outline,
-            iconColor: Colors.blue,
-            title: 'Create Prescription',
-            subtitle: 'Generate and assign a prescription for the patient',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => CreatePrescriptionPage()),
-              );
-            },
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: const Text(
+          'Prescriptions Manager',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          const SizedBox(height: 16),
-          _buildOptionCard(
-            context,
-            icon: Icons.list_alt,
-            iconColor: Colors.blue,
-            title: 'View Prescriptions',
-            subtitle: 'Access and review all patient prescriptions',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => PrescriptionPage()),
-              );
-            },
-          ),
-        ],
+        ),
+        backgroundColor: const Color(0xFF2196F3),
+        elevation: 0,
+        centerTitle: true,
       ),
-    );
-  }
-
-  Widget _buildOptionCard(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Card(
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Row(
-            children: [
-              Icon(icon, size: 40, color: iconColor),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, size: 30, color: Colors.grey),
-            ],
-          ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDashboardCard(
+              context,
+              title: 'Create Prescription',
+              icon: Icons.add_circle,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => CreatePrescriptionPage()),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: 'View Prescriptions',
+              icon: Icons.list_alt,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => PrescriptionPage()),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-// Placeholder Screens
-class CreatePrescriptionScreen extends StatelessWidget {
-  const CreatePrescriptionScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create Prescription')),
-      body: const Center(child: Text('Create Prescription Screen')),
-    );
-  }
-}
-
-class ViewPrescriptionsScreen extends StatelessWidget {
-  const ViewPrescriptionsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('View Prescriptions')),
-      body: const Center(child: Text('View Prescriptions Screen')),
+  Widget _buildDashboardCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.grey.shade200,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey.shade400,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

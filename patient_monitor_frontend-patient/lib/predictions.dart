@@ -150,7 +150,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 
              ListTile(
               leading: Icon(Icons.show_chart, color: Colors.cyan),
-              title: Text('Retrieve Patient Vitals Readings'),
+              title: Text('Retrieve Readings'),
               onTap: () {
                 Navigator.push(
                   context,

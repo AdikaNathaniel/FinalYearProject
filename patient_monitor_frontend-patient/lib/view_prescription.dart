@@ -43,19 +43,13 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
         backgroundColor: Colors.blue,
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue, Colors.red], // Gradient background
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-          ),
-        ),
+        color: Colors.white, // Default white background
         child: prescriptions.isEmpty
             ? Center(child: CircularProgressIndicator())
             : ListView.separated(
                 itemCount: prescriptions.length,
                 separatorBuilder: (context, index) => Divider(
-                  color: Colors.white.withOpacity(0.5), // Divider color
+                  color: Colors.grey.withOpacity(0.5), // Divider color
                   thickness: 1, // Thickness of the divider
                   height: 20, // Space above and below the divider
                 ),
@@ -66,6 +60,10 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
                     elevation: 6,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Colors.grey, // Grey outer casing
+                        width: 1.0,
+                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),

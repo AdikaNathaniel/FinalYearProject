@@ -100,123 +100,89 @@ class _CsvPageState extends State<CsvPage> {
   }
 
   // --- Save and Open CSV File (Mobile Only) ---
-  // Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
-  //   try {
-  //     // Get directory for saving file
-  //     final directory = await getApplicationDocumentsDirectory();
-  //     final filePath = '${directory.path}/$id.csv';
-  //     final file = File(filePath);
-      
-  //     // Write CSV content to file
-  //     await file.writeAsString(csvContent);
-      
-  //     // Open the file with appropriate app
-  //     await OpenFile.open(filePath);
-      
-  //     // Also show preview dialog for mobile users
-  //     _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
-      
-  //   } catch (e) {
-  //     // If file opening fails, fall back to preview dialog
-  //     _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
-      
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('File saved! Use a file manager to open it.'),
-  //         backgroundColor: Colors.green,
-  //       ),
-  //     );
-  //   }
-  // }
-
-
-
-// --- Save and Open CSV File (Mobile Only) ---
-Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
-  try {
-    // Try to get Downloads directory first (works on newer Android versions)
-    final directory = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/$id.csv';
-    final file = File(filePath);
-    
-    // Write CSV content to file
-    await file.writeAsString(csvContent);
-    
-    // Show success message with file path
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('CSV saved successfully!'),
-            SizedBox(height: 4),
-            Text(
-              'Location: ${directory.path}',
-              style: TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 5),
-      ),
-    );
-    
-    // Try to open the file with appropriate app
+  Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
     try {
-      await OpenFile.open(filePath);
-    } catch (e) {
-      print('Could not open file automatically: $e');
-      // File is still saved, user can access it manually
-    }
-    
-    // Also show preview dialog
-    _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
-    
-  } catch (e) {
-    // Fallback: If saving to Downloads fails, try application directory
-    try {
-      final fallbackDir = await getApplicationDocumentsDirectory();
-      final fallbackPath = '${fallbackDir.path}/$id.csv';
-      final fallbackFile = File(fallbackPath);
-      await fallbackFile.writeAsString(csvContent);
+      // Try to get Downloads directory first (works on newer Android versions)
+      final directory = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/$id.csv';
+      final file = File(filePath);
       
+      // Write CSV content to file
+      await file.writeAsString(csvContent);
+      
+      // Show success message with file path
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('CSV saved to app storage!'),
+              Text('CSV saved successfully!'),
               SizedBox(height: 4),
               Text(
-                'Use a file manager to access: Android/data/<your.app>/files/',
+                'Location: ${directory.path}',
                 style: TextStyle(fontSize: 12),
               ),
             ],
           ),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 6),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 5),
         ),
       );
       
+      // Try to open the file with appropriate app
+      try {
+        await OpenFile.open(filePath);
+      } catch (e) {
+        print('Could not open file automatically: $e');
+        // File is still saved, user can access it manually
+      }
+      
+      // Also show preview dialog
       _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
       
-    } catch (fallbackError) {
-      // If everything fails, just show the preview
-      _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not save file. Showing preview instead.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } catch (e) {
+      // Fallback: If saving to Downloads fails, try application directory
+      try {
+        final fallbackDir = await getApplicationDocumentsDirectory();
+        final fallbackPath = '${fallbackDir.path}/$id.csv';
+        final fallbackFile = File(fallbackPath);
+        await fallbackFile.writeAsString(csvContent);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('CSV saved to app storage!'),
+                SizedBox(height: 4),
+                Text(
+                  'Use a file manager to access: Android/data/<your.app>/files/',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 6),
+          ),
+        );
+        
+        _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+        
+      } catch (fallbackError) {
+        // If everything fails, just show the preview
+        _showEnhancedCsvPreviewDialog(id, csvContent, csvContent.length);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not save file. Showing preview instead.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
-}
-
-
 
   // Enhanced CSV preview dialog with multiple export options
   void _showEnhancedCsvPreviewDialog(String id, String content, int fileSize) {
@@ -230,7 +196,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.table_chart, color: Colors.cyan),
+            Icon(Icons.table_chart, color: Colors.blue),
             SizedBox(width: 8),
             Text('CSV File: $id'),
           ],
@@ -298,7 +264,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
             icon: Icon(Icons.copy, size: 18),
             label: Text('Copy All'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.cyan,
+              backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
@@ -362,7 +328,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.cyan,
+                  color: Colors.blue,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                 ),
                 child: Row(
@@ -474,10 +440,10 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.cyan.shade50,
+      backgroundColor: Colors.white, // Default white background
       appBar: AppBar(
-        backgroundColor: Colors.cyan,
-        title: Text("Pregnant Woman Vitals In CSV Format"),
+        backgroundColor: Colors.blue,
+        title: Text("Vitals In CSV"),
         centerTitle: true, 
         foregroundColor: Colors.white,
       ),
@@ -490,14 +456,16 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
               color: Colors.white,
               elevation: 4,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey, width: 1.0), // Grey casing
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.description, color: Colors.cyan, size: 32),
+                        Icon(Icons.description, color: Colors.blue, size: 32),
                         SizedBox(width: 10),
                         Text(
                           "Get Latest CSV Readings",
@@ -509,7 +477,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                     const SizedBox(height: 12),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyan,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       ),
@@ -530,12 +498,12 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                       Container(
                         padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.cyan.shade50,
+                          color: Colors.blue.shade50,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.info_outline, color: Colors.cyan),
+                            Icon(Icons.info_outline, color: Colors.blue),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -572,14 +540,16 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
               color: Colors.white,
               elevation: 4,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey, width: 1.0), // Grey casing
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.list, color: Colors.cyan, size: 32),
+                        Icon(Icons.list, color: Colors.blue, size: 32),
                         SizedBox(width: 10),
                         Text(
                           "All CSV IDs",
@@ -591,7 +561,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                     const SizedBox(height: 12),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyan,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       ),
@@ -636,7 +606,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.copy, color: Colors.cyan),
+                                            icon: const Icon(Icons.copy, color: Colors.blue),
                                             tooltip: "Copy ID",
                                             onPressed: () {
                                               Clipboard.setData(ClipboardData(text: id));
@@ -673,14 +643,16 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
               color: Colors.white,
               elevation: 4,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey, width: 1.0), // Grey casing
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.search, color: Colors.cyan, size: 32),
+                        Icon(Icons.search, color: Colors.blue, size: 32),
                         SizedBox(width: 10),
                         Text(
                           "Download CSV by ID",
@@ -700,9 +672,9 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.cyan, width: 2),
+                          borderSide: BorderSide(color: Colors.blue, width: 2),
                         ),
-                        prefixIcon: Icon(Icons.fingerprint, color: Colors.cyan),
+                        prefixIcon: Icon(Icons.fingerprint, color: Colors.blue),
                       ),
                       onSubmitted: (value) {
                         if (value.trim().isNotEmpty) {
@@ -713,7 +685,7 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       ),
@@ -792,60 +764,6 @@ Future<void> _saveAndOpenCsvFile(String id, String csvContent) async {
                 ),
               ),
             ],
-
-            // --- Instructions Section ---
-            const SizedBox(height: 16),
-            Card(
-              color: Colors.white,
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.help_outline, color: Colors.cyan),
-                        SizedBox(width: 8),
-                        Text(
-                          "How to Use CSV Files",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.cyan,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      "• Click 'Download CSV' to view and copy file content",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "• Use 'Copy All' to copy entire CSV to clipboard",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "• Use 'View Full' to see complete file content",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "• On mobile: Files are saved and can be opened with Excel/Sheets",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "• Paste copied content into Excel, Google Sheets, or any text editor",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),

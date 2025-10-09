@@ -364,7 +364,7 @@ class _DoctorAppointmentsStatsPageState extends State<DoctorAppointmentsStatsPag
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Appointments Stats'),
+        title: const Text('Appointment Stats'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,

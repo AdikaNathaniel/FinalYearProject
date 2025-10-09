@@ -90,12 +90,12 @@ class _UpdateAppointmentStatusPageState extends State<UpdateAppointmentStatusPag
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update Appointment Status'),
+        title: const Text('Update Status'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
