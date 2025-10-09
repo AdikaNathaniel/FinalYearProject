@@ -6,7 +6,7 @@ import 'login_page.dart';
 import 'support-settings.dart';
 import 'users_summary.dart';
 import 'set_profile.dart';
-import 'map.dart'; // Import the MapPage
+import 'map.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String userEmail;
@@ -18,7 +18,7 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
-  String _selectedPage = 'Dashboard';
+  String _selectedPage = 'Users';
 
   Future<void> _logout(BuildContext context) async {
     try {
@@ -69,104 +69,141 @@ class _AdminHomePageState extends State<AdminHomePage> {
   void _showUserInfoDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Center(child: Text('Profile')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                const SizedBox(
-                  width: 40,
-                  child: Icon(Icons.email),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Title
+              const Text(
+                'Profile',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(width: 10),
-                Expanded(child: Text(widget.userEmail)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context); // Close dialog first
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+              ),
+              const SizedBox(height: 20),
+              
+              // Email row
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
-                    const SizedBox(
-                      width: 40,
-                      child: Icon(Icons.settings, color: Colors.blue),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
+                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Flexible(
                       child: Text(
+                        widget.userEmail,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Settings row
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+                      const SizedBox(width: 12),
+                      const Text(
                         'Settings',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blueAccent,
+                          color: Colors.black,
+                          fontSize: 12,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                Navigator.pop(context); // Close dialog first
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MapPage(),
+                      const Spacer(),
+                    ],
                   ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 40,
-                      child: Icon(Icons.map, color: Colors.green),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        'View Location Of PregMama',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () async {
-                await _logout(context);
-              },
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+              const SizedBox(height: 12),
+              
+              // Map row
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 20, color: Colors.green),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'View Location Of PregMama',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Logout button
+              TextButton(
+                onPressed: () async {
+                  await _logout(context);
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              // Close button
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -180,151 +217,419 @@ class _AdminHomePageState extends State<AdminHomePage> {
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GestureDetector(
-              onTap: () => _showUserInfoDialog(context),
-              child: CircleAvatar(
-                child: Text(
-                  widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
-                  style: const TextStyle(color: Colors.blue),
-                ),
-                backgroundColor: Colors.white,
+          IconButton(
+            icon: CircleAvatar(
+              radius: 16,
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
+                style: const TextStyle(color: Colors.blue, fontSize: 16),
               ),
+              backgroundColor: Colors.white,
             ),
+            onPressed: () {
+              _showUserInfoDialog(context);
+            },
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _selectedPage == 'Dashboard'
-            ? _buildDashboard(context)
-            : _buildContent(_selectedPage),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Center(
+                child: Text(
+                  'ADMIN PANEL',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.supervised_user_circle),
+              title: const Text('All Users'),
+              selected: _selectedPage == 'Users',
+              onTap: () {
+                setState(() {
+                  _selectedPage = 'Users';
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notifications'),
+              selected: _selectedPage == 'Notifications',
+              onTap: () {
+                setState(() {
+                  _selectedPage = 'Notifications';
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.support_agent),
+              title: const Text('Support'),
+              selected: _selectedPage == 'Support',
+              onTap: () {
+                setState(() {
+                  _selectedPage = 'Support';
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildDashboard(BuildContext context) {
-    return Column(
-      children: [
-        _buildNotificationCard(
-          context: context,
-          icon: Icons.notifications,
-          title: 'Notifications',
-          iconColor: Colors.orange,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NotificationSettingsPage(userEmail: widget.userEmail),
-              ),
-            );
-          },
-        ),
-        _buildNotificationCard(
-          context: context,
-          icon: Icons.support_agent,
-          title: 'Support',
-          iconColor: Colors.green,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SupportSettingsPage(userEmail: widget.userEmail),
-              ),
-            );
-          },
-        ),
-        _buildNotificationCard(
-          context: context,
-          icon: Icons.supervised_user_circle,
-          title: 'View All Awopa Users',
-          iconColor: Colors.blueAccent,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => UserListPage(userEmail: widget.userEmail),
-              ),
-            );
-          },
-        ),
-      ],
+      body: _buildContent(_selectedPage),
     );
   }
 
   Widget _buildContent(String page) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Row(
+    switch (page) {
+      case 'Users':
+        return UserListPage(userEmail: widget.userEmail);
+      case 'Notifications':
+        return NotificationSettingsPage(userEmail: widget.userEmail);
+      case 'Support':
+        return SupportSettingsPage(userEmail: widget.userEmail);
+      default:
+        return UserListPage(userEmail: widget.userEmail);
+    }
+  }
+}
+
+// UserListPage with updated UI
+class UserListPage extends StatefulWidget {
+  final String userEmail;
+
+  const UserListPage({Key? key, required this.userEmail}) : super(key: key);
+
+  @override
+  _UserListPageState createState() => _UserListPageState();
+}
+
+class _UserListPageState extends State<UserListPage> {
+  bool isLoading = true;
+  List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
+
+  Future<void> fetchUsers() async {
+    final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body)['result'];
+      setState(() {
+        users = data.map((userData) => User.fromJson(userData)).toList();
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      print('Failed to load users');
+    }
+  }
+
+  void _showSnackbar(BuildContext context, String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 2),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _showUserInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  setState(() {
-                    _selectedPage = 'Dashboard';
-                  });
-                },
-              ),
-              const SizedBox(width: 8),
-              Text(
-                page,
-                style: const TextStyle(
-                  fontSize: 24,
+              const Text(
+                'Profile',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 20),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        widget.userEmail,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Navigate to settings if needed
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              TextButton(
+                onPressed: () async {
+                  final response = await http.put(
+                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    final responseData = json.decode(response.body);
+                    if (responseData['success']) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                        (Route<dynamic> route) => false
+                      );
+                    } else {
+                      _showSnackbar(
+                        context,
+                        "Logout failed: ${responseData['message']}",
+                        Colors.red
+                      );
+                    }
+                  } else {
+                    _showSnackbar(
+                      context,
+                      "Logout failed: Server error",
+                      Colors.red
+                    );
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
             ],
           ),
         ),
-        Expanded(
-          child: Center(
-            child: Text(
-              '$page Page',
-              style: const TextStyle(fontSize: 20),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildNotificationCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required Color iconColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 6,
-        margin: const EdgeInsets.only(bottom: 16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: iconColor.withOpacity(0.1),
-                child: Icon(icon, color: iconColor, size: 30),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('All Users'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              radius: 16,
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
+                style: const TextStyle(color: Colors.blue, fontSize: 16),
               ),
-              const SizedBox(width: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
+              backgroundColor: Colors.white,
+            ),
+            onPressed: () {
+              _showUserInfoDialog(context);
+            },
           ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : users.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No users found',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    return UserCard(user: users[index]);
+                  },
+                ),
+    );
+  }
+}
+
+class User {
+  final String name;
+  final String email;
+  final String type;
+  final bool isVerified;
+
+  User({required this.name, required this.email, required this.type, required this.isVerified});
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      name: json['name'],
+      email: json['email'],
+      type: json['type'],
+      isVerified: json['isVerified'],
+    );
+  }
+}
+
+class UserCard extends StatelessWidget {
+  final User user;
+
+  const UserCard({Key? key, required this.user}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    IconData userTypeIcon = Icons.account_circle;
+    String userTypeText = 'Unknown';
+    Color userTypeColor = Colors.grey;
+
+    if (user.type == 'doctor') {
+      userTypeIcon = Icons.medical_services;
+      userTypeText = 'Doctor';
+      userTypeColor = Colors.blue;
+    } else if (user.type == 'admin') {
+      userTypeIcon = Icons.admin_panel_settings;
+      userTypeText = 'Admin';
+      userTypeColor = Colors.red;
+    } else if (user.type == 'relative') {
+      userTypeIcon = Icons.family_restroom;
+      userTypeText = 'Relative';
+      userTypeColor = Colors.green;
+    } else if (user.type == 'pregnantWoman') {
+      userTypeIcon = Icons.pregnant_woman;
+      userTypeText = 'Pregnant Woman';
+      userTypeColor = Colors.pink;
+    }
+
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: userTypeColor.withOpacity(0.2),
+              ),
+              child: Icon(
+                userTypeIcon,
+                color: userTypeColor,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user.email,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    userTypeText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: userTypeColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              user.isVerified ? Icons.verified : Icons.pending,
+              color: user.isVerified ? Colors.green : Colors.orange,
+              size: 24,
+            ),
+          ],
         ),
       ),
     );
