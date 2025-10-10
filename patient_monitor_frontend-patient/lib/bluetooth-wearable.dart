@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'bluetooth-health-data.dart';
 
 class WearableDevicePairingPage extends StatefulWidget {
   final String userEmail;
@@ -415,7 +416,8 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     );
   }
 
-  void _showDataDialog() {
+  // Navigate to BluetoothHealthMetricsPage
+  void _navigateToHealthMetrics() {
     if (lastReceivedData == null) {
       _showErrorDialog('No data received yet');
       return;
@@ -424,51 +426,18 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     try {
       Map<String, dynamic> vitals = json.decode(lastReceivedData!);
       
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Latest Vitals Data'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildVitalRow('Glucose', '${vitals['glucose']} mg/dL'),
-                _buildVitalRow('Systolic BP', '${vitals['systolic_bp']} mmHg'),
-                _buildVitalRow('Diastolic BP', '${vitals['diastolic_bp']} mmHg'),
-                _buildVitalRow('Heart Rate', '${vitals['heart_rate']} bpm'),
-                _buildVitalRow('SpO2', '${vitals['spo2']} %'),
-                _buildVitalRow('Skin Temp', '${vitals['skin_temp']} °C'),
-                _buildVitalRow('Body Temp', '${vitals['body_temp']} °C'),
-                const SizedBox(height: 8),
-                Text('Timestamp: ${vitals['timestamp']}', style: const TextStyle(fontSize: 11)),
-              ],
-            ),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BluetoothHealthMetricsPage(
+            userEmail: widget.userEmail,
+            initialBluetoothData: vitals,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
         ),
       );
     } catch (e) {
       _showErrorDialog('Error displaying data: $e');
     }
-  }
-
-  Widget _buildVitalRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
-        ],
-      ),
-    );
   }
 
   @override
@@ -568,7 +537,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
             if (isConnected && lastReceivedData != null) ...[
               const SizedBox(height: 12),
               ElevatedButton.icon(
-                onPressed: _showDataDialog,
+                onPressed: _navigateToHealthMetrics,
                 icon: const Icon(Icons.show_chart, size: 18),
                 label: const Text('View Latest Data'),
                 style: ElevatedButton.styleFrom(
@@ -588,19 +557,6 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // const Text(
-        //   'Step 1: Find Your ESP32 Device',
-        //   style: TextStyle(
-        //     fontSize: 18,
-        //     fontWeight: FontWeight.bold,
-        //     color: Colors.pinkAccent,
-        //   ),
-        // ),
-        // const SizedBox(height: 8),
-        // const Text(
-        //   'Make sure your Wearable is Powered on and nearby.',
-        //   style: TextStyle(fontSize: 14, color: Colors.grey),
-        // ),
         const SizedBox(height: 16),
         ElevatedButton.icon(
           onPressed: isScanning ? null : _startScan,
@@ -637,7 +593,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.pinkAccent,
+            color: Colors.blue,
           ),
         ),
         const SizedBox(height: 16),
@@ -707,8 +663,8 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
           icon: const Icon(Icons.search),
           label: const Text('Scan for New Device'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.pinkAccent,
-            side: const BorderSide(color: Colors.pinkAccent),
+            foregroundColor: Colors.blue,
+            side: const BorderSide(color: Colors.blue),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -744,7 +700,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.pinkAccent,
+            color: Colors.blue,
           ),
         ),
         const SizedBox(height: 12),
@@ -785,7 +741,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
               color: isESP32 ? Colors.green[50] : Colors.white,
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: isESP32 ? Colors.green : Colors.pinkAccent,
+                  backgroundColor: isESP32 ? Colors.green : Colors.blue,
                   child: Icon(
                     isESP32 ? Icons.monitor_heart : Icons.bluetooth,
                     color: Colors.white,
@@ -807,7 +763,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
                     : IconButton(
                         icon: Icon(
                           Icons.link,
-                          color: isESP32 ? Colors.green : Colors.pinkAccent,
+                          color: isESP32 ? Colors.green : Colors.blue,
                         ),
                         onPressed: () => _connectToDevice(result.device),
                       ),

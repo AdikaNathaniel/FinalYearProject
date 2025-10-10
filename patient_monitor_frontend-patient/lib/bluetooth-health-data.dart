@@ -90,7 +90,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       'diastolicBP': data['diastolic_bp']?.toDouble(),
       'heartRate': data['heart_rate']?.toDouble(),
       'spo2': data['spo2']?.toDouble(),
-      'skinTemp': data['skin_temp']?.toDouble(),
+      // 'skinTemp': data['skin_temp']?.toDouble(), // Commented out as requested
       'bodyTemp': data['body_temp']?.toDouble(),
       'updatedAt': DateTime.now().toIso8601String(),
     };
@@ -622,61 +622,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
     );
   }
 
-  // Method to show Bluetooth data dialog (same as in WearableDevicePairingPage)
-  void _showBluetoothDataDialog() {
-    if (bluetoothVitalData == null) {
-      _showErrorDialog('No Bluetooth data received yet');
-      return;
-    }
-    
-    try {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Latest Bluetooth Vitals Data'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildVitalRow('Glucose', '${bluetoothVitalData!['glucose']} mg/dL'),
-                _buildVitalRow('Systolic BP', '${bluetoothVitalData!['systolic_bp']} mmHg'),
-                _buildVitalRow('Diastolic BP', '${bluetoothVitalData!['diastolic_bp']} mmHg'),
-                _buildVitalRow('Heart Rate', '${bluetoothVitalData!['heart_rate']} bpm'),
-                _buildVitalRow('SpO2', '${bluetoothVitalData!['spo2']} %'),
-                _buildVitalRow('Skin Temp', '${bluetoothVitalData!['skin_temp']} °C'),
-                _buildVitalRow('Body Temp', '${bluetoothVitalData!['body_temp']} °C'),
-                const SizedBox(height: 8),
-                Text('Timestamp: ${bluetoothVitalData!['timestamp'] ?? 'N/A'}', style: const TextStyle(fontSize: 11)),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-    } catch (e) {
-      _showErrorDialog('Error displaying Bluetooth data: $e');
-    }
-  }
-
-  Widget _buildVitalRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
-        ],
-      ),
-    );
-  }
-
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -701,19 +646,10 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
 
   @override
   Widget build(BuildContext context) {
-    double? mapValue;
-    if (vitalData != null && 
-        vitalData!['systolicBP'] != null && 
-        vitalData!['diastolicBP'] != null) {
-      final systolicBP = vitalData!['systolicBP'].toDouble();
-      final diastolicBP = vitalData!['diastolicBP'].toDouble();
-      mapValue = diastolicBP + (1/3) * (systolicBP - diastolicBP);
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Health Metrics Dashboard',
+          'Bluetooth Health Metrics',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -723,12 +659,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         actions: [
-          if (bluetoothVitalData != null) 
-            // IconButton(
-            //   icon: const Icon(Icons.bluetooth_connected, color: Colors.white),
-            //   onPressed: _showBluetoothDataDialog,
-            //   tooltip: 'View Bluetooth Data',
-            // ),
           IconButton(
             icon: CircleAvatar(
               radius: 16,
@@ -928,6 +858,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
+                        // Glucose Card
                         MetricCard(
                           title: 'Blood Glucose',
                           value: '${vitalData?['glucose']?.toStringAsFixed(1) ?? 'N/A'} mg/dL',
@@ -936,6 +867,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
+                        // Blood Pressure Card
                         MetricCard(
                           title: 'Blood Pressure',
                           value: '${vitalData?['systolicBP']?.toStringAsFixed(0) ?? 'N/A'}/${vitalData?['diastolicBP']?.toStringAsFixed(0) ?? 'N/A'} mmHg',
@@ -944,6 +876,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
+                        // Heart Rate Card
                         MetricCard(
                           title: 'Heart Rate',
                           value: '${vitalData?['heartRate']?.toStringAsFixed(0) ?? 'N/A'} BPM',
@@ -952,6 +885,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
+                        // Oxygen Saturation Card
                         MetricCard(
                           title: 'Oxygen Saturation',
                           value: '${vitalData?['spo2']?.toStringAsFixed(0) ?? 'N/A'}%',
@@ -960,31 +894,94 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
+                        // Body Temperature Card
                         MetricCard(
-                          title: 'Skin Temperature',
-                          value: '${vitalData?['skinTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
-                          icon: Icons.thermostat_outlined,
-                          color: Colors.deepPurple,
+                          title: 'Body Temperature',
+                          value: '${vitalData?['bodyTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
+                          icon: Icons.thermostat,
+                          color: Colors.orange,
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        MetricCard(
-                          title: 'Health Status',
-                          value: mapValue != null ? 'MAP: ${mapValue.toStringAsFixed(1)}' : 'Calculating...',
-                          icon: Icons.health_and_safety,
-                          color: Colors.green,
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                        // Protein in Urine Card - Click to update
+                        GestureDetector(
+                          onTap: () => _showUrineStripDialog(context),
+                          child: Card(
+                            elevation: 0,
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.indigo.withOpacity(0.2),
+                                    ),
+                                    child: Icon(
+                                      Icons.science,
+                                      color: selectedProteinLevel != null 
+                                          ? selectedProteinColor ?? Colors.indigo
+                                          : Colors.indigo,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Protein in Urine',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: Colors.grey[700],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      selectedProteinLevel != null 
+                                          ? 'Level: $selectedProteinLevel'
+                                          : 'Tap to Test',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: selectedProteinLevel != null 
+                                            ? Colors.black87 
+                                            : Colors.blue,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    selectedProteinLevel != null 
+                                        ? 'Last updated: Just now'
+                                        : 'Click me to test',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey[600],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-
-                    if (selectedProteinLevel != null) ...[
-                      SizedBox(height: 12),
-                      ProteinCard( 
-                        proteinLevel: selectedProteinLevel!,
-                        color: selectedProteinColor!,
-                      ),
-                    ],
                   ],
                 ),
         ),
@@ -1288,8 +1285,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
   }
 }
 
-// Add the missing widget classes here:
-
 class MetricCard extends StatelessWidget {
   final String title;
   final String value;
@@ -1309,111 +1304,65 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
+      elevation: 0,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.2),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
+              title,
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.blueGrey,
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               lastUpdated,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: Colors.grey,
+                color: Colors.grey[600],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProteinCard extends StatelessWidget {
-  final int proteinLevel;
-  final Color color;
-
-  const ProteinCard({
-    Key? key,
-    required this.proteinLevel,
-    required this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(Icons.bloodtype, color: Colors.red),
-                const SizedBox(width: 8),
-                const Text(
-                  'Protein Level',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Level: $proteinLevel',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
