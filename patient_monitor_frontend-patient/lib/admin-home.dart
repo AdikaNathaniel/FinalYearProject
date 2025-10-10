@@ -211,27 +211,63 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Panel'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: CircleAvatar(
-              radius: 16,
-              child: Text(
-                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
-                style: const TextStyle(color: Colors.blue, fontSize: 16),
+      appBar: _selectedPage == 'Users' 
+          ? AppBar(
+              title: const Text('All Users'),
+              centerTitle: true,
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+              leading: Builder(
+                builder: (context) => IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
               ),
-              backgroundColor: Colors.white,
+              actions: [
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 16,
+                    child: Text(
+                      widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
+                      style: const TextStyle(color: Colors.blue, fontSize: 16),
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    _showUserInfoDialog(context);
+                  },
+                ),
+              ],
+            )
+          : AppBar(
+              title: Text(_selectedPage),
+              centerTitle: true,
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _selectedPage = 'Users';
+                  });
+                },
+              ),
+              actions: [
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 16,
+                    child: Text(
+                      widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
+                      style: const TextStyle(color: Colors.blue, fontSize: 16),
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    _showUserInfoDialog(context);
+                  },
+                ),
+              ],
             ),
-            onPressed: () {
-              _showUserInfoDialog(context);
-            },
-          ),
-        ],
-      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -242,7 +278,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ),
               child: Center(
                 child: Text(
-                  'ADMIN PANEL',
+                  'ADMIN',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -351,170 +387,23 @@ class _UserListPageState extends State<UserListPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void _showUserInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Profile',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        widget.userEmail,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Navigate to settings if needed
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Settings',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              TextButton(
-                onPressed: () async {
-                  final response = await http.put(
-                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-                    headers: {'Content-Type': 'application/json'},
-                  );
-
-                  if (response.statusCode == 200) {
-                    final responseData = json.decode(response.body);
-                    if (responseData['success']) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                        (Route<dynamic> route) => false
-                      );
-                    } else {
-                      _showSnackbar(
-                        context,
-                        "Logout failed: ${responseData['message']}",
-                        Colors.red
-                      );
-                    }
-                  } else {
-                    _showSnackbar(
-                      context,
-                      "Logout failed: Server error",
-                      Colors.red
-                    );
-                  }
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Users'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: CircleAvatar(
-              radius: 16,
-              child: Text(
-                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A',
-                style: const TextStyle(color: Colors.blue, fontSize: 16),
-              ),
-              backgroundColor: Colors.white,
-            ),
-            onPressed: () {
-              _showUserInfoDialog(context);
-            },
-          ),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : users.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No users found',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    return UserCard(user: users[index]);
-                  },
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : users.isEmpty
+            ? const Center(
+                child: Text(
+                  'No users found',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
                 ),
-    );
+              )
+            : ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  return UserCard(user: users[index]);
+                },
+              );
   }
 }
 

@@ -144,7 +144,7 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
       appBar: AppBar(
         title: const Text('Create Notification'),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -182,24 +182,24 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
               icon: const Icon(Icons.send),
               label: const Text('Send Notification'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(50),
                 disabledBackgroundColor: Colors.grey.shade300,
                 disabledForegroundColor: Colors.grey.shade600,
               ),
             ),
-            if (!_isFormValid)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Please enter a message and select a date/time',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
+            // if (!_isFormValid)
+            //   Padding(
+            //     padding: const EdgeInsets.only(top: 8),
+            //     child: Text(
+            //       'Please enter a message and select a date/time',
+            //       style: TextStyle(
+            //         color: Colors.grey.shade600,
+            //         fontSize: 12,
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
       ),

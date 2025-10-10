@@ -116,7 +116,7 @@ Future<void> _deleteNotification(String id) async {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Delete Notification"),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.blue,
         centerTitle: true,
       ),
       body: Padding(
@@ -142,7 +142,7 @@ Future<void> _deleteNotification(String id) async {
               icon: const Icon(Icons.delete_outline),
               label: const Text("Delete Notification"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.blue,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 textStyle: const TextStyle(fontSize: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

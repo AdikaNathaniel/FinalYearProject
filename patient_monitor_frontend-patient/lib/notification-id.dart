@@ -174,7 +174,7 @@ void _showNotificationDialog(Map<String, dynamic> notification) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Notification by ID'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -197,7 +197,7 @@ void _showNotificationDialog(Map<String, dynamic> notification) {
                       const Icon(
                         Icons.search,
                         size: 48,
-                        color: Colors.deepPurple,
+                        color: Colors.blue,
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -226,7 +226,7 @@ void _showNotificationDialog(Map<String, dynamic> notification) {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _fetchAndShowNotification,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

@@ -49,48 +49,48 @@ class NotificationSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notification Settings'),
-        centerTitle: true,
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Notification Settings'),
+      //   centerTitle: true,
+      //   backgroundColor: Colors.deepPurple,
+      //   foregroundColor: Colors.white,
+      // ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Display admin email at the top
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.deepPurple.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Admin: $userEmail',
-                      style: const TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w600,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   margin: const EdgeInsets.all(16),
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     color: Colors.deepPurple.withOpacity(0.1),
+            //     borderRadius: BorderRadius.circular(12),
+            //     border: Border.all(color: Colors.deepPurple.withOpacity(0.2)),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       const Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
+            //       const SizedBox(width: 10),
+            //       Expanded(
+            //         child: Text(
+            //           'Admin: $userEmail',
+            //           style: const TextStyle(
+            //             fontSize: 16, 
+            //             fontWeight: FontWeight.w600,
+            //             color: Colors.deepPurple,
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
             const SizedBox(height: 8),
 
             _buildNotificationCard(
   icon: Icons.add_alert,
   title: 'Create Notification',
-  iconColor: Colors.green,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -104,8 +104,8 @@ class NotificationSettingsPage extends StatelessWidget {
 
   _buildNotificationCard(
   icon: Icons.group,
-  title: 'Get Notifications by Role',
-  iconColor: Colors.teal,
+  title: 'Notifications by Role',
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -131,7 +131,7 @@ class NotificationSettingsPage extends StatelessWidget {
                 _buildNotificationCard(
   icon: Icons.notifications_active,
   title: 'Get All Notifications',
-  iconColor: Colors.orange,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -169,8 +169,8 @@ class NotificationSettingsPage extends StatelessWidget {
 
                   _buildNotificationCard(
   icon: Icons.info_outline,
-  title: 'Get Notification by ID',
-  iconColor: Colors.orange,
+  title: 'Notification by ID',
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -183,7 +183,7 @@ class NotificationSettingsPage extends StatelessWidget {
                           _buildNotificationCard(
   icon: Icons.check_circle_outline,
   title: 'Mark Notification as Sent',
-  iconColor: Colors.indigo,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -198,7 +198,7 @@ class NotificationSettingsPage extends StatelessWidget {
           _buildNotificationCard(
   icon: Icons.delete_forever,
   title: 'Delete Notifications',
-  iconColor: Colors.red,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,

@@ -179,7 +179,7 @@ class _NotificationsByRolePageState extends State<NotificationsByRolePage> {
       appBar: AppBar(
         title: const Text('Notifications by Role'),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -196,7 +196,7 @@ class _NotificationsByRolePageState extends State<NotificationsByRolePage> {
                     const Icon(
                       Icons.group,
                       size: 48,
-                      color: Colors.deepPurple,
+                      color: Colors.blue,
                     ),
                     const SizedBox(height: 16),
                     const Text(

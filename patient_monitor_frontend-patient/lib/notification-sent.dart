@@ -96,7 +96,7 @@ class _NotificationSentPageState extends State<NotificationSentPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mark Notification as Sent'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -120,7 +120,7 @@ class _NotificationSentPageState extends State<NotificationSentPage>
                         const Icon(
                           Icons.mark_email_unread,
                           size: 48,
-                          color: Colors.deepPurple,
+                          color: Colors.blue,
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -150,7 +150,7 @@ class _NotificationSentPageState extends State<NotificationSentPage>
                           child: ElevatedButton(
                             onPressed: isLoading ? null : _markNotificationAsSent,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepPurple,
+                              backgroundColor: Colors.blue,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),

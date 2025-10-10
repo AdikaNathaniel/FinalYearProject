@@ -48,41 +48,41 @@ class SupportSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Support Settings'),
-        centerTitle: true,
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Support Settings'),
+      //   centerTitle: true,
+      //   backgroundColor: Colors.deepPurple,
+      //   foregroundColor: Colors.white,
+      // ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Display admin email at the top
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.deepPurple.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Admin: $userEmail',
-                      style: const TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w600,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   margin: const EdgeInsets.all(16),
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     color: Colors.deepPurple.withOpacity(0.1),
+            //     borderRadius: BorderRadius.circular(12),
+            //     border: Border.all(color: Colors.deepPurple.withOpacity(0.2)),
+            //   ),
+            //   // child: Row(
+            //   //   children: [
+            //   //     const Icon(Icons.admin_panel_settings, color: Colors.deepPurple),
+            //   //     const SizedBox(width: 10),
+            //   //     Expanded(
+            //   //       child: Text(
+            //   //         'Admin: $userEmail',
+            //   //         style: const TextStyle(
+            //   //           fontSize: 16, 
+            //   //           fontWeight: FontWeight.w600,
+            //   //           color: Colors.deepPurple,
+            //   //         ),
+            //   //       ),
+            //   //     ),
+            //   //   ],
+            //   // ),
+            // ),
 
             const SizedBox(height: 8),
 
@@ -90,7 +90,7 @@ class SupportSettingsPage extends StatelessWidget {
             _buildSupportCard(
               icon: Icons.list_alt,
               title: 'Get All Support Requests',
-              iconColor: Colors.orange,
+              iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
@@ -102,7 +102,7 @@ class SupportSettingsPage extends StatelessWidget {
              _buildSupportCard(
   icon: Icons.find_in_page, 
   title: 'Get Support Request By Id',
-  iconColor: Colors.orange,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -114,7 +114,7 @@ class SupportSettingsPage extends StatelessWidget {
  _buildSupportCard(
   icon: Icons.lock_open,
   title: 'Account Reactivation',
-  iconColor: Colors.orange,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -126,7 +126,7 @@ class SupportSettingsPage extends StatelessWidget {
  _buildSupportCard(
   icon: Icons.receipt_long, 
   title: 'Get Support Request By Name',
-  iconColor: Colors.orange,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,

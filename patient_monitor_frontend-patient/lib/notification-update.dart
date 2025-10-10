@@ -101,7 +101,7 @@ class _NotificationUpdatePageState extends State<NotificationUpdatePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Update Notification'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -124,7 +124,7 @@ class _NotificationUpdatePageState extends State<NotificationUpdatePage> {
                       const Icon(
                         Icons.edit_notifications,
                         size: 48,
-                        color: Colors.deepPurple,
+                        color: Colors.blue,
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -166,7 +166,7 @@ class _NotificationUpdatePageState extends State<NotificationUpdatePage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _updateNotification,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
