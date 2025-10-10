@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Health Metrics Dashboard',
+      title: 'Health Metrics',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -73,16 +73,16 @@ class _HealthDashboardState extends State<HealthDashboard> {
   Timer? _alertTimer;
   bool _showAlertDialog = false;
   bool _hasPostedInitialData = false;
-  bool _isOnDashboardPage = false; // Track if user is on dashboard
+  bool _isOnDashboardPage = false;
+  bool _wearableDialogShown = false;
 
   @override
   void initState() {
     super.initState();
-    _isOnDashboardPage = true; // Set to true when dashboard loads
+    _isOnDashboardPage = true;
     _fetchVitalData();
     Timer.periodic(const Duration(seconds: 120), (Timer t) => _fetchVitalData());
     
-    // Changed to 3 minutes and only checks when on dashboard
     _alertTimer = Timer.periodic(const Duration(minutes: 3), (Timer t) {
       if (_isOnDashboardPage && mounted) {
         _checkAlarmingValues();
@@ -93,7 +93,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
 
   @override
   void dispose() {
-    _isOnDashboardPage = false; // Set to false when leaving dashboard
+    _isOnDashboardPage = false;
     _alertTimer?.cancel();
     super.dispose();
   }
@@ -114,6 +114,88 @@ class _HealthDashboardState extends State<HealthDashboard> {
           });
           if (_isOnDashboardPage && mounted) {
             _checkAlarmingValues();
+            _checkForZeroVitals();
+          }
+        } else {
+          setState(() {
+            errorMessage = responseData['message'] ?? 'Failed to fetch data';
+            isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          errorMessage = 'Server error: ${response.statusCode}';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error: ${e.toString()}';
+        isLoading = false;
+      });
+    }
+  }
+
+  void _checkForZeroVitals() {
+    if (vitalData == null || !mounted || _wearableDialogShown) return;
+
+    final heartRate = vitalData?['heartRate']?.toDouble() ?? 0.0;
+    final spo2 = vitalData?['spo2']?.toDouble() ?? 0.0;
+
+    if (heartRate == 0 || spo2 == 0) {
+      _wearableDialogShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showWearableCheckDialog(context);
+        }
+      });
+    }
+  }
+
+  Future<void> _fetchLatestNonZeroVitalData() async {
+    try {
+      setState(() {
+        isLoading = true;
+        errorMessage = '';
+      });
+
+      final response = await http.get(
+        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-live-vitals'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['success'] == true && responseData['result'] != null) {
+          List<dynamic> allData = responseData['result'];
+          
+          Map<String, dynamic>? latestValidData;
+          
+          for (var data in allData) {
+            final heartRate = data['heartRate']?.toDouble() ?? 0.0;
+            final spo2 = data['spo2']?.toDouble() ?? 0.0;
+            
+            if (heartRate != 0 && spo2 != 0) {
+              latestValidData = data;
+              break;
+            }
+          }
+          
+          if (latestValidData != null) {
+            setState(() {
+              vitalData = latestValidData;
+              isLoading = false;
+              errorMessage = '';
+              _wearableDialogShown = false;
+            });
+            if (_isOnDashboardPage && mounted) {
+              _checkAlarmingValues();
+            }
+          } else {
+            setState(() {
+              errorMessage = 'No valid vital data available';
+              isLoading = false;
+            });
           }
         } else {
           setState(() {
@@ -356,37 +438,21 @@ class _HealthDashboardState extends State<HealthDashboard> {
     }
   }
 
-  // String _getTimeAgo(String timestamp) {
-  //   try {
-  //     final createdAt = DateTime.parse(timestamp);
-  //     final now = DateTime.now();
-  //     final difference = now.difference(createdAt);
-      
-  //     if (difference.inMinutes < 1) return 'Just now';
-  //     if (difference.inMinutes < 60) return '${difference.inMinutes} min ago';
-  //     if (difference.inHours < 24) return '${difference.inHours}h ago';
-  //     return '${difference.inDays}d ago';
-  //   } catch (e) {
-  //     return 'Unknown';
-  //   }
-  // }
-
   String _getTimeAgo(String timestamp) {
-  try {
-    final createdAt = DateTime.parse(timestamp);
-    final now = DateTime.now();
-    final difference = now.difference(createdAt);
+    try {
+      final createdAt = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(createdAt);
 
-    if (difference.inSeconds < 1) return 'Just now';
-    if (difference.inSeconds < 60) return '${difference.inSeconds}s ago';
-    if (difference.inMinutes < 60) return '${difference.inMinutes}min ago';
-    if (difference.inHours < 24) return '${difference.inHours}h ago';
-    return '${difference.inDays}d ago';
-  } catch (e) {
-    return 'Unknown';
+      if (difference.inSeconds < 1) return 'Just now';
+      if (difference.inSeconds < 60) return '${difference.inSeconds}s ago';
+      if (difference.inMinutes < 60) return '${difference.inMinutes}min ago';
+      if (difference.inHours < 24) return '${difference.inHours}h ago';
+      return '${difference.inDays}d ago';
+    } catch (e) {
+      return 'Unknown';
+    }
   }
-}
-
 
   Future<void> _sendEmergencyAlert(String message) async {
     try {
@@ -636,7 +702,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Health Metrics Dashboard',
+          'Health Metrics ',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -646,6 +712,13 @@ class _HealthDashboardState extends State<HealthDashboard> {
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () {
+              _fetchLatestNonZeroVitalData();
+            },
+            tooltip: 'Refresh Data',
+          ),
           IconButton(
             icon: CircleAvatar(
               radius: 16,
@@ -680,31 +753,19 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 ),
               ),
             ),
-            // ListTile(
-            //   leading: const Icon(Icons.calendar_today),
-            //   title: const Text('Create-Cancel Appointment'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) =>
-            //               CreateCancelAppointmentPage(userEmail: widget.userEmail)),
-            //     );
-            //   },
-            // ),
 
             ListTile(
-  leading: const Icon(Icons.calendar_today),
-  title: const Text('Schedule Appointment'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AppointmentScheduleByMedicPage(),
-      ),
-    );
-  },
-),
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Schedule Appointment'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AppointmentScheduleByMedicPage(),
+                  ),
+                );
+              },
+            ),
 
             ListTile(
               leading: const Icon(Icons.health_and_safety),
@@ -718,17 +779,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
-            // ListTile(
-            //   leading: Icon(Icons.monitor_heart),
-            //   title: Text('Live Vitals Data'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => LiveVitalsHardwareDataPage()),
-            //     );
-            //   },
-            // ),
 
             ListTile(
               leading: const Icon(Icons.info),
@@ -817,7 +867,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
 
-             ListTile(
+            ListTile(
               leading: Icon(Icons.bloodtype),
               title: Text('Charts Data'),
               onTap: () {
@@ -855,9 +905,9 @@ class _HealthDashboardState extends State<HealthDashboard> {
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(12),
-          // REMOVED the gradient background to use default theme background
           child: isLoading 
-            ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
+            ? const Center(child: CircularProgressIndicator
+            (color: Colors.blueAccent))
             : errorMessage.isNotEmpty
               ? Center(
                   child: Text(
@@ -876,7 +926,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        // Row 1: Blood Glucose and Blood Pressure
                         MetricCard(
                           title: 'Blood Glucose',
                           value: '${vitalData?['glucose']?.toStringAsFixed(1) ?? 'N/A'} mg/dL',
@@ -893,7 +942,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        // Row 2: Heart Rate and Oxygen Saturation
                         MetricCard(
                           title: 'Heart Rate',
                           value: '${vitalData?['heartRate']?.toStringAsFixed(0) ?? 'N/A'} BPM',
@@ -910,7 +958,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        // Row 3: Body Temperature and Protein in Urine
                         MetricCard(
                           title: 'Body Temperature',
                           value: '${vitalData?['bodyTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
@@ -919,7 +966,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        // Protein in Urine Card - Click to update
                         GestureDetector(
                           onTap: () => _showUrineStripDialog(context),
                           child: Card(
@@ -996,31 +1042,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                             ),
                           ),
                         ),
-                        
-                        // Commented out cards:
-                        /*
-                        AccelerometerCard(
-                          x: vitalData?['accelX']?.toStringAsFixed(2) ?? 'N/A',
-                          y: vitalData?['accelY']?.toStringAsFixed(2) ?? 'N/A',
-                          z: vitalData?['accelZ']?.toStringAsFixed(2) ?? 'N/A',
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
-                        ),
-                        
-                        GyroscopeCard(
-                          x: vitalData?['gyroX']?.toStringAsFixed(2) ?? 'N/A',
-                          y: vitalData?['gyroY']?.toStringAsFixed(2) ?? 'N/A',
-                          z: vitalData?['gyroZ']?.toStringAsFixed(2) ?? 'N/A',
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
-                        ),
-                        
-                        MetricCard(
-                          title: 'Skin Temperature',
-                          value: '${vitalData?['skinTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
-                          icon: Icons.thermostat_outlined,
-                          color: Colors.deepPurple,
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
-                        ),
-                        */
                       ],
                     ),
                   ],
@@ -1037,318 +1058,327 @@ class _HealthDashboardState extends State<HealthDashboard> {
   }
 
 
-void _showUserInfoDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Title
-            const Text(
-              'Profile',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Email row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      widget.userEmail,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Emergency Alert row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  _showEmergencyAlertDialog(context);
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.emergency, size: 20, color: Colors.red),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'Send An Emergency Alert',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Settings row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-          
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'Pair With Bluetooth Device',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-            
-            // Notifications row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NotificationListPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Notifications',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Need Help row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SupportFormPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.help_outline, size: 20, color: Colors.purple),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Need Help?',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Map row - FIXED ICON
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MapPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 20, color: Colors.green),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'View Location Of PregMama',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Logout button
-            TextButton(
-              onPressed: () async {
-                final response = await http.put(
-                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-                  headers: {'Content-Type': 'application/json'},
-                );
-
-                if (response.statusCode == 200) {
-                  final responseData = json.decode(response.body);
-                  if (responseData['success']) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: ${responseData['message']}",
-                        Colors.red);
-                  }
-                } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: Server error",
-                        Colors.red);
-                }
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text(
-                'Logout',
+  void _showUserInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Profile',
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
+              const SizedBox(height: 20),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        widget.userEmail,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showEmergencyAlertDialog(context);
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.emergency, size: 20, color: Colors.red),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'Send An Emergency Alert',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
             
-            // Close button
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'Pair With Bluetooth Device',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NotificationListPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SupportFormPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.help_outline, size: 20, color: Colors.purple),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Need Help?',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 20, color: Colors.green),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'View Location Of PregMama',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              TextButton(
+                onPressed: () async {
+                  final response = await http.put(
+                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    final responseData = json.decode(response.body);
+                    if (responseData['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: ${responseData['message']}",
+                          Colors.red);
+                    }
+                  } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: Server error",
+                          Colors.red);
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-  
+    );
+  }
 
-  
+  void _showWearableCheckDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Wearable Check'),
+        content: const Text('Are You Wearing The Wearable?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _fetchLatestNonZeroVitalData();
+            },
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
+                ),
+              );
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+  }
 
-void _showSnackbar(BuildContext context, String message, Color color) {
-  final snackBar = SnackBar(
-    content: Text(message),
-    backgroundColor: color,
-    duration: const Duration(seconds: 2),
-  );
+  void _showSnackbar(BuildContext context, String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 2),
+    );
 
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-}
-
-
-  // void _showSnackbar(BuildContext context, String message, Color color) {
-  //   final snackBar = SnackBar(
-  //     content: Text(message),
-  //     backgroundColor: color,
-  //     duration: const Duration(seconds: 2),
-  //   );
-
-  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  // }
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 }
 
 class MetricCard extends StatelessWidget {
