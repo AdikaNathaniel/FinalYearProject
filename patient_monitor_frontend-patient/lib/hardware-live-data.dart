@@ -75,20 +75,37 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
     }
   }
 
-  String _getTimeAgo(String timestamp) {
-    try {
-      final createdAt = DateTime.parse(timestamp);
-      final now = DateTime.now();
-      final difference = now.difference(createdAt);
+  // String _getTimeAgo(String timestamp) {
+  //   try {
+  //     final createdAt = DateTime.parse(timestamp);
+  //     final now = DateTime.now();
+  //     final difference = now.difference(createdAt);
       
-      if (difference.inMinutes < 1) return 'Just now';
-      if (difference.inMinutes < 60) return '${difference.inMinutes} min ago';
-      if (difference.inHours < 24) return '${difference.inHours}h ago';
-      return '${difference.inDays}d ago';
-    } catch (e) {
-      return 'Unknown';
-    }
+  //     if (difference.inMinutes < 1) return 'Just now';
+  //     if (difference.inMinutes < 60) return '${difference.inMinutes} min ago';
+  //     if (difference.inHours < 24) return '${difference.inHours}h ago';
+  //     return '${difference.inDays}d ago';
+  //   } catch (e) {
+  //     return 'Unknown';
+  //   }
+  // }
+
+  String _getTimeAgo(String timestamp) {
+  try {
+    final createdAt = DateTime.parse(timestamp);
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+
+    if (difference.inSeconds < 1) return 'Just now';
+    if (difference.inSeconds < 60) return '${difference.inSeconds}s ago';
+    if (difference.inMinutes < 60) return '${difference.inMinutes}min ago';
+    if (difference.inHours < 24) return '${difference.inHours}h ago';
+    return '${difference.inDays}d ago';
+  } catch (e) {
+    return 'Unknown';
   }
+}
+
 
   Color _getProteinColor(int? proteinLevel) {
     if (proteinLevel == null) return Colors.grey;
