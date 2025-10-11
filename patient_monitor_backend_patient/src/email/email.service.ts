@@ -5,22 +5,7 @@ import * as nodemailer from 'nodemailer';
 export class EmailService {
   private transporter;
 
-  // constructor() {
-  //   this.transporter = nodemailer.createTransport({
-  //     host: process.env.SMTP_HOST,
-  //     port: parseInt(process.env.SMTP_PORT),
-  //     secure: false,
-  //     auth: {
-  //       user: process.env.SMTP_USER,
-  //       pass: process.env.SMTP_PASS,
-  //     },
-  //     connectionTimeout: 10000, // 10 seconds
-  //     greetingTimeout: 10000, // 10 seconds
-  //     socketTimeout: 10000,
-  //   });
-  // }
-
-
+  
 
   constructor() {
   console.log("SMTP Configuration:", {
@@ -44,27 +29,7 @@ export class EmailService {
   });
 }
 
-  // async sendOTPEmail(email: string, otp: string) {
-  //   const mailOptions = {
-  //     from: process.env.SMTP_USER,
-  //     to: email,
-  //     subject: 'Your OTP Verification Code',
-  //     html: `
-  //       <h1>OTP Verification</h1>
-  //       <p>Your OTP code is: <strong>${otp}</strong></p>
-  //       <p>This code will expire in 10 minutes.</p>
-  //     `,
-  //   };
-
-  //   try {
-  //     await this.transporter.sendMail(mailOptions);
-  //     return { success: true, message: 'OTP sent successfully' };
-  //   } catch (error) {
-  //     return { success: false, message: error.message };
-  //   }
-  // }
-
-
+ 
 
   async sendOTPEmail(email: string, otp: string) {
   const mailOptions = {

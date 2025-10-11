@@ -40,14 +40,13 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (!_reactivationSuccess) _buildReactivationForm(),
             if (_reactivationSuccess) _buildSuccessCard(),
-            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -55,105 +54,100 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
   }
 
   Widget _buildReactivationForm() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.lock_open_rounded,
-                  size: 48,
-                  color: Colors.blue,
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.lock_open_rounded,
+              size: 48,
+              color: Colors.blue,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Reactivate Account',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (widget.userEmail == null)
+              TextFormField(
+                controller: _userEmailController,
+                decoration: const InputDecoration(
+                  labelText: 'User Email to Reactivate',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email),
+                  hintText: 'e.g., user@example.com',
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Reactivate Account',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            if (widget.userEmail != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
                 ),
-                const SizedBox(height: 20),
-                if (widget.userEmail == null)
-                  TextFormField(
-                    controller: _userEmailController,
-                    decoration: const InputDecoration(
-                      labelText: 'User Email to Reactivate',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
-                      hintText: 'e.g., user@example.com',
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                if (widget.userEmail != null)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.person_outline, color: Colors.blue),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Account to reactivate: ${widget.userEmail}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blue.shade800,
-                            ),
-                          ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline, color: Colors.blue),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Account to reactivate: ${widget.userEmail}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade800,
                         ),
-                      ],
-                    ),
-                  ),
-                if (widget.userEmail == null) const SizedBox(height: 20),
-                TextFormField(
-                  controller: _adminEmailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Admin Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.admin_panel_settings),
-                    hintText: 'e.g., admin@example.com',
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _reactivateAccount,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            'Reactivate Account',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                  ],
+                ),
+              ),
+            if (widget.userEmail == null) const SizedBox(height: 20),
+            TextFormField(
+              controller: _adminEmailController,
+              decoration: const InputDecoration(
+                labelText: 'Admin Email',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.admin_panel_settings),
+                hintText: 'e.g., admin@example.com',
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _reactivateAccount,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              ],
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Reactivate Account',
+                        style: TextStyle(fontSize: 16),
+                      ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

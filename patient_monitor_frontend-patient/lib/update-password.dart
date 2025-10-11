@@ -86,12 +86,12 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                'Your password has been successfully updated.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 20),
+              // const Text(
+              //   'Your password has been successfully updated.',
+              //   textAlign: TextAlign.center,
+              //   style: TextStyle(fontSize: 16),
+              // ),
+              // const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

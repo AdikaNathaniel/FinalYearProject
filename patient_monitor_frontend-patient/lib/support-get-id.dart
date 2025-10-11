@@ -149,7 +149,7 @@ class _SupportByIdPageState extends State<SupportByIdPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find Support Ticket by ID'),
+        title: const Text('Find Supporty By ID'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
