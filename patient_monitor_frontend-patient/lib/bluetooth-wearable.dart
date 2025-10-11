@@ -9,7 +9,13 @@ import 'bluetooth-health-data.dart';
 
 class WearableDevicePairingPage extends StatefulWidget {
   final String userEmail;
-  const WearableDevicePairingPage({super.key, required this.userEmail});
+  final bool autoRequestRunningAverages; 
+  
+  const WearableDevicePairingPage({
+    super.key, 
+    required this.userEmail,
+    this.autoRequestRunningAverages = false, 
+  });
 
   @override
   State<WearableDevicePairingPage> createState() => _WearableDevicePairingPageState();
@@ -33,6 +39,11 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
   StreamSubscription<BluetoothConnectionState>? connectionSubscription;
   StreamSubscription<List<int>>? characteristicSubscription;
 
+  // ✅ NEW: For auto-request feature
+  bool isRequestingData = false;
+  bool hasRequestedData = false;
+  Timer? autoRequestTimer;
+
   // ESP32 Service and Characteristic UUIDs
   static const String SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
   static const String CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
@@ -42,6 +53,11 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     super.initState();
     _loadSavedDevice();
     _checkBluetoothState();
+    
+    // ✅ NEW: Auto-request data if parameter is true
+    if (widget.autoRequestRunningAverages) {
+      _initAutoRequest();
+    }
   }
 
   @override
@@ -49,7 +65,86 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     scanSubscription?.cancel();
     connectionSubscription?.cancel();
     characteristicSubscription?.cancel();
+    autoRequestTimer?.cancel(); // ✅ NEW
     super.dispose();
+  }
+
+  // ✅ NEW: Initialize auto-request sequence
+  Future<void> _initAutoRequest() async {
+    // Wait a bit for UI to settle
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Check if device is already connected
+    if (isConnected && vitalsCharacteristic != null) {
+      await _sendCommandToMCU('GET_AVERAGES');
+    } else if (savedDeviceId != null) {
+      // Try to reconnect and then request
+      await _reconnectToSavedDevice();
+      
+      // Wait for connection to establish
+      autoRequestTimer = Timer(const Duration(seconds: 3), () async {
+        if (isConnected && vitalsCharacteristic != null) {
+          await _sendCommandToMCU('GET_AVERAGES');
+        } else {
+          _showErrorDialog('Could not connect to device. Please ensure device is powered on and nearby.');
+        }
+      });
+    } else {
+      _showErrorDialog('No paired device found. Please pair with your wearable device first.');
+    }
+  }
+
+  // ✅ NEW: Send command to MCU via Bluetooth
+  Future<void> _sendCommandToMCU(String command) async {
+    if (vitalsCharacteristic == null) {
+      _showErrorDialog('Not connected to device');
+      return;
+    }
+
+    setState(() {
+      isRequestingData = true;
+    });
+
+    try {
+      // Convert command to bytes
+      List<int> bytes = utf8.encode(command);
+      
+      // Write command to characteristic
+      await vitalsCharacteristic!.write(bytes);
+      
+      print('✅ Sent command to MCU: $command');
+      
+      // Show loading indicator
+      _showLoadingDialog('Requesting data from device...');
+      
+      // Wait for response (MCU should send data via notification)
+      // The response will be handled by _handleReceivedData
+      
+    } catch (e) {
+      print('❌ Error sending command: $e');
+      _showErrorDialog('Failed to send command: $e');
+      setState(() {
+        isRequestingData = false;
+      });
+      Navigator.of(context).pop(); // Close loading dialog if open
+    }
+  }
+
+  // ✅ NEW: Show loading dialog
+  void _showLoadingDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Expanded(child: Text(message)),
+          ],
+        ),
+      ),
+    );
   }
 
   // Check Bluetooth state
@@ -246,14 +341,16 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
         
         // Find the vitals service and characteristic
         for (var service in services) {
+          // ✅ FIXED: Use service.uuid from flutter_blue_plus
           if (service.uuid.toString().toLowerCase() == SERVICE_UUID.toLowerCase()) {
+            // ✅ FIXED: Use service.characteristics from flutter_blue_plus
             for (var characteristic in service.characteristics) {
               if (characteristic.uuid.toString().toLowerCase() == CHARACTERISTIC_UUID.toLowerCase()) {
                 vitalsCharacteristic = characteristic;
                 
                 // Subscribe to notifications
                 await characteristic.setNotifyValue(true);
-                characteristicSubscription = characteristic.lastValueStream.listen((value) {
+                characteristicSubscription = characteristic.onValueReceived.listen((value) {
                   _handleReceivedData(value);
                 });
                 
@@ -281,7 +378,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     }
   }
 
-  // Handle received data from ESP32
+  // ✅ UPDATED: Handle received data from ESP32
   void _handleReceivedData(List<int> value) {
     try {
       String data = utf8.decode(value);
@@ -292,26 +389,77 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
       // Parse JSON data
       Map<String, dynamic> vitalsData = json.decode(data);
       
-      print('Received vitals data:');
+      print('📊 Received vitals data:');
+      print('Type: ${vitalsData['type'] ?? 'N/A'}');
       print('Glucose: ${vitalsData['glucose']} mg/dL');
       print('Blood Pressure: ${vitalsData['systolic_bp']}/${vitalsData['diastolic_bp']} mmHg');
       print('Heart Rate: ${vitalsData['heart_rate']} bpm');
       print('SpO2: ${vitalsData['spo2']} %');
       print('Body Temperature: ${vitalsData['body_temp']} °C');
       
+      // ✅ NEW: If this was an auto-request, close loading dialog and return data
+      if (widget.autoRequestRunningAverages && !hasRequestedData) {
+        hasRequestedData = true;
+        setState(() {
+          isRequestingData = false;
+        });
+        
+        // Close loading dialog if open
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              vitalsData['type'] == 'running_averages' 
+                  ? '✓ Running averages received!'
+                  : '✓ Current readings received!',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        // Return data to calling page
+        Navigator.of(context).pop(vitalsData);
+        return;
+      }
+      
       // Show notification to user
       _showVitalsNotification(vitalsData);
       
     } catch (e) {
-      print('Error parsing received data: $e');
+      print('❌ Error parsing received data: $e');
+      
+      // ✅ NEW: Handle error during auto-request
+      if (widget.autoRequestRunningAverages && !hasRequestedData) {
+        setState(() {
+          isRequestingData = false;
+        });
+        
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+        
+        _showErrorDialog('Failed to parse data: $e');
+      }
     }
   }
 
   void _showVitalsNotification(Map<String, dynamic> vitals) {
+    String dataType = vitals['type'] == 'running_averages' 
+        ? 'Running Averages' 
+        : vitals['type'] == 'current_reading'
+        ? 'Current Reading'
+        : 'New Data';
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'New vitals received!\nHR: ${vitals['heart_rate']} bpm | SpO2: ${vitals['spo2']}%',
+          '$dataType received!\nHR: ${vitals['heart_rate']} bpm | SpO2: ${vitals['spo2']}%',
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green,
@@ -327,7 +475,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     setState(() => isConnecting = true);
 
     try {
-      final connectedDevices = FlutterBluePlus.connectedDevices;
+      final connectedDevices = await FlutterBluePlus.connectedDevices;
       
       BluetoothDevice? device;
       for (var d in connectedDevices) {
@@ -440,6 +588,99 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     }
   }
 
+  // ✅ NEW: Manual request buttons
+  Widget _buildManualRequestButtons() {
+    if (!isConnected || vitalsCharacteristic == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 20),
+        const Text(
+          'Request Data from Device',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        ElevatedButton.icon(
+          onPressed: isRequestingData 
+              ? null 
+              : () => _sendCommandToMCU('GET_CURRENT_DATA'),
+          icon: isRequestingData
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.refresh),
+          label: const Text('Get Current Readings'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 8),
+        
+        ElevatedButton.icon(
+          onPressed: isRequestingData 
+              ? null 
+              : () => _sendCommandToMCU('GET_AVERAGES'),
+          icon: isRequestingData
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.show_chart),
+          label: const Text('Get Running Averages'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.purple,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 8),
+        
+        OutlinedButton.icon(
+          onPressed: isRequestingData 
+              ? null 
+              : () => _sendCommandToMCU('GET_STATUS'),
+          icon: const Icon(Icons.info_outline),
+          label: const Text('Get Device Status'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.blue,
+            side: const BorderSide(color: Colors.blue),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -450,7 +691,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: !widget.autoRequestRunningAverages, // ✅ Hide back button during auto-request
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -465,6 +706,9 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
             ] else ...[
               _buildConnectedSection(),
             ],
+            
+            // ✅ NEW: Manual request buttons
+            _buildManualRequestButtons(),
             
             if (isScanning || scanResults.isNotEmpty) ...[
               const SizedBox(height: 20),

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+// Import your other pages
 import 'create_cancel-appointment.dart';
 import 'login_page.dart';
-import 'dart:async';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'wellness-page.dart';
 import 'protein-strip.dart';
 import 'pregnancy-health.dart';
@@ -18,13 +21,162 @@ import 'doctor-by-name.dart';
 import 'symptom-checker.dart';
 import 'set_profile.dart'; 
 import 'map.dart';
-import  'hardware_vitals.dart';
-import  'paystack-home.dart';
-// import 'hardware-live-data.dart';
+import 'hardware_vitals.dart';
+import 'paystack-home.dart';
 import 'anemia-assessment.dart';
 import 'chart-data.dart';
 import 'appointment-schedule-by-medic.dart';
 import 'bluetooth-wearable.dart';
+
+// ✅ FIXED: Bluetooth Service Singleton with proper instance handling
+class BluetoothHealthService {
+  static final BluetoothHealthService _instance = BluetoothHealthService._internal();
+  factory BluetoothHealthService() => _instance;
+  BluetoothHealthService._internal();
+
+  // ✅ FIXED: Proper FlutterBluePlus instance access
+  // Remove the getter and use FlutterBluePlus directly where needed
+  BluetoothDevice? _connectedDevice;
+  BluetoothCharacteristic? _vitalsCharacteristic;
+  bool _isConnected = false;
+  StreamSubscription<List<int>>? _dataSubscription;
+
+  // UUIDs matching your ESP32 code
+  final String serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+  final String characteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+  // Connection state stream
+  final StreamController<bool> _connectionController = StreamController<bool>.broadcast();
+  Stream<bool> get connectionStream => _connectionController.stream;
+
+  // Data received stream
+  final StreamController<Map<String, dynamic>> _dataController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get dataStream => _dataController.stream;
+
+  Future<bool> connectToDevice(BluetoothDevice device) async {
+    try {
+      await device.connect();
+      _connectedDevice = device;
+      
+      // ✅ FIXED: Proper type handling
+      List<BluetoothService> services = await device.discoverServices();
+      
+      for (BluetoothService service in services) {
+        if (service.uuid.toString().toLowerCase() == serviceUUID.toLowerCase()) {
+          for (BluetoothCharacteristic characteristic in service.characteristics) {
+            if (characteristic.uuid.toString().toLowerCase() == characteristicUUID.toLowerCase()) {
+              _vitalsCharacteristic = characteristic;
+              
+              // Enable notifications
+              await characteristic.setNotifyValue(true);
+              
+              // Listen for incoming data
+              _dataSubscription = characteristic.onValueReceived.listen((value) {
+                _handleIncomingData(value);
+              });
+              
+              _isConnected = true;
+              _connectionController.add(true);
+              
+              print('✅ Bluetooth connected and notifications enabled');
+              return true;
+            }
+          }
+        }
+      }
+      
+      // If we get here, connection failed
+      await device.disconnect();
+      _isConnected = false;
+      return false;
+    } catch (e) {
+      print('❌ Bluetooth connection error: $e');
+      _isConnected = false;
+      return false;
+    }
+  }
+
+  void _handleIncomingData(List<int> data) {
+    try {
+      String jsonString = utf8.decode(data);
+      Map<String, dynamic> parsedData = json.decode(jsonString);
+      
+      print('📱 Received Bluetooth data: $parsedData');
+      _dataController.add(parsedData);
+    } catch (e) {
+      print('❌ Error parsing Bluetooth data: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> sendCommand(String command) async {
+    if (!_isConnected || _vitalsCharacteristic == null) {
+      print('❌ No Bluetooth connection available');
+      return null;
+    }
+
+    try {
+      print('📤 Sending Bluetooth command: $command');
+      
+      // Send command to ESP32
+      await _vitalsCharacteristic!.write(utf8.encode(command));
+      
+      // Wait for response with timeout
+      final response = await _waitForBluetoothResponse();
+      return response;
+    } catch (e) {
+      print('❌ Bluetooth command error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> _waitForBluetoothResponse() async {
+    final completer = Completer<Map<String, dynamic>?>();
+    StreamSubscription<Map<String, dynamic>>? subscription;
+    
+    subscription = dataStream.listen((data) {
+      // Check if this is a response to our command
+      if (data['type'] != null) {
+        subscription?.cancel();
+        completer.complete(data);
+      }
+    });
+
+    // Timeout after 5 seconds
+    return completer.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        subscription?.cancel();
+        print('❌ Bluetooth response timeout');
+        return null;
+      },
+    );
+  }
+
+  Future<void> disconnect() async {
+    _dataSubscription?.cancel();
+    _dataSubscription = null;
+    
+    if (_connectedDevice != null) {
+      await _connectedDevice!.disconnect();
+    }
+    
+    _isConnected = false;
+    _connectedDevice = null;
+    _vitalsCharacteristic = null;
+    _connectionController.add(false);
+    
+    print('🔌 Bluetooth disconnected');
+  }
+
+  bool get isConnected => _isConnected;
+  BluetoothDevice? get connectedDevice => _connectedDevice;
+
+  void dispose() {
+    _dataSubscription?.cancel();
+    _connectionController.close();
+    _dataController.close();
+  }
+}
 
 class BluetoothHealthMetricsPage extends StatefulWidget {
   final String userEmail;
@@ -42,6 +194,8 @@ class BluetoothHealthMetricsPage extends StatefulWidget {
 
 class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage> {
   final TextEditingController _emergencyMessageController = TextEditingController();
+  final BluetoothHealthService _bluetoothService = BluetoothHealthService();
+  
   Map<String, dynamic>? vitalData;
   Map<String, dynamic>? bluetoothVitalData;
   bool isLoading = true;
@@ -53,8 +207,13 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
   bool _hasPostedInitialData = false;
   bool _isOnDashboardPage = false;
 
-  // Bluetooth data
-  String? lastReceivedData;
+  // ✅ UPDATED: Bluetooth state management
+  bool _isRefreshingFromBluetooth = false;
+  DateTime? _lastBluetoothRefreshTime;
+  String? _bluetoothStatus = 'Disconnected';
+  StreamSubscription<bool>? _connectionSubscription;
+  StreamSubscription<Map<String, dynamic>>? _dataSubscription;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -67,17 +226,97 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
         bluetoothVitalData = widget.initialBluetoothData;
         vitalData = _convertBluetoothData(widget.initialBluetoothData!);
         isLoading = false;
+        _lastBluetoothRefreshTime = DateTime.now();
       });
     } else {
       _fetchVitalData();
     }
     
+    // ✅ NEW: Set up Bluetooth listeners
+    _setupBluetoothListeners();
+    
+    // Start periodic tasks
     Timer.periodic(const Duration(seconds: 120), (Timer t) => _fetchVitalData());
     
     _alertTimer = Timer.periodic(const Duration(minutes: 3), (Timer t) {
       if (_isOnDashboardPage && mounted) {
         _checkAlarmingValues();
         _sendPredictionData();
+      }
+    });
+  }
+
+  // ✅ NEW: Set up Bluetooth event listeners
+  void _setupBluetoothListeners() {
+    // Listen for connection state changes
+    _connectionSubscription = _bluetoothService.connectionStream.listen((connected) {
+      if (mounted) {
+        setState(() {
+          _bluetoothStatus = connected ? 'Connected' : 'Disconnected';
+        });
+        
+        if (connected) {
+          // Auto-request data when connected
+          _requestBluetoothRunningAverages();
+          // Start auto-refresh timer
+          _startAutoRefresh();
+        } else {
+          // Stop auto-refresh when disconnected
+          _autoRefreshTimer?.cancel();
+        }
+      }
+    });
+
+    // Listen for incoming Bluetooth data
+    _dataSubscription = _bluetoothService.dataStream.listen((data) {
+      if (mounted) {
+        _handleBluetoothData(data);
+      }
+    });
+
+    // Check current connection status
+    if (_bluetoothService.isConnected) {
+      setState(() {
+        _bluetoothStatus = 'Connected';
+      });
+      _startAutoRefresh();
+    }
+  }
+
+  // ✅ NEW: Handle incoming Bluetooth data
+  void _handleBluetoothData(Map<String, dynamic> data) {
+    print('🔄 Processing Bluetooth data: $data');
+    
+    setState(() {
+      bluetoothVitalData = data;
+      vitalData = _convertBluetoothData(data);
+      isLoading = false;
+      _lastBluetoothRefreshTime = DateTime.now();
+      _isRefreshingFromBluetooth = false;
+    });
+
+    _checkAlarmingValues();
+    
+    // Show appropriate message based on data type
+    switch (data['type']) {
+      case 'running_averages':
+        _showSnackbar(context, "✓ Running averages updated", Colors.green);
+        break;
+      case 'current_reading':
+        _showSnackbar(context, "✓ Instant reading received", Colors.blue);
+        break;
+      case 'status':
+        _showSnackbar(context, "✓ Device status updated", Colors.orange);
+        break;
+    }
+  }
+
+  // ✅ NEW: Start auto-refresh when connected
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (_bluetoothService.isConnected && mounted && _isOnDashboardPage) {
+        _requestBluetoothRunningAverages();
       }
     });
   }
@@ -90,7 +329,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       'diastolicBP': data['diastolic_bp']?.toDouble(),
       'heartRate': data['heart_rate']?.toDouble(),
       'spo2': data['spo2']?.toDouble(),
-      // 'skinTemp': data['skin_temp']?.toDouble(), // Commented out as requested
       'bodyTemp': data['body_temp']?.toDouble(),
       'updatedAt': DateTime.now().toIso8601String(),
     };
@@ -100,21 +338,79 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
   void dispose() {
     _isOnDashboardPage = false;
     _alertTimer?.cancel();
+    _autoRefreshTimer?.cancel();
+    _connectionSubscription?.cancel();
+    _dataSubscription?.cancel();
+    _bluetoothService.dispose();
     super.dispose();
   }
 
-  // Method to receive Bluetooth data from WearableDevicePairingPage
-  void updateBluetoothData(Map<String, dynamic> data) {
-    if (mounted) {
+  // ✅ UPDATED: Event-based Bluetooth refresh
+  Future<void> _requestBluetoothRunningAverages() async {
+    if (_isRefreshingFromBluetooth) return;
+    
+    setState(() {
+      _isRefreshingFromBluetooth = true;
+    });
+
+    try {
+      // ✅ EVENT-BASED: Use existing Bluetooth connection
+      final data = await _bluetoothService.sendCommand('GET_AVERAGES');
+      
+      if (data != null) {
+        // Data will be handled by the stream listener
+        print('✅ Command sent successfully, waiting for response...');
+      } else {
+        setState(() {
+          _isRefreshingFromBluetooth = false;
+        });
+        _showSnackbar(context, "No response from device", Colors.orange);
+      }
+    } catch (e) {
+      print('❌ Error requesting Bluetooth data: $e');
       setState(() {
-        bluetoothVitalData = data;
-        vitalData = _convertBluetoothData(data);
-        isLoading = false;
+        _isRefreshingFromBluetooth = false;
       });
-      _checkAlarmingValues();
+      _showSnackbar(context, "Refresh failed: ${e.toString()}", Colors.red);
     }
   }
 
+  // ✅ NEW: Request instant sensor readings
+  Future<void> _requestInstantReadings() async {
+    final data = await _bluetoothService.sendCommand('GET_CURRENT_DATA');
+    if (data == null) {
+      _showSnackbar(context, "Failed to get instant readings", Colors.orange);
+    }
+  }
+
+  // ✅ NEW: Request device status
+  Future<void> _requestDeviceStatus() async {
+    final data = await _bluetoothService.sendCommand('GET_STATUS');
+    if (data == null) {
+      _showSnackbar(context, "Failed to get device status", Colors.orange);
+    }
+  }
+
+  // ✅ UPDATED: Navigate to pairing page without callback parameter
+  Future<void> _navigateToPairingPage() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WearableDevicePairingPage(
+          userEmail: widget.userEmail,
+          autoRequestRunningAverages: false,
+        ),
+      ),
+    );
+
+    // Handle result if needed
+    if (result != null && result is Map<String, dynamic>) {
+      // Handle data returned from pairing page
+      _handleBluetoothData(result);
+    }
+  }
+
+  // Rest of your existing methods remain the same...
   Future<void> _fetchVitalData() async {
     try {
       final response = await http.get(
@@ -622,28 +918,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
     );
   }
 
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Error'),
-          ],
-        ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -659,6 +933,39 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         actions: [
+          // ✅ UPDATED: Bluetooth status indicator with connection state
+          IconButton(
+            icon: Stack(
+              children: [
+                Icon(
+                  _bluetoothService.isConnected 
+                      ? Icons.bluetooth_connected 
+                      : Icons.bluetooth,
+                  color: _bluetoothService.isConnected ? Colors.white : Colors.white70,
+                ),
+                if (_bluetoothService.isConnected)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: _bluetoothService.isConnected 
+                ? 'Bluetooth Connected - Tap to refresh' 
+                : 'Bluetooth Disconnected - Tap to connect',
+            onPressed: _bluetoothService.isConnected 
+                ? _requestBluetoothRunningAverages
+                : _navigateToPairingPage,
+          ),
           IconButton(
             icon: CircleAvatar(
               radius: 16,
@@ -717,19 +1024,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                 );
               },
             ),
-            
-            // ListTile(
-            //   leading: const Icon(Icons.info),
-            //   title: const Text('Pregnancy InfoDesk'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (context) => PregnancyHealthForm(),
-            //       ),
-            //     );
-            //   },
-            // ),
             ListTile(
               leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
               title: const Text('Pregnancy Chatbot'),
@@ -812,8 +1106,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.search, color: Colors.blue),
+            ListTile(leading: const Icon(Icons.search, color: Colors.blue),
               title: const Text(
                 'Find Your Favorite Medic',
                 style: TextStyle(
@@ -839,19 +1132,138 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(12),
-          child: isLoading 
-            ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
-            : errorMessage.isNotEmpty
-              ? Center(
-                  child: Text(
-                    errorMessage,
-                    style: const TextStyle(color: Colors.red, fontSize: 18),
-                    textAlign: TextAlign.center,
+          child: Column(
+            children: [
+              // ✅ UPDATED: Bluetooth Status Banner with connection info
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _bluetoothService.isConnected 
+                        ? [Colors.green.shade50, Colors.green.shade100]
+                        : [Colors.blue.shade50, Colors.blue.shade100],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                )
-              : Column(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _bluetoothService.isConnected 
+                        ? Colors.green.shade200 
+                        : Colors.blue.shade200,
+                  ),
+                ),
+                child: Row(
                   children: [
-                    GridView.count(
+                    Icon(
+                      _bluetoothService.isConnected 
+                          ? Icons.bluetooth_connected 
+                          : Icons.bluetooth,
+                      color: _bluetoothService.isConnected 
+                          ? Colors.green.shade700 
+                          : Colors.blue.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _bluetoothService.isConnected 
+                                ? 'Bluetooth Connected'
+                                : 'Bluetooth Disconnected',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: _bluetoothService.isConnected 
+                                  ? Colors.green.shade900 
+                                  : Colors.blue.shade900,
+                            ),
+                          ),
+                          if (_lastBluetoothRefreshTime != null)
+                            Text(
+                              'Last refreshed: ${_getTimeAgo(_lastBluetoothRefreshTime!.toIso8601String())}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _bluetoothService.isConnected 
+                                    ? Colors.green.shade700 
+                                    : Colors.blue.shade700,
+                              ),
+                            ),
+                          if (_lastBluetoothRefreshTime == null)
+                            Text(
+                              'Tap refresh to get data',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _bluetoothService.isConnected 
+                                    ? Colors.green.shade700 
+                                    : Colors.blue.shade700,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (_bluetoothService.isConnected)
+                      IconButton(
+                        icon: _isRefreshingFromBluetooth
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                                ),
+                              )
+                            : Icon(Icons.refresh, 
+                                color: Colors.green.shade700, size: 20),
+                        onPressed: _isRefreshingFromBluetooth 
+                            ? null 
+                            : _requestBluetoothRunningAverages,
+                        tooltip: 'Refresh Now',
+                      ),
+                    if (!_bluetoothService.isConnected)
+                      IconButton(
+                        icon: Icon(Icons.bluetooth_searching, 
+                            color: Colors.blue.shade700, size: 20),
+                        onPressed: _navigateToPairingPage,
+                        tooltip: 'Connect Device',
+                      ),
+                  ],
+                ),
+              ),
+              
+              isLoading 
+                ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
+                : errorMessage.isNotEmpty
+                  ? Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            errorMessage,
+                            style: const TextStyle(color: Colors.red, fontSize: 18),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: _bluetoothService.isConnected
+                                ? _requestBluetoothRunningAverages
+                                : _navigateToPairingPage,
+                            icon: Icon(_bluetoothService.isConnected 
+                                ? Icons.bluetooth_connected 
+                                : Icons.bluetooth),
+                            label: Text(_bluetoothService.isConnected
+                                ? 'Try Bluetooth Refresh'
+                                : 'Connect Bluetooth Device'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GridView.count(
                       crossAxisCount: 2,
                       childAspectRatio: 0.95,
                       crossAxisSpacing: 12,
@@ -983,15 +1395,50 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                         ),
                       ],
                     ),
-                  ],
-                ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showUrineStripDialog(context),
-        child: const Icon(Icons.add),
-        tooltip: 'Add Protein Test Result',
-        backgroundColor: Colors.blueAccent,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // ✅ UPDATED: Bluetooth FAB with connection state
+          FloatingActionButton(
+            onPressed: _bluetoothService.isConnected
+                ? _requestBluetoothRunningAverages
+                : _navigateToPairingPage,
+            heroTag: 'bluetooth_refresh',
+            child: _isRefreshingFromBluetooth
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Icon(
+                    _bluetoothService.isConnected
+                        ? Icons.bluetooth_connected
+                        : Icons.bluetooth,
+                    color: Colors.white,
+                  ),
+            tooltip: _bluetoothService.isConnected
+                ? 'Refresh from Bluetooth'
+                : 'Connect Bluetooth Device',
+            backgroundColor: _bluetoothService.isConnected 
+                ? Colors.green 
+                : Colors.blue,
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            onPressed: () => _showUrineStripDialog(context),
+            heroTag: 'add_protein',
+            child: const Icon(Icons.add),
+            tooltip: 'Add Protein Test Result',
+            backgroundColor: Colors.blueAccent,
+          ),
+        ],
       ),
     );
   }
@@ -1020,6 +1467,67 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                 ),
               ),
               const SizedBox(height: 20),
+              
+              // Bluetooth Connection Status
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: _bluetoothService.isConnected 
+                      ? Colors.green.shade50 
+                      : Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    _bluetoothService.isConnected 
+                        ? Icons.bluetooth_connected 
+                        : Icons.bluetooth,
+                    color: _bluetoothService.isConnected ? Colors.green : Colors.blue,
+                  ),
+                  title: Text(
+                    _bluetoothService.isConnected 
+                        ? 'Bluetooth Connected' 
+                        : 'Bluetooth Disconnected',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _bluetoothService.isConnected ? Colors.green : Colors.blue,
+                    ),
+                  ),
+                  subtitle: Text(
+                    _bluetoothService.isConnected 
+                        ? 'Tap to refresh data' 
+                        : 'Tap to connect device',
+                  ),
+                  trailing: _isRefreshingFromBluetooth
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : null,
+                  onTap: _bluetoothService.isConnected
+                      ? _requestBluetoothRunningAverages
+                      : _navigateToPairingPage,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Quick Actions when Bluetooth is connected
+              if (_bluetoothService.isConnected) ...[
+                ListTile(
+                  leading: const Icon(Icons.flash_on, color: Colors.orange),
+                  title: const Text('Get Instant Reading'),
+                  subtitle: const Text('Current sensor values'),
+                  onTap: _requestInstantReadings,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info, color: Colors.blue),
+                  title: const Text('Device Status'),
+                  subtitle: const Text('Connection & sensor info'),
+                  onTap: _requestDeviceStatus,
+                ),
+                const Divider(),
+              ],
               
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1101,23 +1609,18 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
-                      ),
-                    );
-                  },
+                  onTap: _navigateToPairingPage,
                   child: Row(
                     children: [
-                      const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
+                      Icon(Icons.bluetooth, size: 20, 
+                          color: _bluetoothService.isConnected ? Colors.green : Colors.blue),
                       const SizedBox(width: 12),
-                      const Flexible(
+                      Flexible(
                         child: Text(
-                          'Pair With Bluetooth Device',
-                          style: TextStyle(
+                          _bluetoothService.isConnected
+                              ? 'Change Bluetooth Device'
+                              : 'Pair With Bluetooth Device',
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 12,
                           ),
@@ -1233,6 +1736,8 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                   if (response.statusCode == 200) {
                     final responseData = json.decode(response.body);
                     if (responseData['success']) {
+                      // Disconnect Bluetooth before logout
+                      await _bluetoothService.disconnect();
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => LoginPage()),
