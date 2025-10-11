@@ -173,8 +173,8 @@ class _SupportByNamePageState extends State<SupportByNamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find Support Tickets by Name'),
-        backgroundColor: Colors.deepPurple,
+        title: const Text('Support By Name'),
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -197,7 +197,7 @@ class _SupportByNamePageState extends State<SupportByNamePage> {
                       const Icon(
                         Icons.support_agent,
                         size: 48,
-                        color: Colors.deepPurple,
+                        color: Colors.blue,
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -226,7 +226,7 @@ class _SupportByNamePageState extends State<SupportByNamePage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _fetchAndShowSupportTickets,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

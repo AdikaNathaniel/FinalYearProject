@@ -156,7 +156,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Create Your PIN"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue,
         centerTitle: true,
         foregroundColor: Colors.white,
       ),
@@ -166,11 +166,11 @@ class _CreatePinPageState extends State<CreatePinPage> {
           key: _formKey,
           child: Column(
             children: [
-              Text(
-                "Kindly Enter Your Details To Create A Secure PIN",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 20),
+              // Text(
+              //   "Kindly Enter Your Details To Create A Secure PIN",
+              //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              // ),
+              // SizedBox(height: 20),
 
               TextFormField(
                 controller: _userIdController,
@@ -211,7 +211,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
               SizedBox(height: 24),
 
               _isLoading
-                  ? CircularProgressIndicator(color: Colors.blueAccent)
+                  ? CircularProgressIndicator(color: Colors.blue)
                   : ElevatedButton.icon(
                       onPressed: _submitPin,
                       icon: Icon(Icons.lock_open, color: Colors.white),

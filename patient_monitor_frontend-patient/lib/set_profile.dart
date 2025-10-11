@@ -53,24 +53,24 @@ class SetProfilePage extends StatelessWidget {
         child: Column(
           children: [
             // Display user email at the top
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Icon(Icons.person, color: Colors.teal),
-                  SizedBox(width: 10),
-                  Text(
-                    'User: $userEmail',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-            Divider(),
+            // Padding(
+            //   padding: const EdgeInsets.all(16.0),
+            //   child: Row(
+            //     children: [
+            //       Icon(Icons.person, color: Colors.teal),
+            //       SizedBox(width: 10),
+            //       Text(
+            //         'User: $userEmail',
+            //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // Divider(),
 _buildSettingTile(
   icon: Icons.lock_outline,
   title: 'Create PIN',
-  iconColor: Colors.green,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -82,7 +82,7 @@ _buildSettingTile(
     _buildSettingTile(
   icon: Icons.edit,
   title: 'Update PIN',
-  iconColor: Colors.blueAccent,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -95,7 +95,7 @@ _buildSettingTile(
               _buildSettingTile(
   icon: Icons.delete_outline,
   title: 'Delete PIN',
-  iconColor: Colors.red,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,
@@ -108,7 +108,7 @@ _buildSettingTile(
                _buildSettingTile(
   icon: Icons.lock_reset,
   title: 'Update Password',
-  iconColor: Colors.orange,
+  iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
       context,

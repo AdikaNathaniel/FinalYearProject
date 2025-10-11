@@ -150,7 +150,7 @@ class _SupportByIdPageState extends State<SupportByIdPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Support Ticket by ID'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -173,7 +173,7 @@ class _SupportByIdPageState extends State<SupportByIdPage> {
                       const Icon(
                         Icons.support_agent,
                         size: 48,
-                        color: Colors.deepPurple,
+                        color: Colors.blue,
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -202,7 +202,7 @@ class _SupportByIdPageState extends State<SupportByIdPage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _fetchAndShowSupportTicket,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

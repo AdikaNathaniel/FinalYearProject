@@ -396,14 +396,14 @@ class _MapPageState extends State<MapPage> {
       appBar: AppBar(
         title: const Text('Location Of PregMama'),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _showSearchOptions,
-            tooltip: 'Search Healthcare Facilities',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.search),
+          //   onPressed: _showSearchOptions,
+          //   tooltip: 'Search Healthcare Facilities',
+          // ),
           IconButton(
             icon: const Icon(Icons.my_location),
             onPressed: () {

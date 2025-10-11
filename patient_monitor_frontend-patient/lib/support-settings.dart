@@ -89,7 +89,7 @@ class SupportSettingsPage extends StatelessWidget {
             // Get All Support Requests
             _buildSupportCard(
               icon: Icons.list_alt,
-              title: 'Get All Support Requests',
+              title: 'All Support Requests',
               iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
@@ -101,7 +101,7 @@ class SupportSettingsPage extends StatelessWidget {
 
              _buildSupportCard(
   icon: Icons.find_in_page, 
-  title: 'Get Support Request By Id',
+  title: 'Request By Id',
   iconColor: Colors.blue,
   onTap: () {
     Navigator.push(
@@ -125,7 +125,7 @@ class SupportSettingsPage extends StatelessWidget {
 
  _buildSupportCard(
   icon: Icons.receipt_long, 
-  title: 'Get Support Request By Name',
+  title: 'Request By Name',
   iconColor: Colors.blue,
   onTap: () {
     Navigator.push(

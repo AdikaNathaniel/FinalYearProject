@@ -780,18 +780,19 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
 
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('Pregnancy InfoDesk'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PregnancyHealthForm(),
-                  ),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: const Icon(Icons.info),
+            //   title: const Text('Pregnancy InfoDesk'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => PregnancyHealthForm(),
+            //       ),
+            //     );
+            //   },
+            // ),
+            
             ListTile(
               leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
               title: const Text('Pregnancy Chatbot'),
@@ -1048,12 +1049,12 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showUrineStripDialog(context),
-        child: const Icon(Icons.add),
-        tooltip: 'Add Protein Test Result',
-        backgroundColor: Colors.blueAccent,
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => _showUrineStripDialog(context),
+      //   child: const Icon(Icons.add),
+      //   tooltip: 'Add Protein Test Result',
+      //   backgroundColor: Colors.blueAccent,
+      // ),
     );
   }
 

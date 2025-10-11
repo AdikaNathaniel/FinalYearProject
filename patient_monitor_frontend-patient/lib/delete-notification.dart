@@ -10,39 +10,24 @@ class DeleteNotificationPage extends StatefulWidget {
 
 class _DeleteNotificationPageState extends State<DeleteNotificationPage> {
   final TextEditingController _idController = TextEditingController();
+  bool isLoading = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-// Future<void> _deleteNotification(String id) async {
-//     try {
-//       final url = Uri.parse("https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/$id");
-//       final response = await http.delete(url);
+  Future<void> _deleteNotification(String id) async {
+    try {
+      final url = Uri.parse("https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/$id");
+      final response = await http.delete(url);
 
-//       if (response.statusCode == 200) {
-//         _showSuccessDialog();
-//       } else {
-//         _showErrorDialog("Failed to delete notification. Status: ${response.statusCode}");
-//       }
-//     } catch (e) {
-//       _showErrorDialog("Error: ${e.toString()}");
-//     }
-//   }
-
-
-
-Future<void> _deleteNotification(String id) async {
-  try {
-    final url = Uri.parse("https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/$id");
-    final response = await http.delete(url);
-
-    if (response.statusCode == 200) {
-      _idController.clear(); 
-      _showSuccessDialog();
-    } else {
-      _showErrorDialog("Failed to delete notification. Status: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        _idController.clear(); 
+        _showSuccessDialog();
+      } else {
+        _showErrorDialog("Failed to delete notification. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      _showErrorDialog("Error: ${e.toString()}");
     }
-  } catch (e) {
-    _showErrorDialog("Error: ${e.toString()}");
   }
-}
 
   void _showConfirmDialog(String id) {
     showDialog(
@@ -103,6 +88,8 @@ Future<void> _deleteNotification(String id) async {
   }
 
   void _onDeletePressed() {
+    if (!_formKey.currentState!.validate()) return;
+    
     final id = _idController.text.trim();
     if (id.isEmpty) {
       _showErrorDialog("Please enter a Notification ID.");
@@ -117,40 +104,83 @@ Future<void> _deleteNotification(String id) async {
       appBar: AppBar(
         title: const Text("Delete Notification"),
         backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const Text(
-              "Enter Notification ID to Delete:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _idController,
-              decoration: InputDecoration(
-                hintText: "Notification ID",
-                prefixIcon: const Icon(Icons.vpn_key),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.search,
+                        size: 48,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter Notification ID to Delete',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _idController,
+                        decoration: const InputDecoration(
+                          labelText: 'Notification ID',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.notifications),
+                          hintText: 'e.g., 682e926c2217b2bca7722bef',
+                        ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Please enter an ID' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _onDeletePressed,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Delete Notification',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _onDeletePressed,
-              icon: const Icon(Icons.delete_outline),
-              label: const Text("Delete Notification"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                textStyle: const TextStyle(fontSize: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    super.dispose();
   }
 }

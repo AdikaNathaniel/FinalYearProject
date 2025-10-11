@@ -717,18 +717,19 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('Pregnancy InfoDesk'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PregnancyHealthForm(),
-                  ),
-                );
-              },
-            ),
+            
+            // ListTile(
+            //   leading: const Icon(Icons.info),
+            //   title: const Text('Pregnancy InfoDesk'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => PregnancyHealthForm(),
+            //       ),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
               title: const Text('Pregnancy Chatbot'),

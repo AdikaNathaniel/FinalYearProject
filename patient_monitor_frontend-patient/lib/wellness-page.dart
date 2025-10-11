@@ -77,68 +77,274 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     super.dispose();
   }
 
-  void _showUserInfoDialog(BuildContext context) {
+  // Add missing method
+  void _showEmergencyAlertDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Center(child: Text('Profile')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.email),
-                SizedBox(width: 10),
-                Text(widget.userEmail),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.settings),
-                SizedBox(width: 10),
-                Text('Settings'),
-              ],
-            ),
-            SizedBox(height: 10),
-            TextButton(
-              onPressed: () async {
-                // Call logout API
-                final response = await http.put(
-                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
-                  headers: {'Content-Type': 'application/json'},
-                );
-
-                if (response.statusCode == 200) {
-                  final responseData = json.decode(response.body);
-                  if (responseData['success']) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  } else {
-                    _showSnackbar(
-                        context,
-                        "Logout failed: ${responseData['message']}",
-                        Colors.red);
-                  }
-                } else {
-                  _showSnackbar(
-                      context, "Logout failed: Server error", Colors.red);
-                }
-              },
-              child: Text('Logout', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
+        title: Text("Emergency Alert"),
+        content: Text("Emergency alert functionality would be implemented here."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: Text("OK"),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showUserInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Profile',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        widget.userEmail,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showEmergencyAlertDialog(context);
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.emergency, size: 20, color: Colors.red),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'Send An Emergency Alert',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // This will use the SetProfilePage from set_profile.dart
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+            
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // This will use the WearableDevicePairingPage from bluetooth-wearable.dart
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'Pair With Bluetooth Device',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // This will use the NotificationListPage from notification-list.dart
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // This will use the SupportFormPage from support-create.dart
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.help_outline, size: 20, color: Colors.purple),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Need Help?',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // This will use the MapPage from map.dart
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 20, color: Colors.green),
+                      const SizedBox(width: 12),
+                      const Flexible(
+                        child: Text(
+                          'View Location Of PregMama',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              TextButton(
+                onPressed: () async {
+                  final response = await http.put(
+                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    final responseData = json.decode(response.body);
+                    if (responseData['success']) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: ${responseData['message']}",
+                          Colors.red);
+                    }
+                  } else {
+                      _showSnackbar(
+                          context,
+                          "Logout failed: Server error",
+                          Colors.red);
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -187,14 +393,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.blue,
-               Colors.red,           
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: Padding(
           padding: EdgeInsets.all(12.0),
           child: Scrollbar(
@@ -206,9 +405,9 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
               itemCount: displayedTips.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75, // Reduced from 0.85 to fit better
-                crossAxisSpacing: 8, // Reduced spacing
-                mainAxisSpacing: 8, // Reduced spacing
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
               ),
               itemBuilder: (context, index) {
                 var tip = displayedTips[index];
@@ -216,36 +415,42 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
                   duration: Duration(milliseconds: 800),
                   child: Card(
                     key: ValueKey(tip["title"]),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Colors.grey[400]!,
+                        width: 2,
+                      ),
+                    ),
                     elevation: 5,
-                    color: Colors.pink[50],
+                    color: Colors.white,
                     child: Padding(
-                      padding: EdgeInsets.all(8.0), // Reduced padding
+                      padding: EdgeInsets.all(8.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(tip["icon"], size: 40, color: Colors.pinkAccent), // Reduced icon size
-                          SizedBox(height: 8), // Reduced spacing
+                          Icon(tip["icon"], size: 40, color: Colors.pinkAccent),
+                          SizedBox(height: 8),
                           Text(
                             tip["title"],
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 14, // Reduced font size
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 2, // Limit title to 2 lines
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(height: 6), // Reduced spacing
+                          SizedBox(height: 6),
                           Expanded(
                             child: Text(
                               tip["description"],
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 12, // Reduced font size
+                                fontSize: 12,
                                 color: Colors.grey[700],
                               ),
-                              maxLines: 3, // Limit description to 3 lines
+                              maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -262,7 +467,3 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     );
   }
 }
-
-// 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
-
-// https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa0ZOUVBUM0UwSDFxZ0Q5ZzlYdnFpakM3YUlEQXxBQ3Jtc0trMnUxTS1GdkdtOXdGMFNkZkczM3JraWxRN05zU1RRbHVpQ21yWEVrYndUNnl6QjdTb3hIemd3S09Ra1E2ZnRoSXhHZXdzWXg4OWZ0YXdxeklIYWpMVFMzX2tuLXFSS1JvbnNIbDNraThtMVFmS3Ntcw&q=https%3A%2F%2Fgithub.com%2Fmarketplace%2Fmodels&v=YP8mV_2RDLc

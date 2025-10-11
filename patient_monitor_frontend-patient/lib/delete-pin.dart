@@ -132,87 +132,81 @@ class _PinDeleteScreenState extends State<PinDeleteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Delete PIN"),
-        backgroundColor: Colors.blueAccent,
-        centerTitle: true,
+        title: const Text('Delete PIN'),
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        elevation: 2,
+        centerTitle: true,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Color(0xFFF8F9FA)],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                children: [
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: userIdController,
-                    decoration: InputDecoration(
-                      labelText: 'UserName',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.delete_outline,
+                        size: 48,
+                        color: Colors.blue,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter Username to Delete PIN',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: userIdController,
+                        decoration: const InputDecoration(
+                          labelText: 'Username',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                          hintText: 'e.g., john_doe',
+                        ),
+                        validator: (value) =>
+                            (value == null || value.trim().isEmpty)
+                                ? 'Please enter username'
+                                : null,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                    ),
-                    validator: (value) => 
-                        (value == null || value.trim().isEmpty) ? 'Please enter user name' : null,
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : deletePin,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : deletePin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.lock_open, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text("Delete PIN"),
-                            ],
                           ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : const Text(
+                                  'Delete PIN',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

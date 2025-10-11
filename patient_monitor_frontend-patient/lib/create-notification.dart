@@ -148,58 +148,82 @@ class _CreateNotificationPageState extends State<CreateNotificationPage> {
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                labelText: 'Notification Message',
-                border: OutlineInputBorder(),
-                helperText: 'Enter your notification message',
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              title: Text(
-                formattedDate,
-                style: TextStyle(
-                  color: _scheduledAt != null ? Colors.black : Colors.grey,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.edit_note, // Writing hand with note icon
+                      size: 48,
+                      color: Colors.blue,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Create New Notification',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _messageController,
+                      decoration: const InputDecoration(
+                        labelText: 'Notification Message',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.message),
+                        helperText: 'Enter your notification message',
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 20),
+                    ListTile(
+                      title: Text(
+                        formattedDate,
+                        style: TextStyle(
+                          color: _scheduledAt != null ? Colors.black : Colors.grey,
+                        ),
+                      ),
+                      leading: const Icon(Icons.calendar_today),
+                      trailing: const Icon(Icons.access_time),
+                      onTap: _pickDateTime,
+                      tileColor: Colors.grey.shade200,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isFormValid ? _submitNotification : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Send Notification',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              leading: const Icon(Icons.calendar_today),
-              trailing: const Icon(Icons.access_time),
-              onTap: _pickDateTime,
-              tileColor: Colors.grey.shade200,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
             ),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: _isFormValid ? _submitNotification : null,
-              icon: const Icon(Icons.send),
-              label: const Text('Send Notification'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(50),
-                disabledBackgroundColor: Colors.grey.shade300,
-                disabledForegroundColor: Colors.grey.shade600,
-              ),
-            ),
-            // if (!_isFormValid)
-            //   Padding(
-            //     padding: const EdgeInsets.only(top: 8),
-            //     child: Text(
-            //       'Please enter a message and select a date/time',
-            //       style: TextStyle(
-            //         color: Colors.grey.shade600,
-            //         fontSize: 12,
-            //       ),
-            //     ),
-            //   ),
           ],
         ),
       ),

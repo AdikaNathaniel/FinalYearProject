@@ -165,7 +165,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          'Click for Password Update',
+                          'Update Password',
                           style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                 ),

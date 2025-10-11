@@ -450,6 +450,7 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

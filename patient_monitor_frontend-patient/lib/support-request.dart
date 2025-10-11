@@ -57,7 +57,7 @@ class _SupportRequestsPageState extends State<SupportRequestsPage> {
      appBar: AppBar(
         title: const Text('Support Requests'),
         centerTitle: true,
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       body: isLoading
@@ -80,7 +80,7 @@ class _SupportRequestsPageState extends State<SupportRequestsPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.vpn_key, color: Colors.blueGrey),
+                            const Icon(Icons.vpn_key, color: Colors.blue),
                             const SizedBox(width: 8),
                             Expanded(
                               child: SelectableText(
@@ -119,7 +119,7 @@ class _SupportRequestsPageState extends State<SupportRequestsPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.indigo),
+          Icon(icon, color: Colors.blue),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
