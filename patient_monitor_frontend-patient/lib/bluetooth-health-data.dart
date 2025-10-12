@@ -923,7 +923,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Bluetooth Health Metrics',
+          'Health Metrics',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
