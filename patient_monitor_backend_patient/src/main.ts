@@ -1,3 +1,6 @@
+import * as crypto from 'crypto';
+globalThis.crypto = crypto.webcrypto as any;
+
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, ValidationPipe } from '@nestjs/common';
@@ -10,7 +13,6 @@ import { raw } from 'express';
 import express from 'express';
 import { join } from 'path';
 import { HealthCheckService, MicroserviceHealthIndicator } from '@nestjs/terminus';
-import * as crypto from 'crypto';
 
 // Import SearchService class directly
 import { SearchService } from './search/search.service';
