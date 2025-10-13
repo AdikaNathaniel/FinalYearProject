@@ -14,7 +14,7 @@
 //   final TextEditingController _scheduledAtController = TextEditingController();
 
 //   Future<void> sendNotification() async {
-//     final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/notifications');
+//     final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/notifications');
 
 //     final payload = {
 //       "role": _roleController.text,

@@ -432,7 +432,7 @@ class _AnaemiaAssessmentScreenState extends State<AnaemiaAssessmentScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/anaemia-risk/predict'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/anaemia-risk/predict'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );

@@ -35,7 +35,7 @@ class _HealthDataPageState extends State<HealthDataPage> {
   }
 
   Future<void> fetchHealthData() async {
-    final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/health'));
+    final response = await http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/health'));
 
     if (response.statusCode == 200) {
       setState(() {

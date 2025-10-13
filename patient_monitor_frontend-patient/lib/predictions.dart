@@ -71,7 +71,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 
   void _logout() async {
     final response = await http.put(
-      Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+      Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -536,7 +536,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
               TextButton(
                 onPressed: () async {
                   final response = await http.put(
-                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
                     headers: {'Content-Type': 'application/json'},
                   );
 
@@ -641,7 +641,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
   Future<void> _sendEmergencyAlert(String message) async {
     try {
       final response = await http.post(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergery/contacts/send'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/emergery/contacts/send'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({"message": message}),
       );

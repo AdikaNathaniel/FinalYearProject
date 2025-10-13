@@ -111,7 +111,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
 
   Future<void> submitPrescription() async {
     final response = await http.post(
-      Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/prescriptions'),
+      Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/prescriptions'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({
         'patient_name': patientNameController.text,

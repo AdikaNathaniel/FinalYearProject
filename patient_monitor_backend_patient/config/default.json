@@ -2,7 +2,7 @@
     "port": "3100",
     "mongoDbUrl": "mongodb+srv://adikanathaniel0:7myo9l7s9Nwtodo1@cluster0.rn0fm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
     "adminSecretToken": "admin@123",
-    "jwtSecret": "secretTest@123456",
+   "JWT_SECRET": "secretTest@123456",
     "loginLink": "http://localhost:3000/auth",
     "appPrefix": "/api/v1",
     "fileStoragePath": "../uploads/",

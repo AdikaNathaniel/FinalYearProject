@@ -37,7 +37,7 @@ class _GetAllRecordsPageState extends State<GetAllRecordsPage>
   Future<List<dynamic>> fetchRecords() async {
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/preeclampsia-vitals'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/preeclampsia-vitals'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

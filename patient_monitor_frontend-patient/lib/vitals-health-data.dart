@@ -254,7 +254,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
       logger.d('Sending vitals data: $requestData');
       
       final response = await http.post(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/vitals-health-data'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/vitals-health-data'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestData),
       );

@@ -160,7 +160,7 @@ class _FaceLoginPageState extends State<FaceLoginPage> {
 
     setState(() => _isLoading = true);
 
-    final uri = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/face/detect');
+    final uri = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/face/detect');
     final request = http.MultipartRequest('POST', uri);
 
     try {

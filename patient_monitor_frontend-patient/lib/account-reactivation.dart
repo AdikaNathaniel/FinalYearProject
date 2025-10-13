@@ -265,7 +265,7 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
     try {
       final response = await http.put(
         Uri.parse(
-            'https://finalyearproject-3-y6io.onrender.com/api/v1/users/reactivate-account/$userEmail'),
+            'https://patient-monitor-backend-patient.fly.dev/api/v1/users/reactivate-account/$userEmail'),
         headers: {
           'Content-Type': 'application/json',
         },

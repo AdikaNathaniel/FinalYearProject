@@ -21,7 +21,7 @@ class _FindSymptomPageState extends State<FindSymptomPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/symptoms/search?query=${_searchController.text.trim()}'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/symptoms/search?query=${_searchController.text.trim()}'),
       );
 
       if (response.statusCode == 200) {

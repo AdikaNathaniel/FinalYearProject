@@ -23,7 +23,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
   Future<void> fetchNotifications() async {
     try {
-      final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/notifications'));
+      final response = await http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/notifications'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

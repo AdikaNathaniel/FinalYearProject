@@ -80,7 +80,7 @@ class _PatientAnalyticsPageState extends State<PatientAnalyticsPage> {
   Future<Map<String, dynamic>> fetchPatientData(String patientName) async {
     final encodedName = Uri.encodeComponent(patientName);
     final url = Uri.parse(
-      'https://finalyearproject-3-y6io.onrender.com/api/v1/health-analytics/charting-insights?patientName=$encodedName');
+      'https://patient-monitor-backend-patient.fly.dev/api/v1/health-analytics/charting-insights?patientName=$encodedName');
 
     final response = await http.get(url);
     if (response.statusCode == 200) {

@@ -50,7 +50,7 @@ class _VitalsHealthDataListPageState extends State<VitalsHealthDataListPage> {
 
     try {
       final url = Uri.parse(
-        "https://finalyearproject-3-y6io.onrender.com/api/v1/vitals-health-data"
+        "https://patient-monitor-backend-patient.fly.dev/api/v1/vitals-health-data"
         "?page=$currentPage&limit=$limit"
         "&startDate=${startDate!.toIso8601String()}"
         "&endDate=${endDate!.toIso8601String()}"

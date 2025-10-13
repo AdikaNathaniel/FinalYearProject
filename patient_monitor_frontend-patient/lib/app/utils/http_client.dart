@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class HttpClient {
-  static const String baseUrl = 'https://finalyearproject-3-y6io.onrender.com';
+  static const String baseUrl = 'https://patient-monitor-backend-patient.fly.dev';
 
   static Future post(String endpoint, dynamic body) async {
     final response = await http.post(

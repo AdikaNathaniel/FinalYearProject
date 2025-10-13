@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 
 // Base API URL
-const String baseUrl = "https://finalyearproject-3-y6io.onrender.com/api/v1/chart-data";
+const String baseUrl = "https://patient-monitor-backend-patient.fly.dev/api/v1/chart-data";
 
 class ChartsDataPage extends StatelessWidget {
   final List<Map<String, dynamic>> chartEndpoints = [

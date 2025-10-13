@@ -41,7 +41,7 @@ class _CreateEmergencyContactState extends State<CreateEmergencyContact> {
     // Format phone number with country code
     final String formattedPhoneNumber = '${_selectedCountryCode ?? ''}${_phoneNumberController.text}';
 
-    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergency/contacts');
+    final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/emergency/contacts');
 
     final Map<String, String> body = {
       "name": _nameController.text,

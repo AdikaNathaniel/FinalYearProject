@@ -101,7 +101,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
   Future<void> _fetchVitalData() async {
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-live-vitals/latest'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals/latest'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -160,7 +160,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
       });
 
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-live-vitals'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -231,7 +231,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
       print('Sending prediction data - Systolic: $systolicBP, Diastolic: $diastolicBP, Protein: $proteinUrine');
 
       final response = await http.put(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-esp32-predictions/patient/001'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-esp32-predictions/patient/001'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'systolicBP': systolicBP,
@@ -417,7 +417,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
   Future<void> _sendProteinLevelToBackend(int proteinLevel) async {
     try {
       final response = await http.patch(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-live-vitals/latest/protein-level'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals/latest/protein-level'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({"proteinLevel": proteinLevel}),
       );
@@ -457,7 +457,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
   Future<void> _sendEmergencyAlert(String message) async {
     try {
       final response = await http.post(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergery/contacts/send'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/emergery/contacts/send'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({"message": message}),
       );
@@ -1290,7 +1290,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               TextButton(
                 onPressed: () async {
                   final response = await http.put(
-                    Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                    Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
                     headers: {'Content-Type': 'application/json'},
                   );
 

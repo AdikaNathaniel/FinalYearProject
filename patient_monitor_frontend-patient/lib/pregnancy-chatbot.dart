@@ -23,7 +23,7 @@ class _PregChatBotPageState extends State<PregChatBotPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/api/v1/chatbot/message'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/api/v1/chatbot/message'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'content': message}),
       );

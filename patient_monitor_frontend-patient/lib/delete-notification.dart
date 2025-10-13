@@ -15,7 +15,7 @@ class _DeleteNotificationPageState extends State<DeleteNotificationPage> {
 
   Future<void> _deleteNotification(String id) async {
     try {
-      final url = Uri.parse("https://finalyearproject-3-y6io.onrender.com/api/v1/notifications/$id");
+      final url = Uri.parse("https://patient-monitor-backend-patient.fly.dev/api/v1/notifications/$id");
       final response = await http.delete(url);
 
       if (response.statusCode == 200) {

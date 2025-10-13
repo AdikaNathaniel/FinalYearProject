@@ -21,7 +21,7 @@ class _RiskAssessmentPageState extends State<RiskAssessmentPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/anaemia-risk/assessments?patientId=${_patientIdController.text.trim()}'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/anaemia-risk/assessments?patientId=${_patientIdController.text.trim()}'),
       );
 
       if (response.statusCode == 200) {

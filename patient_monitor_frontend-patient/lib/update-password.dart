@@ -24,7 +24,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
 
     try {
       final response = await http.patch(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/update-password-or-name'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/update-password-or-name'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           "email": _emailController.text.trim(),

@@ -29,7 +29,7 @@ export default function FaceRegister() {
     formData.append('image', selectedImage);
 
     try {
-      const response = await axios.post('https://finalyearproject-3-y6io.onrender.com/api/v1/face/register', formData);
+      const response = await axios.post('https://patient-monitor-backend-patient.fly.dev/api/v1/face/register', formData);
       if (response.status === 201) {
         alert('Registration successful. You can now log in with your face.');
       } else {

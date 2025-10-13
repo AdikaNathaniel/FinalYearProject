@@ -27,7 +27,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
       return;
     }
 
-    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/pin');
+    final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/pin');
     final body = {
       "userId": _userIdController.text.trim(),
       "pin": _pin,

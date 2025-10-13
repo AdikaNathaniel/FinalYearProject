@@ -22,7 +22,7 @@ class _PinDeleteScreenState extends State<PinDeleteScreen> {
     });
 
     try {
-      final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/pin/${userIdController.text.trim()}');
+      final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/pin/${userIdController.text.trim()}');
 
       final response = await http.delete(
         url,

@@ -40,7 +40,7 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
 
     try {
       final encodedDoctorName = Uri.encodeComponent(doctorNameController.text.trim());
-      String url = 'https://finalyearproject-3-y6io.onrender.com/api/v1/doctors/$encodedDoctorName/appointments?status=$selectedStatus';
+      String url = 'https://patient-monitor-backend-patient.fly.dev/api/v1/doctors/$encodedDoctorName/appointments?status=$selectedStatus';
 
       if (startDate != null && endDate != null) {
         final startDateStr = dateFormatter.format(startDate!);

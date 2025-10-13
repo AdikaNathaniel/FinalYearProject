@@ -29,7 +29,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       _isLoading = true;
     });
 
-    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/verify-email/$otp/${widget.email}');
+    final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/verify-email/$otp/${widget.email}');
     try {
       final response = await http.get(url);
       final data = json.decode(response.body);

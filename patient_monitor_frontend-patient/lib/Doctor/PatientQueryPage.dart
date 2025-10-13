@@ -32,7 +32,7 @@ class _PatientQueryPageState extends State<PatientQueryPage> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://finalyearproject-3-y6io.onrender.com/api/v1/health-analytics/query?patientName=${Uri.encodeComponent(_patientNameController.text)}&question=${Uri.encodeComponent(_questionController.text)}',
+          'https://patient-monitor-backend-patient.fly.dev/api/v1/health-analytics/query?patientName=${Uri.encodeComponent(_patientNameController.text)}&question=${Uri.encodeComponent(_questionController.text)}',
         ),
       );
 

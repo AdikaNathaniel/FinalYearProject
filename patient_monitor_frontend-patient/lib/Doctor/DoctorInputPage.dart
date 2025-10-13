@@ -19,7 +19,7 @@ class _DoctorInputPageState extends State<DoctorInputPage> {
     });
 
     final response = await http.post(
-      Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/health-analytics/translate'),
+      Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/health-analytics/translate'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'text': _textController.text,

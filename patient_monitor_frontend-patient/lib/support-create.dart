@@ -21,7 +21,7 @@ class _SupportFormPageState extends State<SupportFormPage> {
 
     setState(() => _isLoading = true);
 
-    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/support');
+    final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/support');
 
     final response = await http.post(
       url,

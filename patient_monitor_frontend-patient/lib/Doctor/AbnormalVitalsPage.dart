@@ -45,7 +45,7 @@ class _AbnormalVitalsScreenState extends State<AbnormalVitalsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/health-analytics/patients-with-abnormal-vitals'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/health-analytics/patients-with-abnormal-vitals'),
       );
 
       if (response.statusCode == 200) {

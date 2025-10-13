@@ -49,7 +49,7 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Future<void> fetchUsers() async {
-    final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users'));
+    final response = await http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users'));
 
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body)['result'];
@@ -109,7 +109,7 @@ class _UserListPageState extends State<UserListPage> {
           TextButton(
             onPressed: () async {
               final response = await http.put(
-                Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
                 headers: {'Content-Type': 'application/json'},
               );
 

@@ -25,7 +25,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
 
   Future<void> fetchAppointments() async {
     try {
-      final response = await http.get(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/appointments'));
+      final response = await http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/appointments'));
       if (response.statusCode == 200) {
         final decodedData = json.decode(response.body);
         if (decodedData['success'] == true && decodedData.containsKey('result')) {
@@ -55,7 +55,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
   }
 
   Future<void> deleteAppointment(String patientName) async {
-    await http.delete(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/appointments/last'));
+    await http.delete(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/appointments/last'));
     fetchAppointments();
   }
 
@@ -103,7 +103,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
             TextButton(
               onPressed: () async {
                 final response = await http.put(
-                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                  Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
                 );
 

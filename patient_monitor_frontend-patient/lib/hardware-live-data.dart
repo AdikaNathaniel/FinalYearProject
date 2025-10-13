@@ -47,7 +47,7 @@ class _LiveVitalsHardwareDataPageState extends State<LiveVitalsHardwareDataPage>
     
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/heltec-live-vitals/latest'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals/latest'),
         headers: {'Content-Type': 'application/json'},
       );
 

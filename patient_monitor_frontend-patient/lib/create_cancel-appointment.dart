@@ -112,7 +112,7 @@ class _CreateCancelAppointmentPageState
 
       try {
         final response = await http.post(
-          Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/appointments'),
+          Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/appointments'),
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -142,7 +142,7 @@ class _CreateCancelAppointmentPageState
 
   Future<void> deleteAppointment() async {
     final response =
-        await http.delete(Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/appointments/last'));
+        await http.delete(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/appointments/last'));
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -183,7 +183,7 @@ class _CreateCancelAppointmentPageState
               onPressed: () async {
                 // Call logout API
                 final response = await http.put(
-                  Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/users/logout'),
+                  Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},
                 );
 

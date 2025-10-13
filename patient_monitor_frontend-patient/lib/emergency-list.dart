@@ -28,7 +28,7 @@ class _EmergencyContactsListState extends State<EmergencyContactsList> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/emergency/contacts'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/emergency/contacts'),
         headers: {'Content-Type': 'application/json'},
       );
 

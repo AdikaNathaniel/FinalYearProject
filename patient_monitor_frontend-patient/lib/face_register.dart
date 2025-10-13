@@ -207,7 +207,7 @@ class _FaceRegisterPageState extends State<FaceRegisterPage> {
 
     setState(() => _isLoading = true);
 
-    final uri = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/face/register');
+    final uri = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/face/register');
     
     try {
       final request = http.MultipartRequest('POST', uri)

@@ -28,7 +28,7 @@ class _MedicsListPageState extends State<MedicsListPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/medics'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/medics'),
       );
 
       if (response.statusCode == 200) {
@@ -72,7 +72,7 @@ class _MedicsListPageState extends State<MedicsListPage> {
                   backgroundImage: medic['profilePhoto'] != null && 
                                     medic['profilePhoto'].isNotEmpty
                       ? NetworkImage(
-                          'https://finalyearproject-3-y6io.onrender.com${medic['profilePhoto']}',
+                          'https://patient-monitor-backend-patient.fly.dev${medic['profilePhoto']}',
                         )
                       : null,
                   child: medic['profilePhoto'] == null || medic['profilePhoto'].isEmpty

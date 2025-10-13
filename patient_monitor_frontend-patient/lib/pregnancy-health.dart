@@ -79,7 +79,7 @@ class _PregnancyHealthFormState extends State<PregnancyHealthForm> {
 
   // Function to send data to the API
   Future<void> _sendData() async {
-    final url = Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/health');
+    final url = Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/health');
     final response = await http.post(
       url,
       headers: {

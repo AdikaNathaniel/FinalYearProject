@@ -57,7 +57,7 @@ class _VitalsHistoryPageState extends State<VitalsHistoryPage> {
 
     try {
       final url = Uri.parse(
-        "https://finalyearproject-3-y6io.onrender.com/api/v1/vitals-health-data"
+        "https://patient-monitor-backend-patient.fly.dev/api/v1/vitals-health-data"
         "?userId=${_userIdController.text}"
         "&startDate=${startDateTime!.toUtc().toIso8601String()}"
         "&endDate=${endDateTime!.toUtc().toIso8601String()}",

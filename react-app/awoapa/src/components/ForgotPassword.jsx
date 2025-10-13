@@ -18,7 +18,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const response = await fetch(`https://finalyearproject-3-y6io.onrender.com/api/v1/users/forgot-password/${email}`, {
+      const response = await fetch(`https://patient-monitor-backend-patient.fly.dev/api/v1/users/forgot-password/${email}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

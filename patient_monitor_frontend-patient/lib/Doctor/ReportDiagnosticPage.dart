@@ -68,7 +68,7 @@ class _DiagnosticToolPageState extends State<DiagnosticToolPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://finalyearproject-3-y6io.onrender.com/api/v1/health-analytics/explain-diagnostic'),
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/health-analytics/explain-diagnostic'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'patientName': _patientNameController.text,

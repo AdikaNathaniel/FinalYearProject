@@ -15,7 +15,7 @@ class _PatientVitalsPageState extends State<PatientVitalsPage> {
   Future<void> fetchVitals(String name) async {
     setState(() => isLoading = true);
     final uri = Uri.parse(
-        'https://finalyearproject-3-y6io.onrender.com/api/v1/health-analytics/patient-vitals?patientName=${Uri.encodeComponent(name)}');
+        'https://patient-monitor-backend-patient.fly.dev/api/v1/health-analytics/patient-vitals?patientName=${Uri.encodeComponent(name)}');
     final res = await http.get(uri);
 
     if (res.statusCode == 200) {

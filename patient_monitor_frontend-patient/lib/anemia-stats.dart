@@ -48,7 +48,7 @@ class _AnaemiaRiskStatisticsPageState extends State<AnaemiaRiskStatisticsPage>
     });
 
     try {
-      final url = Uri.parse("https://finalyearproject-3-y6io.onrender.com/api/v1/anaemia-risk/statistics");
+      final url = Uri.parse("https://patient-monitor-backend-patient.fly.dev/api/v1/anaemia-risk/statistics");
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

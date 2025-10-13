@@ -48,7 +48,7 @@
 
 //   Future<void> _initVideoChat() async {
 //     // Initialize video service
-//     _videoService = VideoService(serverUrl: 'https://finalyearproject-3-y6io.onrender.com');
+//     _videoService = VideoService(serverUrl: 'https://patient-monitor-backend-patient.fly.dev');
 //     _videoService.connect();
 
 //     // Get local stream
