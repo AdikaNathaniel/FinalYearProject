@@ -32,9 +32,9 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --only=production --legacy-peer-deps
-
+# Copy package files and node_modules from build stage
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app .
 
 EXPOSE 3000
