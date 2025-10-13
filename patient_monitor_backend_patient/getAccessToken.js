@@ -1,13 +1,33 @@
 const { GoogleAuth } = require('google-auth-library');
 
 async function getAccessToken() {
-  const auth = new GoogleAuth({
-    keyFilename: 'C:\\Users\\ACER\\Desktop\\SES\\L400-SEM1\\FIRST_SEM\\FinalYearProject\\Code\\patient_monitor_backend_patient\\service-account-file.json', // Correct path
-    scopes: ['https://www.googleapis.com/auth/firebase.messaging'], // Required scopes
-  });
-  const client = await auth.getClient();
-  const token = await client.getAccessToken();
-  console.log(token.token); // This is your access token
+  try {
+    let credentials;
+    
+    if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+      credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    } else if (require('fs').existsSync('./service-account-file.json')) {
+      credentials = require('./service-account-file.json');
+    } else {
+      throw new Error('No service account credentials found');
+    }
+
+    const auth = new GoogleAuth({
+      credentials: credentials,
+      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
+    });
+    
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+    
+    console.log(JSON.stringify({
+      token: token.token,
+      expiresAt: token.res?.data?.expiry_date
+    }));
+  } catch (error) {
+    console.error(JSON.stringify({ error: error.message }));
+    process.exit(1);
+  }
 }
 
 getAccessToken().catch(console.error);
