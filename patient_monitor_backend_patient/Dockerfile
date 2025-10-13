@@ -1,35 +1,42 @@
-# Use official Node.js LTS image
-FROM node:18-alpine AS build
+# Build stage
+FROM node:18-alpine as build
 
-# Set working directory
+# Install dependencies required for canvas and node-gyp
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev
+
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies (with legacy peer deps)
 RUN npm install --legacy-peer-deps
 
-# Copy rest of the code
 COPY . .
 
-# Build NestJS app
-RUN npm run build
+# Production stage
+FROM node:18-alpine as production
 
-# Use a smaller image for running the app
-FROM node:18-alpine AS production
+# Install runtime dependencies for canvas
+RUN apk add --no-cache \
+    cairo \
+    jpeg \
+    pango \
+    giflib \
+    pixman
 
 WORKDIR /app
 
-# Copy only needed files
 COPY package*.json ./
 RUN npm install --only=production --legacy-peer-deps
 
-# Copy built app from build stage
-COPY --from=build /app/dist ./dist
+COPY --from=build /app .
 
-# Expose app port
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "dist/main.js"]
+CMD ["node", "index.js"]
