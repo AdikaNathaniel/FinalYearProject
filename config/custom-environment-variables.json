@@ -1,0 +1,7 @@
+{
+  "JWT_SECRET": "JWT_SECRET",
+  "mongoDbUrl": "MONGODB_URI",
+  "port": "PORT",
+  "adminSecretToken": "ADMIN_SECRET_TOKEN",
+  "appPrefix": "APP_PREFIX"
+}
