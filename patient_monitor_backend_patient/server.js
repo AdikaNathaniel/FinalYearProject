@@ -2,7 +2,7 @@ const express = require('express');
 const { exec } = require('child_process');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.get('/getAccessToken', (req, res) => {
   exec('node getAccessToken.js', (error, stdout, stderr) => {
@@ -20,6 +20,6 @@ app.get('/getAccessToken', (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
 });
