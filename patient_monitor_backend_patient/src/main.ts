@@ -180,7 +180,8 @@ class ApplicationManager {
       logger.log('✓ Application configured');
 
       logger.log(`Starting server on port ${CONFIG.server.port}...`);
-      await this.mainApp.listen(CONFIG.server.port);
+      // await this.mainApp.listen(CONFIG.server.port);
+      await this.mainApp.listen(CONFIG.server.port, '0.0.0.0');
       logger.log(`✓ Main application running on port ${CONFIG.server.port}`);
       logger.log(`✓ Application is running on: ${await this.mainApp.getUrl()}`);
     } catch (error) {

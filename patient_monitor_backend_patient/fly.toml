@@ -5,6 +5,24 @@ app = "patient-monitor-backend-patient"
 
 [env]
   PORT = "8080"
+  NODE_ENV = "production"
+  APP_PREFIX = "api/v1"
+  FRONTEND_URL = "http://localhost:3000"
+  
+  # Redis
+  REDIS_HOST = "inspired-roughy-17170.upstash.io"
+  REDIS_PORT = "6379"
+  REDIS_TLS = "true"
+  
+  # Email
+  SMTP_HOST = "smtp.gmail.com"
+  SMTP_PORT = "587"
+  SMTP_USER = "mawuloloadika359@gmail.com"
+  
+  # Optional services
+  KAFKA_REQUIRED = "false"
+  ELASTICSEARCH_REQUIRED = "false"
+  REDIS_REQUIRED = "false"
 
 [[services]]
   internal_port = 8080
