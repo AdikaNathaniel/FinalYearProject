@@ -14,10 +14,21 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
+
+# Install all dependencies (including dev for building)
 RUN npm install --legacy-peer-deps
 
-COPY . .
+# Copy TypeScript config
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
+
+# Copy source code
+COPY src ./src
+
+# Build NestJS application
+RUN npm run build
 
 # Production stage
 FROM node:18-alpine as production
@@ -32,11 +43,19 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Copy package files and node_modules from build stage
-COPY --from=build /app/package*.json ./
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production --legacy-peer-deps
+
+# Copy built application from build stage
+COPY --from=build /app/dist ./dist
+
+# Copy any necessary runtime files
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app .
 
-EXPOSE 3000
+EXPOSE 8080
 
-CMD ["node", "server.js"]
+# Use the production start script from package.json
+CMD ["npm", "run", "start:prod"]
