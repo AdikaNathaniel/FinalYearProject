@@ -102,18 +102,23 @@ class _SupportFormPageState extends State<SupportFormPage> {
                 validator: (value) => value!.isEmpty ? 'Enter your message' : null,
               ),
               SizedBox(height: 24),
-              ElevatedButton.icon(
-                icon: Icon(Icons.send),
-                label: _isLoading
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : Text('Send Support Request'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  textStyle: TextStyle(fontSize: 16),
-                ),
-                onPressed: _isLoading ? null : _submitForm,
-              ),
+             ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    padding: EdgeInsets.symmetric(vertical: 16),
+    backgroundColor: Colors.blue,
+    foregroundColor: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+  onPressed: _isLoading ? null : _submitForm,
+  child: _isLoading
+      ? CircularProgressIndicator(color: Colors.white)
+      : Text(
+          "Send Support Request",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+),
             ],
           ),
         ),

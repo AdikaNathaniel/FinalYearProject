@@ -268,16 +268,16 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                   TextFormField(
                     controller: userIdController,
                     decoration: InputDecoration(
-                      labelText: 'User Name',
+                      labelText: 'Email',
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
                     ),
-                    validator: (value) => 
-                        value?.trim().isEmpty ?? true 
-                            ? 'Please enter user name' 
+                    validator: (value) =>
+                        value?.trim().isEmpty ?? true
+                            ? 'Please enter email'
                             : null,
                   ),
                   const SizedBox(height: 24),

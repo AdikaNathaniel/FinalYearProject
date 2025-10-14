@@ -175,14 +175,14 @@ class _CreatePinPageState extends State<CreatePinPage> {
               TextFormField(
                 controller: _userIdController,
                 decoration: InputDecoration(
-                  labelText: 'User Name',
+                  labelText: 'Email',
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blueAccent, width: 2),
                   ),
                 ),
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter your user ID' : null,
+                    value == null || value.isEmpty ? 'Enter your email' : null,
               ),
               SizedBox(height: 16),
 

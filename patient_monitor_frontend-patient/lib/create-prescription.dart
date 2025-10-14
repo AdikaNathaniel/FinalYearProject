@@ -20,126 +20,133 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
   final TextEditingController reasonController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
 
+  bool isSubmitting = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: const Text(
-            'Create Prescription',
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
+        title: const Text('Create Prescription'),
+        centerTitle: true,
+        elevation: 0,
         backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue, Colors.red], 
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-          ),
-        ),
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              buildTextField(Icons.person, "Patient Name", patientNameController),
-              buildTextField(Icons.medication, "Drug Name", drugNameController),
-              buildTextField(Icons.local_pharmacy, "Dosage", dosageController),
-              buildTextField(Icons.local_hospital, "Route of Administration(Oral/Topical/Intravenous)", routeOfAdministrationController),
-              buildTextField(Icons.access_time, "Frequency Per Day", frequencyController),
-              buildTextField(Icons.calendar_today, "Duration", durationController),
-              buildTextField(Icons.date_range, "Start Date (YYYY-MM-DD)", startDateController),
-              buildTextField(Icons.date_range, "End Date (YYYY-MM-DD)", endDateController),
-              buildTextField(Icons.confirmation_number, "Quantity", quantityController),
-              buildTextField(Icons.info_outline, "Reason", reasonController),
-              const SizedBox(height: 20),
-              buildTextField(Icons.info_outline, "Notes(Referral Information)", notesController),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity, // Make the button full width
-                child: ElevatedButton(
-                  onPressed: submitPrescription,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    "Submit Prescription",
-                    style: TextStyle(fontSize: 16, color: Colors.white), // Set text color to white
-                    textAlign: TextAlign.center, // Center align text
-                  ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildTextField(patientNameController, "Patient Name", Icons.person),
+            _buildTextField(drugNameController, "Drug Name", Icons.medication),
+            _buildTextField(dosageController, "Dosage", Icons.local_pharmacy),
+            _buildTextField(routeOfAdministrationController, "Route of Administration (Oral/Topical/Intravenous)", Icons.local_hospital),
+            _buildTextField(frequencyController, "Frequency Per Day", Icons.access_time),
+            _buildTextField(durationController, "Duration", Icons.calendar_today),
+            _buildTextField(startDateController, "Start Date (YYYY-MM-DD)", Icons.date_range),
+            _buildTextField(endDateController, "End Date (YYYY-MM-DD)", Icons.date_range),
+            _buildTextField(quantityController, "Quantity", Icons.confirmation_number, keyboardType: TextInputType.number),
+            _buildTextField(reasonController, "Reason", Icons.info_outline),
+            _buildTextField(notesController, "Notes (Referral Information)", Icons.description),
+            
+            const SizedBox(height: 24),
+            
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ],
-          ),
+              onPressed: isSubmitting ? null : submitPrescription,
+              child: isSubmitting
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "Submit Prescription",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget buildTextField(IconData icon, String label, TextEditingController controller) {
+  Widget _buildTextField(
+    TextEditingController controller, 
+    String label, 
+    IconData icon, 
+    {TextInputType? keyboardType}
+  ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: TextField(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
         controller: controller,
-        style: const TextStyle(color: Colors.white), // Set text color to white
+        keyboardType: keyboardType,
         decoration: InputDecoration(
+          prefixIcon: Icon(icon),
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white), // Change label color to white
-          prefixIcon: Icon(icon, color: Colors.blue),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.blue),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.blue, width: 2),
+            borderSide: const BorderSide(color: Colors.blue, width: 2),
           ),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.1), // Background color of the input field
+          fillColor: Colors.grey[50],
         ),
       ),
     );
   }
 
   Future<void> submitPrescription() async {
-    final response = await http.post(
-      Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/prescriptions'),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({
-        'patient_name': patientNameController.text,
-        'drug_name': drugNameController.text,
-        'dosage': dosageController.text,
-        'route_of_administration': routeOfAdministrationController.text,
-        'frequency': frequencyController.text,
-        'duration': durationController.text,
-        'start_date': startDateController.text,
-        'end_date': endDateController.text,
-        'quantity': int.tryParse(quantityController.text) ?? 0,
-        'reason': reasonController.text,
-        'notes': notesController.text,
-      }),
-    );
+    setState(() {
+      isSubmitting = true;
+    });
 
-    if (response.statusCode == 201) {
-      // Successfully submitted
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Prescription submitted successfully!')),
+    try {
+      final response = await http.post(
+        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/prescriptions'),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          'patient_name': patientNameController.text,
+          'drug_name': drugNameController.text,
+          'dosage': dosageController.text,
+          'route_of_administration': routeOfAdministrationController.text,
+          'frequency': frequencyController.text,
+          'duration': durationController.text,
+          'start_date': startDateController.text,
+          'end_date': endDateController.text,
+          'quantity': int.tryParse(quantityController.text) ?? 0,
+          'reason': reasonController.text,
+          'notes': notesController.text,
+        }),
       );
-      // Clear fields after submission
-      clearFields();
-    } else {
-      // Handle error
+
+      if (response.statusCode == 201) {
+        // Successfully submitted
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Prescription submitted successfully!')),
+        );
+        // Clear fields after submission
+        clearFields();
+      } else {
+        // Handle error
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to submit prescription')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit prescription')),
+        SnackBar(content: Text('Error: $e')),
       );
+    } finally {
+      setState(() {
+        isSubmitting = false;
+      });
     }
   }
 

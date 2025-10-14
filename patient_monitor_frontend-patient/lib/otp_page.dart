@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'login_page.dart';
+import 'create-pin.dart';
 
 class OTPVerificationPage extends StatefulWidget {
   final String email;
@@ -58,15 +59,15 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       builder: (context) {
         return AlertDialog(
           title: Icon(Icons.check_circle, color: Colors.blue, size: 50),
-          content: Text("Email verified successfully. You can log in now."),
+          content: Text("Email verified successfully!Please create a new PIN"),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog first
+                Navigator.of(context).pop(); // 
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => LoginPage(),
+                    builder: (context) => CreatePinPage(),
                   ),
                 );
               },

@@ -160,7 +160,7 @@ class _PinDeleteScreenState extends State<PinDeleteScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'Enter Username to Delete PIN',
+                        'Enter Email to Delete PIN',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
@@ -170,14 +170,14 @@ class _PinDeleteScreenState extends State<PinDeleteScreen> {
                       TextFormField(
                         controller: userIdController,
                         decoration: const InputDecoration(
-                          labelText: 'Username',
+                          labelText: 'Email',
                           border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.person),
-                          hintText: 'e.g., john_doe',
+                          prefixIcon: Icon(Icons.email),
+                          hintText: 'e.g john_doe@example.com',
                         ),
                         validator: (value) =>
                             (value == null || value.trim().isEmpty)
-                                ? 'Please enter username'
+                                ? 'Please enter email'
                                 : null,
                       ),
                       const SizedBox(height: 20),

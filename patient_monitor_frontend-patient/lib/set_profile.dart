@@ -17,105 +17,131 @@ class SetProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingTile({
-    required IconData icon,
-    required String title,
-    required Color iconColor,
-    required VoidCallback onTap,
-  }) {
-    return Column(
-      children: [
-        ListTile(
-          leading: CircleAvatar(
-            backgroundColor: iconColor.withOpacity(0.1),
-            child: Icon(icon, color: iconColor),
-          ),
-          title: Text(title, style: TextStyle(fontSize: 16)),
-          trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-          onTap: onTap,
-        ),
-        Divider(height: 1),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text(
+          'Settings',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF2196F3),
+        elevation: 0,
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display user email at the top
-            // Padding(
-            //   padding: const EdgeInsets.all(16.0),
-            //   child: Row(
-            //     children: [
-            //       Icon(Icons.person, color: Colors.teal),
-            //       SizedBox(width: 10),
-            //       Text(
-            //         'User: $userEmail',
-            //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // Divider(),
-_buildSettingTile(
-  icon: Icons.lock_outline,
-  title: 'Create PIN',
-  iconColor: Colors.blue,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CreatePinPage()),
-    );
-  },
-),
-    
-    _buildSettingTile(
-  icon: Icons.edit,
-  title: 'Update PIN',
-  iconColor: Colors.blue,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PinUpdateScreen()),
-    );
-  },
-),
-           
-
-              _buildSettingTile(
-  icon: Icons.delete_outline,
-  title: 'Delete PIN',
-  iconColor: Colors.blue,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PinDeleteScreen()),
-    );
-  },
-),
+            _buildDashboardCard(
+              context,
+              title: 'Update PIN',
+              icon: Icons.edit,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PinUpdateScreen()),
+                );
+              },
+            ),
             
-
-               _buildSettingTile(
-  icon: Icons.lock_reset,
-  title: 'Update Password',
-  iconColor: Colors.blue,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => UpdatePasswordPage()),
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: 'Delete PIN',
+              icon: Icons.delete_outline,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PinDeleteScreen()),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 15),
+            
+            _buildDashboardCard(
+              context,
+              title: 'Update Password',
+              icon: Icons.lock_reset,
+              color: const Color(0xFF2196F3),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UpdatePasswordPage()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
-  },
-),
+  }
+  
+  Widget _buildDashboardCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.grey.shade200,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey.shade400,
+              size: 18,
+            ),
           ],
         ),
       ),

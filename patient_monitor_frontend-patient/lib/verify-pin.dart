@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'login_page.dart'; 
 
 class PinVerifyScreen extends StatefulWidget {
   const PinVerifyScreen({Key? key}) : super(key: key);
@@ -93,14 +94,27 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
+            // const SizedBox(height: 10),
+            // const Text(
+            //   "Click OK to Login Into Awopa",
+            //   textAlign: TextAlign.center,
+            //   style: TextStyle(
+            //     fontSize: 14,
+            //     fontWeight: FontWeight.w500,
+            //     color: Colors.green,
+            //   ),
+            // ),
           ],
         ),
         actions: [
           Center(
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                _clearAllFields();
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.pushReplacement( // Navigate to LoginPage
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
@@ -109,7 +123,7 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text("OK", style: TextStyle(color: Colors.white)),
+              child: const Text("Login To Awopa", style: TextStyle(color: Colors.white)),
             ),
           ),
         ],
@@ -187,8 +201,8 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
                   TextFormField(
                     controller: userIdController,
                     decoration: InputDecoration(
-                      labelText: 'User ID',
-                      hintText: 'Enter your user ID',
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
                       prefixIcon: const Icon(Icons.person),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),

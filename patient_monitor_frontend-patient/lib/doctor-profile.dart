@@ -348,7 +348,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                 child: isSubmitting
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                        "SUBMIT PROFILE",
+                        "Submit Profile",
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),

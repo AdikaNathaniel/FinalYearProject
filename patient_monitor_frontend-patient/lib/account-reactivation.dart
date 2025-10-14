@@ -40,7 +40,7 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView( // Added SingleChildScrollView to prevent overflow
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -84,7 +84,7 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
                   labelText: 'User Email to Reactivate',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
-                  hintText: 'e.g., user@example.com',
+                  hintText: 'e.g user@example.com',
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -120,7 +120,7 @@ class _AccountReactivationPageState extends State<AccountReactivationPage> {
                 labelText: 'Admin Email',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.admin_panel_settings),
-                hintText: 'e.g., admin@example.com',
+                hintText: 'e.g admin@example.com',
               ),
               keyboardType: TextInputType.emailAddress,
             ),

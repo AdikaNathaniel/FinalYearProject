@@ -14,20 +14,44 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _typeController = TextEditingController();
-  final _cardController = TextEditingController();
+  final _cardPart1Controller = TextEditingController();
+  final _cardPart2Controller = TextEditingController();
+  final _cardPart3Controller = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _allowRelative = false;
+  String _selectedUserType = 'pregnant-woman';
 
   static const String _baseUrl = 'https://patient-monitor-backend-patient.fly.dev';
+
+  // User type options
+  final List<String> _userTypes = [
+    'pregnant-woman',
+    'relative', 
+    'doctor',
+    'admin',
+    'midwife',
+    'wellness-user'
+  ];
 
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  bool _isValidCard(String card) {
-    return RegExp(r'^\d+$').hasMatch(card) && card.length >= 6 && card.length <= 15;
+  bool _isValidCardPart(String part) {
+    return RegExp(r'^\d+$').hasMatch(part);
+  }
+
+  String _buildCardNumber() {
+    String part1 = _cardPart1Controller.text.trim();
+    String part2 = _cardPart2Controller.text.trim();
+    String part3 = _cardPart3Controller.text.trim();
+    
+    if (part1.isEmpty || part2.isEmpty || part3.isEmpty) {
+      return '';
+    }
+    
+    return 'GHA-$part1-$part2';
   }
 
   String _sanitizeInput(String input) {
@@ -51,19 +75,14 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    if (!_isValidCard(card)) {
-      _showError("Ghana Card Number must be 6-15 digits!");
-      return;
-    }
-
     if (password.length < 6) {
       _showError("Password must be at least 6 characters!");
       return;
     }
 
-    List<String> validTypes = ['pregnant-woman', 'relative', 'doctor', 'nurse'];
+    List<String> validTypes = ['pregnant-woman', 'relative', 'doctor', 'admin','midwife', 'wellness-user'];
     if (!validTypes.contains(type)) {
-      _showError("User type must be one of: ${validTypes.join(', ')}");
+      _showError("Please select a valid user type");
       return;
     }
 
@@ -75,7 +94,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final requestBody = {
         'name': name,
         'email': email,
-        'card': int.parse(card),
+        'card': card, 
         'password': password,
         'type': type,
       };
@@ -200,58 +219,114 @@ class _RegisterPageState extends State<RegisterPage> {
     final _relativeNameController = TextEditingController();
     final _relativeEmailController = TextEditingController();
     final _relativePasswordController = TextEditingController();
-    final _relativeCardNumberController = TextEditingController();
+    final _relativeCardPart1Controller = TextEditingController();
+    final _relativeCardPart2Controller = TextEditingController();
+    final _relativeCardPart3Controller = TextEditingController();
+    String _relativeSelectedType = 'relative';
 
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Register Relative"),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: _relativeNameController,
-                decoration: const InputDecoration(labelText: "Name"),
-              ),
-              TextField(
-                controller: _relativeEmailController,
-                decoration: const InputDecoration(labelText: "Email"),
-              ),
-              TextField(
-                controller: _relativePasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: "Password"),
-              ),
-              TextField(
-                controller: _relativeCardNumberController,
-                decoration: const InputDecoration(labelText: "Card Number"),
-              ),
-            ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text("Register Relative"),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _relativeNameController,
+                  decoration: const InputDecoration(labelText: "Name"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _relativeEmailController,
+                  decoration: const InputDecoration(labelText: "Email"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _relativePasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: "Password"),
+                ),
+                const SizedBox(height: 10),
+                const Text("Ghana Card Number", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: _relativeCardPart1Controller,
+                        decoration: const InputDecoration(
+                          labelText: "GHA",
+                          enabled: false,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text("-", style: TextStyle(fontSize: 18)),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: _relativeCardPart2Controller,
+                        keyboardType: TextInputType.number,
+                        maxLength: 9,
+                        decoration: const InputDecoration(
+                          labelText: "Number",
+                          counterText: "",
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Text("-", style: TextStyle(fontSize: 18)),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: _relativeCardPart3Controller,
+                        keyboardType: TextInputType.number,
+                        maxLength: 1,
+                        decoration: const InputDecoration(
+                          labelText: "Digit",
+                          counterText: "",
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = _relativeNameController.text;
+                final email = _relativeEmailController.text;
+                final password = _relativePasswordController.text;
+                final part1 = _relativeCardPart1Controller.text;
+                final part2 = _relativeCardPart2Controller.text;
+                final part3 = _relativeCardPart3Controller.text;
+
+                if (name.isEmpty || email.isEmpty || password.isEmpty || part2.isEmpty || part3.isEmpty) {
+                  _showError("All fields are required!");
+                  return;
+                }
+
+                String card = 'GHA-$part2-$part3';
+                await _register(name, email, card, password, _relativeSelectedType);
+                Navigator.pop(context);
+              },
+              child: const Text("Register"),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () async {
-              final name = _relativeNameController.text;
-              final email = _relativeEmailController.text;
-              final password = _relativePasswordController.text;
-              final card = _relativeCardNumberController.text;
-
-              if (name.isEmpty || email.isEmpty || password.isEmpty || card.isEmpty) {
-                _showError("All fields are required!");
-                return;
-              }
-
-              await _register(name, email, card, password, 'relative');
-              Navigator.pop(context);
-            },
-            child: const Text("Register"),
-          ),
-        ],
       ),
     );
   }
@@ -261,8 +336,9 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _typeController.dispose();
-    _cardController.dispose();
+    _cardPart1Controller.dispose();
+    _cardPart2Controller.dispose();
+    _cardPart3Controller.dispose();
     super.dispose();
   }
 
@@ -318,16 +394,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 20),
                   _passwordField(),
                   const SizedBox(height: 20),
-                  _inputField("User Type", _typeController, Icons.person_outline),
+                  _userTypeDropdown(),
                   const SizedBox(height: 20),
-                  _inputField("Ghana Card Number", _cardController, Icons.credit_card),
+                  _cardNumberField(),
                   const SizedBox(height: 20),
                   SwitchListTile(
                     title: const Text("Allow relative to view vitals", style: TextStyle(color: Colors.white)),
                     value: _allowRelative,
                     onChanged: (value) {
                       setState(() => _allowRelative = value);
-                      if (value) _showRelativeRegistrationDialog(_cardController.text);
+                      if (value) _showRelativeRegistrationDialog(_buildCardNumber());
                     },
                     activeColor: Colors.green,
                   ),
@@ -398,15 +474,151 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Widget _userTypeDropdown() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white),
+        color: Colors.white.withOpacity(0.1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _selectedUserType,
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+            iconSize: 24,
+            elevation: 16,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+            dropdownColor: Colors.blue[800],
+            isExpanded: true,
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedUserType = newValue!;
+              });
+            },
+            items: _userTypes.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value.replaceAll('-', ' ').toUpperCase(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _cardNumberField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 12, bottom: 8),
+          child: Text(
+            "Ghana Card Number",
+            style: TextStyle(color: Colors.white70, fontSize: 16),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white),
+            color: Colors.white.withOpacity(0.1),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Fixed "GHA" part
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: _cardPart1Controller..text = "GHA",
+                  enabled: false,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text("-", style: TextStyle(color: Colors.white, fontSize: 18)),
+              ),
+              // Middle part (9 digits)
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  controller: _cardPart2Controller,
+                  keyboardType: TextInputType.number,
+                  maxLength: 9,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    counterText: "",
+                    hintText: "000000000",
+                    hintStyle: TextStyle(color: Colors.white54),
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text("-", style: TextStyle(color: Colors.white, fontSize: 18)),
+              ),
+              // Last part (1 digit)
+              Expanded(
+                flex: 1,
+                child: TextField(
+                  controller: _cardPart3Controller,
+                  keyboardType: TextInputType.number,
+                  maxLength: 1,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    counterText: "",
+                    hintText: "0",
+                    hintStyle: TextStyle(color: Colors.white54),
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _registerButton() {
     return ElevatedButton(
-      onPressed: () => _register(
-        _nameController.text,
-        _emailController.text,
-        _cardController.text,
-        _passwordController.text,
-        _typeController.text,
-      ),
+      onPressed: () {
+        String card = _buildCardNumber();
+        if (card.isEmpty) {
+          _showError("Please complete the Ghana Card number");
+          return;
+        }
+        _register(
+          _nameController.text,
+          _emailController.text,
+          card,
+          _passwordController.text,
+          _selectedUserType,
+        );
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: Colors.blue,
