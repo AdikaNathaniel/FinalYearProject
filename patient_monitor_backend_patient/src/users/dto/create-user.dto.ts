@@ -21,8 +21,8 @@ export class CreateUserDto {
   password: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  card: number;
+  @IsString()
+  card: string;
 
   @IsNotEmpty()
   @IsString()
