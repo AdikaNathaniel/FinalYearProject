@@ -61,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    List<String> validTypes = ['patient', 'relative', 'doctor', 'nurse'];
+    List<String> validTypes = ['pregnant-woman', 'relative', 'doctor', 'nurse'];
     if (!validTypes.contains(type)) {
       _showError("User type must be one of: ${validTypes.join(', ')}");
       return;

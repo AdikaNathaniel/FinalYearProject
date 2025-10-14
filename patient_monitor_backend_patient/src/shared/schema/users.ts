@@ -4,6 +4,7 @@ import { Document } from 'mongoose';
 export enum userTypes {
   ADMIN = 'admin',
   PREGNANT = 'pregnant-woman',
+  MIDWIFE = 'midwife',
   DOCTOR = 'doctor',
   RELATIVE = 'relative',
   GENERALUSER = 'wellness-user',
@@ -33,6 +34,7 @@ export class Users extends Document {
       userTypes.DOCTOR,
       userTypes.RELATIVE,
       userTypes.GENERALUSER,
+      userTypes.MIDWIFE,
     ],
   })
   type: string;

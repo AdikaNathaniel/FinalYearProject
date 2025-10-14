@@ -31,6 +31,8 @@ export class CreateUserDto {
     userTypes.PREGNANT,
     userTypes.DOCTOR,
     userTypes.RELATIVE,
+    userTypes.GENERALUSER,
+    userTypes.MIDWIFE,
   ])
   type: string;
 
