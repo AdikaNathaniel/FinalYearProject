@@ -727,14 +727,14 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Enter your health measurements manually',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
+                        // SizedBox(height: 4),
+                        // Text(
+                        //   'Enter your health measurements manually',
+                        //   style: TextStyle(
+                        //     color: Colors.white70,
+                        //     fontSize: 14,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
@@ -857,7 +857,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          "SUBMIT DATA",
+                          "Submit Data",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

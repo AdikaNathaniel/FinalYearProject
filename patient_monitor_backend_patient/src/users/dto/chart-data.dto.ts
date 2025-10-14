@@ -6,6 +6,7 @@ export class ChartDataDto {
     data: number[];
     borderColor: string;
     backgroundColor: string;
+    tension?: number;
     // fill: boolean;
   }[];
 }

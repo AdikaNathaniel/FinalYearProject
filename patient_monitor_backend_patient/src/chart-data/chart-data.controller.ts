@@ -1,4 +1,3 @@
-// src/controllers/chart-data.controller.ts
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { ChartDataService } from './chart-data.service';
 import { ChartDataDto } from 'src/users/dto/chart-data.dto';
@@ -18,6 +17,41 @@ export class ChartDataController {
     return this.chartDataService.findAll();
   }
 
+  @Get('temperature')
+  async getTemperatureTrend(
+    @Query('days') days: string = '7',
+  ): Promise<ChartDataDto> {
+    return this.chartDataService.getTemperatureTrendChartData(parseInt(days));
+  }
+
+  @Get('oxygen-saturation')
+  async getOxygenSaturation(
+    @Query('days') days: string = '7',
+  ): Promise<ChartDataDto> {
+    return this.chartDataService.getOxygenSaturationChartData(parseInt(days));
+  }
+
+  @Get('blood-pressure')
+  async getBloodPressure(
+    @Query('days') days: string = '7',
+  ): Promise<ChartDataDto> {
+    return this.chartDataService.getBloodPressureChartData(parseInt(days));
+  }
+
+  @Get('blood-glucose')
+  async getBloodGlucose(
+    @Query('days') days: string = '7',
+  ): Promise<ChartDataDto> {
+    return this.chartDataService.getBloodGlucoseChartData(parseInt(days));
+  }
+
+  @Get('heart-rate')
+  async getHeartRate(
+    @Query('days') days: string = '7',
+  ): Promise<ChartDataDto> {
+    return this.chartDataService.getHeartRateChartData(parseInt(days));
+  }
+
   @Get('vital-trends')
   async getVitalTrends(
     @Query('days') days: string = '7',
@@ -30,13 +64,6 @@ export class ChartDataController {
     @Query('days') days: string = '7',
   ): Promise<ChartDataDto> {
     return this.chartDataService.getTemperatureComparisonChartData(parseInt(days));
-  }
-
-  @Get('oxygen-saturation')
-  async getOxygenSaturation(
-    @Query('days') days: string = '7',
-  ): Promise<ChartDataDto> {
-    return this.chartDataService.getOxygenSaturationChartData(parseInt(days));
   }
 
   @Get('vital-statistics')
@@ -68,17 +95,21 @@ export class ChartDataController {
     const daysNum = parseInt(days);
     
     const [
-      vitalTrends,
-      temperatureComparison,
+      temperature,
       oxygenSaturation,
+      bloodPressure,
+      bloodGlucose,
+      heartRate,
       vitalStatistics,
       riskAssessment,
       movementAnalysis,
       proteinTrend,
     ] = await Promise.all([
-      this.chartDataService.getVitalTrendsChartData(daysNum),
-      this.chartDataService.getTemperatureComparisonChartData(daysNum),
+      this.chartDataService.getTemperatureTrendChartData(daysNum),
       this.chartDataService.getOxygenSaturationChartData(daysNum),
+      this.chartDataService.getBloodPressureChartData(daysNum),
+      this.chartDataService.getBloodGlucoseChartData(daysNum),
+      this.chartDataService.getHeartRateChartData(daysNum),
       this.chartDataService.getVitalStatisticsBarChart(),
       this.chartDataService.getRiskAssessmentPieChart(),
       this.chartDataService.getMovementAnalysisChart(1),
@@ -86,9 +117,11 @@ export class ChartDataController {
     ]);
 
     return {
-      vitalTrends,
-      temperatureComparison,
+      temperature,
       oxygenSaturation,
+      bloodPressure,
+      bloodGlucose,
+      heartRate,
       vitalStatistics,
       riskAssessment,
       movementAnalysis,
