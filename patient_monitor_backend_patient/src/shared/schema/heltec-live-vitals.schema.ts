@@ -17,6 +17,9 @@ export class HeltecLiveVitals extends Document {
   @Prop() gyroY: number;
   @Prop() gyroZ: number;
 
+  @Prop()
+  createdAt?: Date;
+  
   // Optional field
   @Prop({ required: false }) proteinLevel?: number;
 }
