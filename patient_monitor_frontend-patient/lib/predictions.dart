@@ -232,7 +232,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
 
             ListTile(
               leading: Icon(Icons.bloodtype),
-              title: Text('Charts Data'),
+              title: Text('Charts'),
               onTap: () {
                 Navigator.push(
                   context,

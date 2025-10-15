@@ -209,7 +209,7 @@ class _PinUpdateScreenState extends State<PinUpdateScreen> {
                   ),
                   filled: true,
                   fillColor: _pinFocusNodes[index].hasFocus
-                      ? Colors.blue.shade50
+                      ? Colors.blue
                       : Colors.grey.shade100,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),

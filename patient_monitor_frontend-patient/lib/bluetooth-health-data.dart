@@ -1098,7 +1098,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
             ),
             ListTile(
               leading: Icon(Icons.bloodtype),
-              title: Text('Charts Data'),
+              title: Text('Charts'),
               onTap: () {
                 Navigator.push(
                   context,
