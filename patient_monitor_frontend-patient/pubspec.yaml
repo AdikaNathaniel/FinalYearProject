@@ -78,6 +78,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   country_codes: ^3.3.0
   flutter_blue_plus: ^1.32.11 
+  lottie: ^3.3.1
   # libphonenumber: ^2.0.2
   
 
@@ -123,6 +124,7 @@ flutter:
   assets:
     - assets/pregnant.png
     - assets/pregnancy.png
+    - assets/lotties/Pregnancy.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
