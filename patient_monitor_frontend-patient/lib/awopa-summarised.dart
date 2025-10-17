@@ -36,6 +36,7 @@ import 'anemia-home.dart';
 import 'vitals-health-data-list.dart';
 import 'vitals-health-data-get-specific-user.dart';
 import 'csv.dart';
+import 'chart-data.dart';
 
 class AWOPASummarisedPage extends StatefulWidget {
   final String userEmail;
@@ -1361,6 +1362,19 @@ void _showUserInfoDialog(BuildContext context) {
             //     );
             //   },
             // ),
+
+              ListTile(
+              leading: Icon(Icons.bloodtype),
+              title: Text('Charts Data'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChartsDataPage()),
+                );
+              },
+            ),
+
+
             ListTile(
               leading: const Icon(Icons.bloodtype),
               title: const Text('Glucose Monitoring'),

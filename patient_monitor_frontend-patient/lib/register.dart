@@ -320,8 +320,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
 
                 String card = 'GHA-$part2-$part3';
-                await _register(name, email, card, password, _relativeSelectedType);
+                
+                // Close the dialog first
                 Navigator.pop(context);
+                
+                // Then register the relative using the original _register method
+                await _register(name, email, card, password, _relativeSelectedType);
               },
               child: const Text("Register"),
             ),

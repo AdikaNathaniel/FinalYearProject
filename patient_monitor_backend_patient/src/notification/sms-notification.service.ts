@@ -12,8 +12,8 @@ export class SmsNotificationService {
   private readonly defaultPhoneNumber: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.apiKey = 'SXZtb3lhRldmZVVCSEdXUW1EVGU';
-    this.senderId = 'Awo)Pa';
+    this.apiKey = 'TkxTbnJoQm5iY2l4YUpiVmxIb0o';
+    this.senderId = 'AwoaPa';
     this.defaultPhoneNumber = this.configService.get<string>(
       'DEFAULT_PHONE_NUMBER',
       '+233241744703',

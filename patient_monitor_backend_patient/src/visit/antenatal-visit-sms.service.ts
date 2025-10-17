@@ -10,7 +10,7 @@ import { SmsRecord } from 'src/shared/schema/sms-record.schema';
 export class AntenatalVisitSmsService {
   private readonly logger = new Logger(AntenatalVisitSmsService.name);
   private readonly smsApiUrl = 'https://sms.arkesel.com/api/v2/sms/send';
-  private readonly senderId = 'Awo)Pa';
+  private readonly senderId = 'AwoaPa';
 
   constructor(
     private readonly configService: ConfigService,

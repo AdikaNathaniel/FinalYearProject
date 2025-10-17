@@ -10,7 +10,7 @@ export class MessageService {
   
   constructor(private configService: ConfigService) {
     // Get API key from environment variables via ConfigService
-    this.smsApiKey = this.configService.get<string>('ARKESLE_SMS_API_KEY') || 'R0lBd2RtanJrd3lsdmhjV1lrR2s';
+    this.smsApiKey = this.configService.get<string>('ARKESLE_SMS_API_KEY') || 'TkxTbnJoQm5iY2l4YUpiVmxIb0o';
     
     if (!this.smsApiKey) {
       this.logger.warn('ARKESLE_SMS_API_KEY not found in environment variables');
@@ -32,7 +32,7 @@ export class MessageService {
       
       // Prepare the request payload according to API V2 format
       const payload = {
-        sender: 'Awo)Pa', // Sender ID, max 11 chars without special characters or spaces
+        sender: 'AwoaPa', // Sender ID, max 11 chars without special characters or spaces
         message: message,
         recipients: [this.doctorPhoneNumber]
       };

@@ -377,7 +377,7 @@ class _FaceLoginPageState extends State<FaceLoginPage> {
                   );
                 },
                 child: const Text(
-                  'Click Me To Register Your Face On Awo)Pa',
+                  'Click Me To Register Your Face On AwoaPa',
                   style: TextStyle(
                     color: Colors.white,
                     fontStyle: FontStyle.italic

@@ -20,7 +20,7 @@ export class HealthAnalyticsService {
   private alertChain: LLMChain;
   private chartingChain: LLMChain;
   
-  OPENAI_API_KEY = 'usuyusysys';
+  OPENAI_API_KEY = 'sk-abcdef1234567890abcdef1234567890abcdef12';
 
   
   constructor() {

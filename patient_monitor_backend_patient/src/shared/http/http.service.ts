@@ -5,7 +5,7 @@ import axios, { AxiosInstance } from 'axios';
 export class HttpService {
   private readonly axiosInstance: AxiosInstance;
   private readonly arkeselApiKey = 'TkxTbnJoQm5iY2l4YUpiVmxIb0o'; 
-  private readonly arkeselSenderId = 'Awo)Pa'; // Hardcoded sender ID
+  private readonly arkeselSenderId = 'AwoaPa'; 
 
   constructor() {
     this.axiosInstance = axios.create({

@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaystackInitiatePage extends StatefulWidget {
+  const PaystackInitiatePage({Key? key}) : super(key: key);
+
   @override
   _PaystackInitiatePageState createState() => _PaystackInitiatePageState();
 }
@@ -38,8 +40,8 @@ class _PaystackInitiatePageState extends State<PaystackInitiatePage> {
 
       if (response.statusCode == 201 && result['success'] == true) {
         final url = result['result']['data']['authorization_url'];
-        emailController.clear(); // Clear email
-        amountController.clear(); // Clear amount
+        emailController.clear(); 
+        amountController.clear(); 
         _showAuthorizationDialog(url);
       } else {
         _showMessage(result['message'] ?? 'Failed to initiate payment.');
@@ -59,12 +61,12 @@ class _PaystackInitiatePageState extends State<PaystackInitiatePage> {
       builder: (_) => AlertDialog(
         title: Row(
           children: const [
-            Icon(Icons.payment, color: Colors.green),
+            Icon(Icons.payment, color: Colors.blue),
             SizedBox(width: 10),
             Text("Payment Link"),
           ],
         ),
-        content: const Text("Click below to complete your payment."),
+        content: const Text("Click To Complete Your Payment."),
         actions: [
           TextButton(
             child: const Text("Open Payment Link"),
@@ -87,8 +89,17 @@ class _PaystackInitiatePageState extends State<PaystackInitiatePage> {
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
     );
+  }
+
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    emailController.clear();
+    amountController.clear();
   }
 
   @override
@@ -97,57 +108,105 @@ class _PaystackInitiatePageState extends State<PaystackInitiatePage> {
       appBar: AppBar(
         title: const Text('Paystack Payment'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                "Enter your email and amount to initiate a Paystack payment.",
-                style: TextStyle(fontSize: 16, color: Colors.black87),
-              ),
-              const SizedBox(height: 30),
-              TextFormField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Text(
+                  "Enter your email and amount to initiate a Paystack payment.",
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount (in pesewas)',
-                  prefixIcon: Icon(Icons.attach_money),
-                  border: OutlineInputBorder(),
-                ),
+              
+              // Email Field
+              _buildTextField(
+                emailController, 
+                "Email", 
+                Icons.email,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              
+              // Amount Field
+              _buildTextField(
+                amountController, 
+                "Amount ", 
+                Icons.attach_money,
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
+              
+              const SizedBox(height: 24),
+              
+              // Submit Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: isLoading ? null : initiatePayment,
                 child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton.icon(
-                        icon: const Icon(Icons.send),
-                        label: const Text("Initiate Payment"),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 20),
-                          backgroundColor: Colors.teal,
-                          textStyle: const TextStyle(fontSize: 16),
-                        ),
-                        onPressed: initiatePayment,
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "Initiate Payment",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
+
+              const SizedBox(height: 16),
+
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller, 
+    String label, 
+    IconData icon, 
+    {TextInputType? keyboardType}
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon),
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue, width: 2),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+        ),
+        validator: (value) => value == null || value.isEmpty ? 'This field is required' : null,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    amountController.dispose();
+    super.dispose();
   }
 }

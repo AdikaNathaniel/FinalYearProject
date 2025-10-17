@@ -193,7 +193,7 @@ async getDoctorAppointmentStats(doctor: string): Promise<any> {
     };
 
     // ✅ Short summary message to actually send via SMS
-    const shortSms = `📋 Dr. ${doctor}:\nPending: ${stats.pending}, Confirmed: ${stats.confirmed}, Canceled: ${stats.canceled}, Upcoming: ${upcomingAppointments.length}, Today: ${todayAppointments.length}.\nLogin to Awo)Pa for full details.`;
+    const shortSms = `📋 Dr. ${doctor}:\nPending: ${stats.pending}, Confirmed: ${stats.confirmed}, Canceled: ${stats.canceled}, Upcoming: ${upcomingAppointments.length}, Today: ${todayAppointments.length}.\nLogin to AwoaPa for full details.`;
 
     // ✅ Long detailed SMS version to include in the JSON response
     const formatAppointments = (title: string, list: any[]) => {

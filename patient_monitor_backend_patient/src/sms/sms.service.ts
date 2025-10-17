@@ -47,7 +47,7 @@ import { PREGNANCY_STAGES, WEEKLY_UPDATES } from './constants/pregnancy-stages.c
 export class SmsService {
   private readonly logger = new Logger(SmsService.name);
   private readonly smsApiUrl = 'https://sms.arkesel.com/api/v2/sms/send';
-  private readonly senderId = 'Awo)Pa';
+  private readonly senderId = 'AwoaPa';
 
   constructor(
     @InjectModel(SmsRecord.name)

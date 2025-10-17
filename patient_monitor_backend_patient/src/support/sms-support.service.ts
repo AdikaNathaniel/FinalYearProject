@@ -13,7 +13,7 @@ export class SupportSmsService {
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = 'R0lBd2RtanJrd3lsdmhjV1lrR2s'; // ⚠️ Move to env variable in production
-    this.senderId = 'Awo)Pa';
+    this.senderId = 'AwoaPa';
     this.defaultPhoneNumber = this.configService.get<string>(
       'DEFAULT_PHONE_NUMBER',
       '+233241744703',
