@@ -62,7 +62,7 @@ import { HeltecLiveVitalsModule } from './live-vitals-data-heltec/heltec-data/he
 import { VitalsHealthDataModule } from './vitals-health-data/vitals-health-data.module';
 import { AnaemiaRiskModule } from './anemia-predictions/anaemia-risk.module';
 import { PreeclampsiaVitalsModule } from './preeclampsia/preeclampsia-vitals.module';
-import {HealthAnalyticsModule} from "./health-analytics/health-analytics.module";
+// import {HealthAnalyticsModule} from "./health-analytics/health-analytics.module";
 // import { PreeclampsiaVitalsService } from './preeclampsia-vitals/preeclampsia-vitals.service';
 // import { PreeclampsiaVitalsController } from './preeclampsia-vitals/preeclampsia-vitals.controller'; 
 // import { HealthDataModule } from './hardware-data/patient-hardware.module';
@@ -142,7 +142,7 @@ import { OfflineReminder, OfflineReminderSchema } from 'src/shared/schema/offlin
     AppointmentsModule,
     StripeModule,
     VitalsModule,
-    HealthAnalyticsModule,
+    // HealthAnalyticsModule,
     KafkaModule,
     SupportModule,
     // HealthDataModule,
