@@ -3,6 +3,9 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:camera/camera.dart';
+import 'package:image/image.dart' as img;
+import 'dart:math';
 
 // Import your other pages
 import 'create_cancel-appointment.dart';
@@ -178,6 +181,351 @@ class BluetoothHealthService {
   }
 }
 
+// Camera Color Scanner Screen
+class CameraColorScanner extends StatefulWidget {
+  final List<Color> proteinColors;
+  final Function(int level, Color color) onColorDetected;
+
+  const CameraColorScanner({
+    Key? key,
+    required this.proteinColors,
+    required this.onColorDetected,
+  }) : super(key: key);
+
+  @override
+  _CameraColorScannerState createState() => _CameraColorScannerState();
+}
+
+class _CameraColorScannerState extends State<CameraColorScanner> {
+  CameraController? _controller;
+  List<CameraDescription>? _cameras;
+  Color? _detectedColor;
+  int? _detectedLevel;
+  bool _isLoading = true;
+  bool _isCapturing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      _cameras = await availableCameras();
+      _controller = CameraController(_cameras![0], ResolutionPreset.medium);
+      await _controller!.initialize();
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error initializing camera: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _captureAndAnalyze() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+
+    setState(() {
+      _isCapturing = true;
+    });
+
+    try {
+      final image = await _controller!.takePicture();
+      final bytes = await image.readAsBytes();
+      final imageData = img.decodeImage(bytes);
+
+      if (imageData != null) {
+        _analyzeImageColor(imageData);
+      }
+    } catch (e) {
+      print('Error capturing image: $e');
+    } finally {
+      setState(() {
+        _isCapturing = false;
+      });
+    }
+  }
+
+  void _analyzeImageColor(img.Image image) {
+    // Sample color from center of image
+    final centerX = image.width ~/ 2;
+    final centerY = image.height ~/ 2;
+    
+    final pixel = image.getPixel(centerX, centerY);
+    
+    // CORRECTED: Use the proper way to get RGB values from the image package
+    final r = pixel.r.toInt();
+    final g = pixel.g.toInt();
+    final b = pixel.b.toInt();
+    
+    final detectedColor = Color.fromRGBO(r, g, b, 1.0);
+
+    // Find the closest matching color from protein colors
+    int closestLevel = 0;
+    Color closestColor = widget.proteinColors[0];
+    double minDistance = double.maxFinite;
+
+    for (int i = 0; i < widget.proteinColors.length; i++) {
+      final color = widget.proteinColors[i];
+      final distance = _colorDistance(detectedColor, color);
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestLevel = i;
+        closestColor = color;
+      }
+    }
+
+    setState(() {
+      _detectedColor = detectedColor;
+      _detectedLevel = closestLevel;
+    });
+
+    // If color is close enough to one of our protein colors
+    if (minDistance < 100) { // Adjust threshold as needed
+      widget.onColorDetected(closestLevel, closestColor);
+      _showResultDialog(closestLevel, closestColor, detectedColor);
+    } else {
+      _showNoMatchDialog(detectedColor);
+    }
+  }
+
+  // CORRECTED: Proper math functions usage
+  double _colorDistance(Color c1, Color c2) {
+    return sqrt(
+      pow(c1.red - c2.red, 2) +
+      pow(c1.green - c2.green, 2) +
+      pow(c1.blue - c2.blue, 2)
+    );
+  }
+
+  void _showResultDialog(int level, Color matchedColor, Color detectedColor) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Color Detected!'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Detected Protein Level: $level'),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: detectedColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Text('Detected Color'),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: matchedColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Text('Matched Level $level'),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context); // Go back to dashboard
+            },
+            child: Text('Use This Level'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Scan Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNoMatchDialog(Color detectedColor) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('No Match Found'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('The detected color doesn\'t match any protein level.'),
+            SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: detectedColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black),
+              ),
+            ),
+            SizedBox(height: 10),
+            Text('Please try again with better lighting or a clearer urine strip.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Scan Urine Strip'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _controller == null || !_controller!.value.isInitialized
+              ? Center(child: Text('Camera not available'))
+              : Column(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          CameraPreview(_controller!),
+                          // Center targeting crosshair
+                          Center(
+                            child: Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Instructions
+                          Positioned(
+                            bottom: 20,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(16),
+                              color: Colors.black54,
+                              child: Text(
+                                'Point the camera at the urine strip. Ensure good lighting and center the strip in the frame.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          if (_detectedColor != null) ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: _detectedColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.black),
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  _detectedLevel != null
+                                      ? 'Detected Level: $_detectedLevel'
+                                      : 'Color detected',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _isCapturing ? null : _captureAndAnalyze,
+                              icon: Icon(_isCapturing ? Icons.camera : Icons.camera_alt),
+                              label: Text(_isCapturing ? 'Processing...' : 'Capture & Analyze'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 15),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Cancel'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+    );
+  }
+}
+
 class BluetoothHealthMetricsPage extends StatefulWidget {
   final String userEmail;
   final Map<String, dynamic>? initialBluetoothData;
@@ -206,6 +554,20 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
   bool _showAlertDialog = false;
   bool _hasPostedInitialData = false;
   bool _isOnDashboardPage = false;
+
+  // Color detection variables
+  final List<Color> _proteinColors = [
+    Color(0xFF00C2C7), 
+    Color(0xFFE5B7A5), 
+    Color(0xFFB794C0), 
+    Color(0xFFD8D8D8), 
+    Color(0xFFF0D56D), 
+    Color(0xFFF5C243), 
+    Color(0xFFFFA500), 
+    Color(0xFFFFD700), 
+    Color(0xFFD2B48C), 
+    Color(0xFF8B5A2B), 
+  ];
 
   // ✅ UPDATED: Bluetooth state management
   bool _isRefreshingFromBluetooth = false;
@@ -244,6 +606,30 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
         _sendPredictionData();
       }
     });
+  }
+
+  // Camera Color Detection Functionality
+  void _showCameraColorScanner(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CameraColorScanner(
+          proteinColors: _proteinColors,
+          onColorDetected: (int level, Color color) {
+            setState(() {
+              selectedProteinLevel = level;
+              selectedProteinColor = color;
+            });
+            _sendProteinLevelToBackend(level);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showUrineStripDialog(BuildContext context) {
+    // Directly open camera scanner - no manual selection option
+    _showCameraColorScanner(context);
   }
 
   // ✅ NEW: Set up Bluetooth event listeners
@@ -776,148 +1162,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
     );
   }
 
-  void _showUrineStripDialog(BuildContext context) {
-    final List<Color> colors = [
-      Color(0xFF00C2C7), 
-      Color(0xFFE5B7A5), 
-      Color(0xFFB794C0), 
-      Color(0xFFD8D8D8), 
-      Color(0xFFF0D56D), 
-      Color(0xFFF5C243), 
-      Color(0xFFFFA500), 
-      Color(0xFFFFD700), 
-      Color(0xFFD2B48C), 
-      Color(0xFF8B5A2B), 
-    ];
-
-    int? selectedIndex = selectedProteinLevel;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          insetPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Select Urine Strip Color',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 12.0),
-                
-                const Text(
-                  'Tap on the color that matches your urine strip',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13.0),
-                ),
-                SizedBox(height: 12.0),
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(5, (index) {
-                    final scaledLevel = _scaleProteinLevel(index.toDouble()).toStringAsFixed(1);
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedIndex = index;
-                              selectedProteinLevel = index;
-                              selectedProteinColor = colors[index];
-                            });
-                            _sendProteinLevelToBackend(index);
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            width: 45.0,
-                            height: 45.0,
-                            decoration: BoxDecoration(
-                              color: colors[index],
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: selectedIndex == index ? Colors.blue : Colors.transparent,
-                                width: 3.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 4.0),
-                        Text('$index', 
-                             textAlign: TextAlign.center, 
-                             style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold)),
-                      ],
-                    );
-                  }),
-                ),
-                SizedBox(height: 12.0),
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(5, (index) {
-                    final actualIndex = index + 5;
-                    final scaledLevel = _scaleProteinLevel(actualIndex.toDouble()).toStringAsFixed(1);
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedIndex = actualIndex;
-                              selectedProteinLevel = actualIndex;
-                              selectedProteinColor = colors[actualIndex];
-                            });
-                            _sendProteinLevelToBackend(actualIndex);
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            width: 45.0,
-                            height: 45.0,
-                            decoration: BoxDecoration(
-                              color: colors[actualIndex],
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: selectedIndex == actualIndex ? Colors.blue : Colors.transparent,
-                                width: 3.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 4.0),
-                        Text('$actualIndex', 
-                             textAlign: TextAlign.center, 
-                             style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold)),
-                      ],
-                    );
-                  }),
-                ),
-                SizedBox(height: 16.0),
-                
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1316,7 +1560,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
-                        // Protein in Urine Card - Click to update
+                        // Protein in Urine Card - Updated to use camera scanning
                         GestureDetector(
                           onTap: () => _showUrineStripDialog(context),
                           child: Card(
@@ -1364,7 +1608,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                                     child: Text(
                                       selectedProteinLevel != null 
                                           ? 'Level: $selectedProteinLevel'
-                                          : 'Tap to Test',
+                                          : 'Tap to Scan',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -1379,7 +1623,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                                   Text(
                                     selectedProteinLevel != null 
                                         ? 'Last updated: Just now'
-                                        : 'Click me to test',
+                                        : 'Click to scan urine strip',
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: Colors.grey[600],
@@ -1434,8 +1678,8 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
           FloatingActionButton(
             onPressed: () => _showUrineStripDialog(context),
             heroTag: 'add_protein',
-            child: const Icon(Icons.add),
-            tooltip: 'Add Protein Test Result',
+            child: const Icon(Icons.camera_alt),
+            tooltip: 'Scan Protein Test Strip',
             backgroundColor: Colors.blueAccent,
           ),
         ],
