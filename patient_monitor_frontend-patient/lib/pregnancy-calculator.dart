@@ -82,7 +82,7 @@ class _PregnancyCalculatorScreenState extends State<PregnancyCalculatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(""),
+        title: Text("Pregnancy Calculator"),
         centerTitle: true,
         backgroundColor: Colors.pink[200], // Light pink color
       ),
@@ -97,83 +97,158 @@ class _PregnancyCalculatorScreenState extends State<PregnancyCalculatorScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Pregnancy Image on Top
-              Container(
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage("assets/pregnancy.png"),
-                    fit: BoxFit.cover,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 
+                          MediaQuery.of(context).padding.top - 
+                          kToolbarHeight,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top Content Section
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Pregnancy Image on Top
+                      Container(
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage("assets/pregnancy.png"),
+                            fit: BoxFit.contain,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+
+                      // Instruction Text
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Select the first day of your Last Menstrual Period",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16, 
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+
+                      // Date Picker Button
+                      Container(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _pickDate,
+                          icon: Icon(Icons.calendar_today),
+                          label: Text(
+                            _selectedDate == null
+                                ? "Select Date"
+                                : DateFormat("MMMM dd, yyyy").format(_selectedDate!),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                            textStyle: TextStyle(fontSize: 16),
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+
+                      // Display Weeks Pregnant
+                      if (_weeksPregnant != null)
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withOpacity(0.3)),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                "Congratulations!!",
+                                style: TextStyle(
+                                  fontSize: 18, 
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                "You Are $_weeksPregnant Weeks Pregnant",
+                                style: TextStyle(
+                                  fontSize: 24, 
+                                  fontWeight: FontWeight.bold, 
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              SizedBox(height: 20),
 
-              // Instruction Text
-              Text(
-                "Select the first day of your Last Menstrual Period ",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              SizedBox(height: 15),
+                  // Spacer to push bottom content down
+                  SizedBox(height: 20),
 
-              // Date Picker Button
-              ElevatedButton.icon(
-                onPressed: _pickDate,
-                icon: Icon(Icons.calendar_today),
-                label: Text(
-                  _selectedDate == null
-                      ? "Select Date"
-                      : DateFormat("MMMM dd, yyyy").format(_selectedDate!), // Fixed intl issue
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  textStyle: TextStyle(fontSize: 16),
-                ),
+                  // Bottom Content Section
+                  Column(
+                    children: [
+                      // View My Vitals Text
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => VitalsHealthDataPage(userEmail: widget.userEmail),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.monitor_heart, color: Colors.white),
+                              SizedBox(width: 10),
+                              Text(
+                                "Record Your Vitals Data",
+                                style: TextStyle(
+                                  fontSize: 18, 
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                    ],
+                  ),
+                ],
               ),
-              SizedBox(height: 20),
-
-              // Display Weeks Pregnant
-              if (_weeksPregnant != null)
-                Column(
-                  children: [
-                    Text(
-                      "Congratulations!!",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "You Are $_weeksPregnant Weeks Pregnant",
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ],
-                ),
-
-              // View My Vitals Text
-              Spacer(), // Pushes the Vitals text to the bottom
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => VitalsHealthDataPage(userEmail: widget.userEmail), // Navigate to VitalsHealthDataPage with userEmail
-                    ),
-                  );
-                },
-                child: Text(
-                  "Record Your Vitals Data",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
-              SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),

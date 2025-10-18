@@ -944,271 +944,200 @@ class _HealthDashboardState extends State<HealthDashboard> {
           borderRadius: BorderRadius.circular(16),
         ),
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Profile',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        widget.userEmail,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Profile',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  _buildProfileItem(
+                    icon: Icons.email_outlined,
+                    text: widget.userEmail,
+                    onTap: null,
+                  ),
+                  
+                  _buildProfileItem(
+                    icon: Icons.emergency,
+                    text: 'Send An Emergency Alert',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showEmergencyAlertDialog(context);
+                    },
+                  ),
+                  
+                  _buildProfileItem(
+                    icon: Icons.settings_outlined,
+                    text: 'Settings',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SetProfilePage(userEmail: widget.userEmail),
                         ),
+                      );
+                    },
+                  ),
+
+                  _buildProfileItem(
+                    icon: Icons.bluetooth,
+                    text: 'Pair With Bluetooth Device',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
+                        ),
+                      );
+                    },
+                  ),
+
+                  _buildProfileItem(
+                    icon: Icons.notifications_active_outlined,
+                    text: 'Notifications',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  _buildProfileItem(
+                    icon: Icons.help_outline,
+                    text: 'Need Help?',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SupportFormPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  _buildProfileItem(
+                    icon: Icons.location_on,
+                    text: 'View Location Of PregMama',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  TextButton(
+                    onPressed: () async {
+                      final response = await http.put(
+                        Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
+                        headers: {'Content-Type': 'application/json'},
+                      );
+
+                      if (response.statusCode == 200) {
+                        final responseData = json.decode(response.body);
+                        if (responseData['success']) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => LoginPage()),
+                          );
+                        } else {
+                          _showSnackbar(
+                              context,
+                              "Logout failed: ${responseData['message']}",
+                              Colors.red);
+                        }
+                      } else {
+                          _showSnackbar(
+                              context,
+                              "Logout failed: Server error",
+                              Colors.red);
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showEmergencyAlertDialog(context);
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.emergency, size: 20, color: Colors.red),
-                      const SizedBox(width: 12),
-                      const Flexible(
-                        child: Text(
-                          'Send An Emergency Alert',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Settings',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
+                  const SizedBox(height: 4),
+                  
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 12),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-            
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WearableDevicePairingPage(userEmail: widget.userEmail),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
-                      const SizedBox(width: 12),
-                      const Flexible(
-                        child: Text(
-                          'Pair With Bluetooth Device',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
+  Widget _buildProfileItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback? onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: Colors.blue),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-
-              const SizedBox(height: 12),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NotificationListPage(),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Notifications',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SupportFormPage(),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.help_outline, size: 20, color: Colors.purple),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Need Help?',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MapPage(),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.location_on, size: 20, color: Colors.green),
-                      const SizedBox(width: 12),
-                      const Flexible(
-                        child: Text(
-                          'View Location Of PregMama',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              TextButton(
-                onPressed: () async {
-                  final response = await http.put(
-                    Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
-                    headers: {'Content-Type': 'application/json'},
-                  );
-
-                  if (response.statusCode == 200) {
-                    final responseData = json.decode(response.body);
-                    if (responseData['success']) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
-                    } else {
-                      _showSnackbar(
-                          context,
-                          "Logout failed: ${responseData['message']}",
-                          Colors.red);
-                    }
-                  } else {
-                      _showSnackbar(
-                          context,
-                          "Logout failed: Server error",
-                          Colors.red);
-                  }
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
+              if (onTap != null) 
+                const Icon(Icons.chevron_right, color: Colors.grey, size: 16),
             ],
           ),
         ),

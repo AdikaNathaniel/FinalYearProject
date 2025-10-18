@@ -686,13 +686,17 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Bluetooth Connect'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-        automaticallyImplyLeading: !widget.autoRequestRunningAverages, // ✅ Hide back button during auto-request
-      ),
+  title: const Text('Bluetooth Connect'),
+  backgroundColor: Colors.blue,
+  foregroundColor: Colors.white,
+  centerTitle: true,
+  elevation: 0,
+  automaticallyImplyLeading: false, // Disable automatic back button
+  leading: widget.autoRequestRunningAverages ? null : IconButton(
+    icon: Icon(Icons.arrow_back),
+    onPressed: () => Navigator.of(context).pop(),
+  ),
+),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
