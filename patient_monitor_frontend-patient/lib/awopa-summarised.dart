@@ -1042,154 +1042,160 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     }
   }
 
-
-void _showUserInfoDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Title
-            const Text(
-              'Profile',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Email row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
+  void _showUserInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.email, size: 20),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      widget.userEmail,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
+                  // Title
+                  const Text(
+                    'Profile',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Email row
+                  _buildProfileItem(
+                    icon: Icons.email_outlined,
+                    text: widget.userEmail,
+                    onTap: null,
+                  ),
+                  
+                  // Settings row
+                  _buildProfileItem(
+                    icon: Icons.settings_outlined,
+                    text: 'Settings',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SetProfilePage(userEmail: widget.userEmail),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  // Map row
+                  _buildProfileItem(
+                    icon: Icons.location_on,
+                    text: 'View Location Of PregMama',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  // Support row
+                  _buildProfileItem(
+                    icon: Icons.help_outline,
+                    text: 'Need Help?',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SupportFormPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  const SizedBox(height: 20),
+      
+                  // Logout button
+                  TextButton(
+                    onPressed: _logout,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  
+                  // Close button
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-
-
-            
-            
-            // Settings row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SetProfilePage(userEmail: widget.userEmail),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.settings, size: 20, color: Colors.black),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Map row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MapPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.map, size: 20, color: Colors.black),
-                    const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text(
-                        'View Location Of PregMama',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade600),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-      
-            // Logout button
-            TextButton(
-              onPressed: _logout,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            
-            // Close button
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-
+  Widget _buildProfileItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback? onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: Colors.blue),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (onTap != null) 
+                const Icon(Icons.chevron_right, color: Colors.grey, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showSnackbar(String message) {
     final snackBar = SnackBar(

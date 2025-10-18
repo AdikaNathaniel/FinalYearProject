@@ -94,260 +94,260 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
     );
   }
 
-  void _showUserInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Profile',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
+  // void _showUserInfoDialog(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => Dialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(16),
+  //       ),
+  //       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+  //       child: Container(
+  //         width: MediaQuery.of(context).size.width * 0.9,
+  //         padding: const EdgeInsets.all(20),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.stretch,
+  //           children: [
+  //             const Text(
+  //               'Profile',
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(
+  //                 fontSize: 20,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 20),
               
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        widget.userEmail,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: Row(
+  //                 children: [
+  //                   const Icon(Icons.email_outlined, size: 20, color: Colors.blue),
+  //                   const SizedBox(width: 12),
+  //                   Flexible(
+  //                     child: Text(
+  //                       widget.userEmail,
+  //                       style: const TextStyle(
+  //                         color: Colors.black,
+  //                         fontSize: 12,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
               
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showEmergencyAlertDialog(context);
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.emergency, size: 20, color: Colors.red),
-                      const SizedBox(width: 12),
-                      const Flexible(
-                        child: Text(
-                          'Send An Emergency Alert',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: GestureDetector(
+  //                 onTap: () {
+  //                   Navigator.pop(context);
+  //                   _showEmergencyAlertDialog(context);
+  //                 },
+  //                 child: Row(
+  //                   children: [
+  //                     const Icon(Icons.emergency, size: 20, color: Colors.red),
+  //                     const SizedBox(width: 12),
+  //                     const Flexible(
+  //                       child: Text(
+  //                         'Send An Emergency Alert',
+  //                         style: TextStyle(
+  //                           color: Colors.black,
+  //                           fontSize: 12,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
               
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    // This will use the SetProfilePage from set_profile.dart
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Settings',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: GestureDetector(
+  //                 onTap: () {
+  //                   Navigator.pop(context);
+  //                   // This will use the SetProfilePage from set_profile.dart
+  //                 },
+  //                 child: Row(
+  //                   children: [
+  //                     const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+  //                     const SizedBox(width: 12),
+  //                     const Text(
+  //                       'Settings',
+  //                       style: TextStyle(
+  //                         color: Colors.black,
+  //                         fontSize: 12,
+  //                       ),
+  //                     ),
+  //                     const Spacer(),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
 
             
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    // This will use the WearableDevicePairingPage from bluetooth-wearable.dart
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
-                      const SizedBox(width: 12),
-                      const Flexible(
-                        child: Text(
-                          'Pair With Bluetooth Device',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              ),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: GestureDetector(
+  //                 onTap: () {
+  //                   Navigator.pop(context);
+  //                   // This will use the WearableDevicePairingPage from bluetooth-wearable.dart
+  //                 },
+  //                 child: Row(
+  //                   children: [
+  //                     const Icon(Icons.bluetooth, size: 20, color: Colors.blue),
+  //                     const SizedBox(width: 12),
+  //                     const Flexible(
+  //                       child: Text(
+  //                         'Pair With Bluetooth Device',
+  //                         style: TextStyle(
+  //                           color: Colors.black,
+  //                           fontSize: 12,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
 
-              const SizedBox(height: 12),
+  //             const SizedBox(height: 12),
               
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    // This will use the NotificationListPage from notification-list.dart
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Notifications',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: GestureDetector(
+  //                 onTap: () {
+  //                   Navigator.pop(context);
+  //                   // This will use the NotificationListPage from notification-list.dart
+  //                 },
+  //                 child: Row(
+  //                   children: [
+  //                     const Icon(Icons.notifications_active_outlined, size: 20, color: Colors.orange),
+  //                     const SizedBox(width: 12),
+  //                     const Text(
+  //                       'Notifications',
+  //                       style: TextStyle(
+  //                         color: Colors.black,
+  //                         fontSize: 12,
+  //                       ),
+  //                     ),
+  //                     const Spacer(),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
               
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    // This will use the SupportFormPage from support-create.dart
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.help_outline, size: 20, color: Colors.purple),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Need Help?',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: GestureDetector(
+  //                 onTap: () {
+  //                   Navigator.pop(context);
+  //                   // This will use the SupportFormPage from support-create.dart
+  //                 },
+  //                 child: Row(
+  //                   children: [
+  //                     const Icon(Icons.help_outline, size: 20, color: Colors.purple),
+  //                     const SizedBox(width: 12),
+  //                     const Text(
+  //                       'Need Help?',
+  //                       style: TextStyle(
+  //                         color: Colors.black,
+  //                         fontSize: 12,
+  //                       ),
+  //                     ),
+  //                     const Spacer(),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
               
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    // This will use the MapPage from map.dart
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(Icons.location_on, size: 20, color: Colors.green),
-                      const SizedBox(width: 12),
-                      const Flexible(
-                        child: Text(
-                          'View Location Of PregMama',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(vertical: 8),
+  //               child: GestureDetector(
+  //                 onTap: () {
+  //                   Navigator.pop(context);
+  //                   // This will use the MapPage from map.dart
+  //                 },
+  //                 child: Row(
+  //                   children: [
+  //                     const Icon(Icons.location_on, size: 20, color: Colors.green),
+  //                     const SizedBox(width: 12),
+  //                     const Flexible(
+  //                       child: Text(
+  //                         'View Location Of PregMama',
+  //                         style: TextStyle(
+  //                           color: Colors.black,
+  //                           fontSize: 12,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 20),
               
-              TextButton(
-                onPressed: () async {
-                  final response = await http.put(
-                    Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
-                    headers: {'Content-Type': 'application/json'},
-                  );
+  //             TextButton(
+  //               onPressed: () async {
+  //                 final response = await http.put(
+  //                   Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/users/logout'),
+  //                   headers: {'Content-Type': 'application/json'},
+  //                 );
 
-                  if (response.statusCode == 200) {
-                    final responseData = json.decode(response.body);
-                    if (responseData['success']) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
-                    } else {
-                      _showSnackbar(
-                          context,
-                          "Logout failed: ${responseData['message']}",
-                          Colors.red);
-                    }
-                  } else {
-                      _showSnackbar(
-                          context,
-                          "Logout failed: Server error",
-                          Colors.red);
-                  }
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
+  //                 if (response.statusCode == 200) {
+  //                   final responseData = json.decode(response.body);
+  //                   if (responseData['success']) {
+  //                     Navigator.pushReplacement(
+  //                       context,
+  //                       MaterialPageRoute(builder: (context) => LoginPage()),
+  //                     );
+  //                   } else {
+  //                     _showSnackbar(
+  //                         context,
+  //                         "Logout failed: ${responseData['message']}",
+  //                         Colors.red);
+  //                   }
+  //                 } else {
+  //                     _showSnackbar(
+  //                         context,
+  //                         "Logout failed: Server error",
+  //                         Colors.red);
+  //                 }
+  //               },
+  //               style: TextButton.styleFrom(
+  //                 foregroundColor: Colors.red,
+  //                 padding: const EdgeInsets.symmetric(vertical: 12),
+  //               ),
+  //               child: const Text(
+  //                 'Logout',
+  //                 style: TextStyle(
+  //                   fontSize: 16,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 4),
               
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //             TextButton(
+  //               onPressed: () => Navigator.pop(context),
+  //               child: const Text('Close'),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _showSnackbar(BuildContext context, String message, Color color) {
     final snackBar = SnackBar(
@@ -377,20 +377,20 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
         ),
         backgroundColor: Colors.pinkAccent,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text(
-                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-            onPressed: () {
-              _showUserInfoDialog(context); // Show user info dialog
-            },
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: CircleAvatar(
+        //       backgroundColor: Colors.white,
+        //       child: Text(
+        //         widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+        //         style: TextStyle(color: Colors.blue),
+        //       ),
+        //     ),
+        //     onPressed: () {
+        //       _showUserInfoDialog(context); // Show user info dialog
+        //     },
+        //   ),
+        // ],
       ),
       body: Container(
         color: Colors.white,
