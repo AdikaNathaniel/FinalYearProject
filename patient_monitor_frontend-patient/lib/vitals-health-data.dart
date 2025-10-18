@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:logger/logger.dart';
 import 'health_metrics.dart';
+import 'relax-page.dart';
 
 class VitalsHealthDataPage extends StatefulWidget {
   final String userEmail;
@@ -653,7 +654,7 @@ class _VitalsHealthDataPageState extends State<VitalsHealthDataPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => HealthDashboard(
+                    builder: (context) => RelaxPage(
                       userEmail: widget.userEmail,
                     ),
                   ),
