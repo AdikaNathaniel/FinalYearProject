@@ -691,11 +691,8 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
   foregroundColor: Colors.white,
   centerTitle: true,
   elevation: 0,
-  automaticallyImplyLeading: false, // Disable automatic back button
-  leading: widget.autoRequestRunningAverages ? null : IconButton(
-    icon: Icon(Icons.arrow_back),
-    onPressed: () => Navigator.of(context).pop(),
-  ),
+  automaticallyImplyLeading: false,
+  leading: Container(),
 ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
