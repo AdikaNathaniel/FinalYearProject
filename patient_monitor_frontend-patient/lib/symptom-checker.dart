@@ -93,7 +93,7 @@ class _SymptomFormState extends State<SymptomForm> {
           children: [
             Row(
               children: [
-                Icon(icon, color: Theme.of(context).primaryColor),
+                Icon(icon, color: Colors.blue), // Changed to explicit blue
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -142,7 +142,7 @@ class _SymptomFormState extends State<SymptomForm> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Symptom Checker'),
-        backgroundColor: Colors.pinkAccent,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -226,7 +226,7 @@ class _SymptomFormState extends State<SymptomForm> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pinkAccent,
+                    backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

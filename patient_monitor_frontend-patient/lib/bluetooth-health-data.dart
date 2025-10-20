@@ -1178,7 +1178,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               ),
               child: Center(
                 child: Text(
-                  'HEALTH METRICS',
+                  'PREGNANT WOMAN',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -1188,7 +1188,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.calendar_today),
+              leading: const Icon(Icons.calendar_today, color: Colors.blue),
               title: const Text('Schedule Appointment'),
               onTap: () {
                 Navigator.push(
@@ -1200,7 +1200,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.health_and_safety),
+              leading: const Icon(Icons.health_and_safety, color: Colors.blue),
               title: const Text('Pregnancy Tips'),
               onTap: () {
                 Navigator.push(
@@ -1212,7 +1212,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
+              leading: const Icon(Icons.pregnant_woman, color: Colors.blue),
               title: const Text('Pregnancy Chatbot'),
               onTap: () {
                 Navigator.push(
@@ -1224,7 +1224,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.emergency, color: Colors.red), 
+              leading: const Icon(Icons.emergency, color: Colors.blue), 
               title: const Text('Emergency Contacts'),
               onTap: () {
                 Navigator.push(
@@ -1236,7 +1236,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.attach_money, color: Colors.teal),
+              leading: const Icon(Icons.attach_money, color: Colors.blue),
               title: const Text('Make Payment'), 
               onTap: () {
                 Navigator.push(
@@ -1260,7 +1260,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
+              leading: const Icon(Icons.pregnant_woman, color: Colors.blue),
               title: const Text('Anemia Assessment'),
               onTap: () {
                 Navigator.push(
@@ -1272,7 +1272,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.healing, color: Colors.pinkAccent),
+              leading: const Icon(Icons.healing, color: Colors.blue),
               title: const Text('How Are You Feeling?'), 
               onTap: () {
                 Navigator.push(
@@ -1284,7 +1284,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
               },
             ),
             ListTile(
-              leading: Icon(Icons.bloodtype),
+              leading: Icon(Icons.bloodtype, color: Colors.blue),
               title: Text('Charts'),
               onTap: () {
                 Navigator.push(
@@ -1293,7 +1293,8 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                 );
               },
             ),
-            ListTile(leading: const Icon(Icons.search, color: Colors.blue),
+            ListTile(
+              leading: const Icon(Icons.search, color: Colors.blue),
               title: const Text(
                 'Find Your Favorite Medic',
                 style: TextStyle(
@@ -1301,9 +1302,6 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
                   fontSize: 16,
                 ),
               ),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              visualDensity: VisualDensity.comfortable,
               onTap: () {
                 Navigator.push(
                   context,

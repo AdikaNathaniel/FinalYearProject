@@ -128,7 +128,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   },
                   child: Row(
                     children: [
-                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blueGrey),
+                      const Icon(Icons.settings_outlined, size: 20, color: Colors.blue),
                       const SizedBox(width: 12),
                       const Text(
                         'Settings',
@@ -159,7 +159,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   },
                   child: Row(
                     children: [
-                      const Icon(Icons.location_on, size: 20, color: Colors.green),
+                      const Icon(Icons.location_on, size: 20, color: Colors.blue),
                       const SizedBox(width: 12),
                       const Flexible(
                         child: Text(
@@ -288,7 +288,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.supervised_user_circle),
+              leading: const Icon(Icons.supervised_user_circle, color: Colors.blue),
               title: const Text('All Users'),
               selected: _selectedPage == 'Users',
               onTap: () {
@@ -299,7 +299,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.notifications),
+              leading: const Icon(Icons.notifications, color: Colors.blue),
               title: const Text('Notifications'),
               selected: _selectedPage == 'Notifications',
               onTap: () {
@@ -310,7 +310,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.support_agent),
+              leading: const Icon(Icons.support_agent, color: Colors.blue),
               title: const Text('Support'),
               selected: _selectedPage == 'Support',
               onTap: () {

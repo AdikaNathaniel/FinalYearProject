@@ -59,47 +59,20 @@ class EmergencyContactsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Manage Contacts'),
         centerTitle: true,
-        backgroundColor: Colors.pinkAccent,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 2,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // User Information Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                border: const Border(bottom: BorderSide(color: Colors.grey)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.account_circle, size: 30, color: Colors.redAccent),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Current User', 
-                        style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      Text(userEmail,
-                        style: const TextStyle(
-                          fontSize: 16, 
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
             const SizedBox(height: 16),
 
             // Emergency Contact Actions
             _buildSettingCard(
               icon: Icons.contact_emergency,
               title: 'Add Emergency Contact',
-              iconColor: Colors.pinkAccent,
+              iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
@@ -108,12 +81,10 @@ class EmergencyContactsPage extends StatelessWidget {
               },
             ),
             
-
-        
-        _buildSettingCard(
+            _buildSettingCard(
               icon: Icons.contact_emergency,
               title: 'View All Emergency Contacts',
-              iconColor: Colors.pinkAccent,
+              iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
@@ -121,24 +92,11 @@ class EmergencyContactsPage extends StatelessWidget {
                 );
               },
             ),
-
-
-            // EmergencyContactsList
-            // _buildSettingCard(
-            //   icon: Icons.contacts,
-            //   title: 'View All Emergency Contacts',
-            //   iconColor: Colors.blue,
-            //   onTap: () {
-            //     ScaffoldMessenger.of(context).showSnackBar(
-            //       const SnackBar(content: Text('View All Contacts functionality coming soon')),
-            //     );
-            //   },
-            // ),
             
-             _buildSettingCard(
+            _buildSettingCard(
               icon: Icons.contact_page,
               title: 'Find An Emergency Contact',
-              iconColor: Colors.pinkAccent,
+              iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
@@ -147,13 +105,10 @@ class EmergencyContactsPage extends StatelessWidget {
               },
             ),
 
-
-            // UpdateEmergencyContact
-
-             _buildSettingCard(
+            _buildSettingCard(
               icon: Icons.edit,
               title: 'Edit Emergency Contact',
-              iconColor: Colors.pinkAccent,
+              iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
@@ -162,49 +117,16 @@ class EmergencyContactsPage extends StatelessWidget {
               },
             ),
         
-            
-
-            // DeleteEmergencyContactPage
-             _buildSettingCard(
+            _buildSettingCard(
               icon: Icons.delete_forever,
               title: 'Remove Emergency Contact',
-              iconColor: Colors.pinkAccent,
+              iconColor: Colors.blue,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) =>  DeleteEmergencyContactPage()),
                 );
               },
-            ),
-
-            // _buildSettingCard(
-            //   icon: Icons.delete_forever,
-            //   title: 'Remove Emergency Contact',
-            //   iconColor: Colors.red,
-            //   onTap: () {
-            //     ScaffoldMessenger.of(context).showSnackBar(
-            //       const SnackBar(content: Text('Remove Contact functionality coming soon')),
-            //     );
-            //   },
-            // ),
-
-            const SizedBox(height: 16),
-
-            // Additional Help Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Card(
-                elevation: 1,
-                color: Colors.grey[50],
-                child: const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Emergency contacts will be notified in case of urgent situations',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
             ),
           ],
         ),

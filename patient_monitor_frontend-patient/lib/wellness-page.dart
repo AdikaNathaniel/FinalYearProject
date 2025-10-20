@@ -375,7 +375,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.pinkAccent,
+        backgroundColor: Colors.blue,
         centerTitle: true,
         // actions: [
         //   IconButton(
@@ -429,7 +429,7 @@ class _WellnessTipsScreenState extends State<WellnessTipsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(tip["icon"], size: 40, color: Colors.pinkAccent),
+                          Icon(tip["icon"], size: 40, color: Colors.blue),
                           SizedBox(height: 8),
                           Text(
                             tip["title"],

@@ -653,7 +653,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             ),
 
             ListTile(
-              leading: const Icon(Icons.calendar_today),
+              leading: const Icon(Icons.calendar_today, color: Colors.blue),
               title: const Text('Schedule Appointment'),
               onTap: () {
                 Navigator.push(
@@ -666,7 +666,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             ),
 
             ListTile(
-              leading: const Icon(Icons.health_and_safety),
+              leading: const Icon(Icons.health_and_safety, color: Colors.blue),
               title: const Text('Pregnancy Tips'),
               onTap: () {
                 Navigator.push(
@@ -679,7 +679,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             ),
 
             ListTile(
-              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
+              leading: const Icon(Icons.pregnant_woman, color: Colors.blue),
               title: const Text('Pregnancy Chatbot'),
               onTap: () {
                 Navigator.push(
@@ -691,7 +691,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.emergency, color: Colors.red), 
+              leading: const Icon(Icons.emergency, color: Colors.blue), 
               title: const Text('Emergency Contacts'),
               onTap: () {
                 Navigator.push(
@@ -704,7 +704,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             ),
 
             ListTile(
-              leading: const Icon(Icons.attach_money, color: Colors.teal),
+              leading: const Icon(Icons.attach_money, color: Colors.blue),
               title: const Text('Make Payment'), 
               onTap: () {
                 Navigator.push(
@@ -729,7 +729,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.pregnant_woman, color: Colors.pinkAccent),
+              leading: const Icon(Icons.pregnant_woman, color: Colors.blue),
               title: const Text('Anemia Assessment'),
               onTap: () {
                 Navigator.push(
@@ -741,7 +741,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.healing, color: Colors.pinkAccent),
+              leading: const Icon(Icons.healing, color: Colors.blue),
               title: const Text('How Are You Feeling?'), 
               onTap: () {
                 Navigator.push(
@@ -754,7 +754,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             ),
 
             ListTile(
-              leading: Icon(Icons.bloodtype),
+              leading: Icon(Icons.bloodtype, color: Colors.blue),
               title: Text('Charts Data'),
               onTap: () {
                 Navigator.push(
@@ -773,9 +773,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   fontSize: 16,
                 ),
               ),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              visualDensity: VisualDensity.comfortable,
               onTap: () {
                 Navigator.push(
                   context,

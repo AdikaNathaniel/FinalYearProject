@@ -1269,7 +1269,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.calendar_today),
+              leading: const Icon(Icons.calendar_today, color: Colors.blue),
               title: const Text('Prescriptions'),
               onTap: () {
                 Navigator.push(
@@ -1279,7 +1279,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.show_chart, color: Colors.cyan),
+              leading: const Icon(Icons.show_chart, color: Colors.blue),
               title: const Text('Retrieve Readings'),
               onTap: () {
                 Navigator.push(
@@ -1289,7 +1289,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.medication),
+              leading: const Icon(Icons.medication, color: Colors.blue),
               title: const Text('Doctor Chat'),
               onTap: () {
                 Navigator.push(
@@ -1299,7 +1299,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.help_outline),
+              leading: const Icon(Icons.help_outline, color: Colors.blue),
               title: const Text('Support Desk'),
               onTap: () {
                 Navigator.push(
@@ -1309,7 +1309,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.medical_services),
+              leading: const Icon(Icons.medical_services, color: Colors.blue),
               title: const Text('Create A Profile'),
               onTap: () {
                 Navigator.push(
@@ -1322,7 +1322,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
 
             // ListTile(
-            //   leading: const Icon(Icons.monitor_heart),
+            //   leading: const Icon(Icons.monitor_heart, color: Colors.blue),
             //   title: const Text('Preeclampsia Symptoms'),
             //   onTap: () {
             //     Navigator.push(
@@ -1335,7 +1335,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             // ),
 
             ListTile(
-              leading: const Icon(Icons.calendar_today),
+              leading: const Icon(Icons.calendar_today, color: Colors.blue),
               title: const Text('Appointments'),
               onTap: () {
                 Navigator.push(
@@ -1346,7 +1346,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
 
             ListTile(
-              leading: const Icon(Icons.monitor_heart),
+              leading: const Icon(Icons.monitor_heart, color: Colors.blue),
               title: const Text('Anaemia Prediction'),
               onTap: () {
                 Navigator.push(
@@ -1357,7 +1357,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             ),
 
             // ListTile(
-            //   leading: const Icon(Icons.monitor_heart),
+            //   leading: const Icon(Icons.monitor_heart, color: Colors.blue),
             //   title: const Text('Live Preeclampsia Predictions'),
             //   onTap: () {
             //     Navigator.push(
@@ -1370,7 +1370,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
             // ),
 
               ListTile(
-              leading: Icon(Icons.bloodtype),
+              leading: Icon(Icons.bloodtype, color: Colors.blue),
               title: Text('Charts Data'),
               onTap: () {
                 Navigator.push(
@@ -1382,7 +1382,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
 
 
             ListTile(
-              leading: const Icon(Icons.bloodtype),
+              leading: const Icon(Icons.bloodtype, color: Colors.blue),
               title: const Text('Glucose Monitoring'),
               onTap: () {
                 Navigator.push(
@@ -1394,7 +1394,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.edit),
+              leading: const Icon(Icons.edit, color: Colors.blue),
               title: const Text('Manual Vitals'),
               onTap: () {
                 Navigator.push(
@@ -1404,7 +1404,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.history),
+              leading: const Icon(Icons.history, color: Colors.blue),
               title: const Text('View Vitals History'),
               onTap: () {
                 Navigator.push(
@@ -1414,7 +1414,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.monitor_heart),
+              leading: const Icon(Icons.monitor_heart, color: Colors.blue),
               title: const Text('Live Vitals'),
               onTap: () {
                 Navigator.push(
@@ -1424,7 +1424,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.health_and_safety),
+              leading: const Icon(Icons.health_and_safety, color: Colors.blue),
               title: const Text('Preeclampsia Prediction'),
               onTap: () {
                 Navigator.push(
