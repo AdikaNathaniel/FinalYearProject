@@ -590,6 +590,8 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
         isLoading = false;
         _lastBluetoothRefreshTime = DateTime.now();
       });
+      // ✅ NEW: Auto-post initial Bluetooth data to server
+      _postBluetoothDataToServer(widget.initialBluetoothData!);
     } else {
       _fetchVitalData();
     }
@@ -607,6 +609,67 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       }
     });
   }
+
+  // ✅ NEW: Post Bluetooth data 
+  // ✅ FIXED: Post Bluetooth data to server with proper field mapping
+Future<void> _postBluetoothDataToServer(Map<String, dynamic> bluetoothData) async {
+  try {
+    print('📤 Posting Bluetooth data to server...');
+    print('📤 Raw Bluetooth data: $bluetoothData');
+    
+    // ✅ FIXED: Handle both field name formats (full and short)
+    final Map<String, dynamic> postData = {
+      // Try full field names first, then short names as fallback
+      'g': bluetoothData['glucose']?.toDouble() ?? bluetoothData['g']?.toDouble(),
+      's': bluetoothData['systolic_bp']?.toDouble() ?? bluetoothData['s']?.toDouble(),
+      'd': bluetoothData['diastolic_bp']?.toDouble() ?? bluetoothData['d']?.toDouble(),
+      'h': bluetoothData['heart_rate']?.toDouble() ?? bluetoothData['h']?.toDouble(),
+      'sp': bluetoothData['spo2']?.toDouble() ?? bluetoothData['sp']?.toDouble(),
+      'sk': bluetoothData['skin_temp']?.toDouble() ?? bluetoothData['sk']?.toDouble(),
+      'b': bluetoothData['body_temp']?.toDouble() ?? bluetoothData['b']?.toDouble(),
+      'aclX': bluetoothData['accel_x']?.toDouble() ?? bluetoothData['aclX']?.toDouble(),
+      'aclY': bluetoothData['accel_y']?.toDouble() ?? bluetoothData['aclY']?.toDouble(),
+      'aclZ': bluetoothData['accel_z']?.toDouble() ?? bluetoothData['aclZ']?.toDouble(),
+      'gyX': bluetoothData['gyro_x']?.toDouble() ?? bluetoothData['gyX']?.toDouble(),
+      'gyY': bluetoothData['gyro_y']?.toDouble() ?? bluetoothData['gyY']?.toDouble(),
+      'gyZ': bluetoothData['gyro_z']?.toDouble() ?? bluetoothData['gyZ']?.toDouble(),
+      'source': 'bluetooth',
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    // Remove null values
+    postData.removeWhere((key, value) => value == null);
+    
+    print('📤 Processed POST data: $postData');
+
+    final response = await http.post(
+      Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(postData),
+    );
+
+    print('📤 POST Response Status: ${response.statusCode}');
+    print('📤 POST Response Body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final responseData = json.decode(response.body);
+      if (responseData['success'] == true) {
+        print('✅ Bluetooth data posted successfully to server');
+        _showSnackbar(context, "Bluetooth data synced to server!", Colors.green);
+      } else {
+        print('❌ Server returned error: ${responseData['message']}');
+        _showSnackbar(context, "Server error: ${responseData['message']}", Colors.orange);
+      }
+    } else {
+      print('❌ HTTP error: ${response.statusCode}');
+      _showSnackbar(context, "Failed to sync data: Server error ${response.statusCode}", Colors.red);
+    }
+  } catch (e) {
+    print('❌ Error posting Bluetooth data: $e');
+    _showSnackbar(context, "Sync failed: ${e.toString()}", Colors.red);
+  }
+}
+ 
 
   // Camera Color Detection Functionality
   void _showCameraColorScanner(BuildContext context) {
@@ -669,7 +732,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
     }
   }
 
-  // ✅ NEW: Handle incoming Bluetooth data
+  // ✅ UPDATED: Handle incoming Bluetooth data - now posts to server
   void _handleBluetoothData(Map<String, dynamic> data) {
     print('🔄 Processing Bluetooth data: $data');
     
@@ -681,18 +744,27 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       _isRefreshingFromBluetooth = false;
     });
 
+    // ✅ NEW: Post Bluetooth data to server
+    _postBluetoothDataToServer(data);
+    
     _checkAlarmingValues();
     
     // Show appropriate message based on data type
     switch (data['type']) {
       case 'running_averages':
-        _showSnackbar(context, "✓ Running averages updated", Colors.green);
+        _showSnackbar(context, "✓ Running averages updated & synced", Colors.green);
         break;
       case 'current_reading':
-        _showSnackbar(context, "✓ Instant reading received", Colors.blue);
+        _showSnackbar(context, "✓ Instant reading received & synced", Colors.blue);
         break;
       case 'status':
         _showSnackbar(context, "✓ Device status updated", Colors.orange);
+        break;
+      case 'initial_test':
+        _showSnackbar(context, "✓ Initial test data received & synced", Colors.green);
+        break;
+      default:
+        _showSnackbar(context, "✓ Data received & synced", Colors.green);
         break;
     }
   }
@@ -716,6 +788,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       'heartRate': data['heart_rate']?.toDouble(),
       'spo2': data['spo2']?.toDouble(),
       'bodyTemp': data['body_temp']?.toDouble(),
+      'skinTemp': data['skin_temp']?.toDouble(),
       'updatedAt': DateTime.now().toIso8601String(),
     };
   }
@@ -744,7 +817,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
       final data = await _bluetoothService.sendCommand('GET_AVERAGES');
       
       if (data != null) {
-        // Data will be handled by the stream listener
+        // Data will be handled by the stream listener which will post to server
         print('✅ Command sent successfully, waiting for response...');
       } else {
         setState(() {
@@ -767,6 +840,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
     if (data == null) {
       _showSnackbar(context, "Failed to get instant readings", Colors.orange);
     }
+    // Data will be automatically posted to server via the stream listener
   }
 
   // ✅ NEW: Request device status
@@ -791,7 +865,7 @@ class _BluetoothHealthMetricsPageState extends State<BluetoothHealthMetricsPage>
 
     // Handle result if needed
     if (result != null && result is Map<String, dynamic>) {
-      // Handle data returned from pairing page
+      // Handle data returned from pairing page and post to server
       _handleBluetoothData(result);
     }
   }
