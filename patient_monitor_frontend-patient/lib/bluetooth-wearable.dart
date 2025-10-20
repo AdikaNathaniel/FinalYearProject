@@ -615,8 +615,6 @@ class _WearableDevicePairingPageState extends State<WearableDevicePairingPage> {
               _buildConnectedSection(),
             ],
             
-            // ✅ NEW: Manual request buttons
-            _buildManualRequestButtons(),
             
             if (isScanning || scanResults.isNotEmpty) ...[
               const SizedBox(height: 20),
