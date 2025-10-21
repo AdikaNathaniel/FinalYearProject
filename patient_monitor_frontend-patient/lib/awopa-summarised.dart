@@ -59,7 +59,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
     try {
       final responses = await Future.wait([
         http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals/latest')),
-        http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-esp32-predictions/patient/${_patientIdController.text.trim()}/latest')),
+        http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/heltec-live-vitals/latest')),
         http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/symptoms/search?query=${_patientIdController.text.trim()}')),
         http.get(Uri.parse('https://patient-monitor-backend-patient.fly.dev/api/v1/anaemia-risk/assessments/patient/${_patientIdController.text.trim()}')),
       ]);
@@ -91,6 +91,26 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       return results;
     } catch (e) {
       throw Exception('Failed to fetch patient data: $e');
+    }
+  }
+
+  // Calculate MAP using the formula: (systolicBP + 2 * diastolicBP) / 3
+  double _calculateMAP(double systolicBP, double diastolicBP) {
+    return (systolicBP + 2 * diastolicBP) / 3;
+  }
+
+  // Determine preeclampsia status based on MAP and proteinUrine
+  String _determineStatus(double map, int proteinUrine) {
+    if (proteinUrine < 2) {
+      return 'no_preeclampsia';
+    } else if (map >= 130) {
+      return 'severe preeclampsia';
+    } else if (map >= 125 && map <= 129) {
+      return 'moderate preeclampsia';
+    } else if (map >= 114 && map <= 124) {
+      return 'mild preeclampsia';
+    } else {
+      return 'no_preeclampsia';
     }
   }
 
@@ -289,7 +309,15 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       return const Center(child: Text('No preeclampsia data available'));
     }
     
-    final status = preeclampsiaData['status'] ?? 'Unknown';
+    // Extract values from the live vitals data
+    final systolicBP = preeclampsiaData['systolicBP'] ?? 0.0;
+    final diastolicBP = preeclampsiaData['diastolicBP'] ?? 0.0;
+    final proteinUrine = preeclampsiaData['proteinLevel'] ?? 0;
+    
+    // Calculate MAP and status using the formulas
+    final double map = _calculateMAP(systolicBP, diastolicBP);
+    final String status = _determineStatus(map, proteinUrine);
+    
     Color statusColor = Colors.grey;
     
     if (status == 'no_preeclampsia') {
@@ -325,15 +353,15 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
           _buildDataCard(
             'Blood Pressure',
             [
-              _buildDataRow('Systolic', '${preeclampsiaData['systolicBP']} mmHg', Icons.speed),
-              _buildDataRow('Diastolic', '${preeclampsiaData['diastolicBP']} mmHg', Icons.speed),
-              _buildDataRow('MAP', '${preeclampsiaData['map']?.toStringAsFixed(1)} mmHg', Icons.speed),
+              _buildDataRow('Systolic', '${systolicBP.toStringAsFixed(1)} mmHg', Icons.speed),
+              _buildDataRow('Diastolic', '${diastolicBP.toStringAsFixed(1)} mmHg', Icons.speed),
+              _buildDataRow('MAP', '${map.toStringAsFixed(1)} mmHg', Icons.speed),
             ],
           ),
           _buildDataCard(
             'Urine Analysis',
             [
-              _buildDataRow('Protein in Urine', '${preeclampsiaData['proteinUrine']}', Icons.science),
+              _buildDataRow('Protein in Urine', '$proteinUrine', Icons.science),
             ],
           ),
           if (preeclampsiaData['createdAt'] != null)
@@ -917,20 +945,25 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
       return [pw.Text('No preeclampsia data available', style: normalTextStyle)];
     }
     
-    final status = preeclampsiaData['status'] ?? 'Unknown';
+    // Calculate MAP and status for PDF as well
+    final systolicBP = preeclampsiaData['systolicBP'] ?? 0.0;
+    final diastolicBP = preeclampsiaData['diastolicBP'] ?? 0.0;
+    final proteinUrine = preeclampsiaData['proteinLevel'] ?? 0;
+    final double map = _calculateMAP(systolicBP, diastolicBP);
+    final String status = _determineStatus(map, proteinUrine);
     
     return [
       pw.Text('Status: $status', style: boldTextStyle.copyWith(color: PdfColors.orange)),
       pw.SizedBox(height: 6),
       pw.Text('Blood Pressure:', style: boldTextStyle),
       pw.SizedBox(height: 6),
-      pw.Row(children: [pw.Text('Systolic: ', style: boldTextStyle), pw.Text('${preeclampsiaData['systolicBP']} mmHg', style: normalTextStyle)]),
-      pw.Row(children: [pw.Text('Diastolic: ', style: boldTextStyle), pw.Text('${preeclampsiaData['diastolicBP']} mmHg', style: normalTextStyle)]),
-      pw.Row(children: [pw.Text('MAP: ', style: boldTextStyle), pw.Text('${preeclampsiaData['map']?.toStringAsFixed(1)} mmHg', style: normalTextStyle)]),
+      pw.Row(children: [pw.Text('Systolic: ', style: boldTextStyle), pw.Text('${systolicBP.toStringAsFixed(1)} mmHg', style: normalTextStyle)]),
+      pw.Row(children: [pw.Text('Diastolic: ', style: boldTextStyle), pw.Text('${diastolicBP.toStringAsFixed(1)} mmHg', style: normalTextStyle)]),
+      pw.Row(children: [pw.Text('MAP: ', style: boldTextStyle), pw.Text('${map.toStringAsFixed(1)} mmHg', style: normalTextStyle)]),
       pw.SizedBox(height: 6),
       pw.Text('Urine Analysis:', style: boldTextStyle),
       pw.SizedBox(height: 6),
-      pw.Row(children: [pw.Text('Protein in Urine: ', style: boldTextStyle), pw.Text('${preeclampsiaData['proteinUrine']}', style: normalTextStyle)]),
+      pw.Row(children: [pw.Text('Protein in Urine: ', style: boldTextStyle), pw.Text('$proteinUrine', style: normalTextStyle)]),
       if (preeclampsiaData['createdAt'] != null)
         pw.Padding(
           padding: const pw.EdgeInsets.only(top: 6),
