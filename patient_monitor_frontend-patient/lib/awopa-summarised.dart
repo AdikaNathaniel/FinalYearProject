@@ -1288,185 +1288,187 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Center(
-                child: Text(
-                  'MEDICAL OFFICER',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                  textAlign: TextAlign.center,
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(color: Colors.blue),
+                child: Center(
+                  child: Text(
+                    'MEDICAL OFFICER',
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today, color: Colors.blue),
-              title: const Text('Prescriptions'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PrescriptionHomePage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.show_chart, color: Colors.blue),
-              title: const Text('Retrieve Readings'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CsvPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.medication, color: Colors.blue),
-              title: const Text('Doctor Chat'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DoctorChatPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.help_outline, color: Colors.blue),
-              title: const Text('Support Desk'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SupportFormPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.medical_services, color: Colors.blue),
-              title: const Text('Create A Profile'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DoctorProfilePage(),
-                  ),
-                );
-              },
-            ),
+              ListTile(
+                leading: const Icon(Icons.calendar_today, color: Colors.blue),
+                title: const Text('Prescriptions'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PrescriptionHomePage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.show_chart, color: Colors.blue),
+                title: const Text('Retrieve Readings'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CsvPage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.medication, color: Colors.blue),
+                title: const Text('Doctor Chat'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DoctorChatPage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.help_outline, color: Colors.blue),
+                title: const Text('Support Desk'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SupportFormPage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.medical_services, color: Colors.blue),
+                title: const Text('Create A Profile'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DoctorProfilePage(),
+                    ),
+                  );
+                },
+              ),
 
-            // ListTile(
-            //   leading: const Icon(Icons.monitor_heart, color: Colors.blue),
-            //   title: const Text('Preeclampsia Symptoms'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (context) => const PreeclampsiaHomePage(),
-            //       ),
-            //     );
-            //   },
-            // ),
-
-            ListTile(
-              leading: const Icon(Icons.calendar_today, color: Colors.blue),
-              title: const Text('Appointments'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AppointmentHomePage()),
-                );
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.monitor_heart, color: Colors.blue),
-              title: const Text('Anaemia Prediction'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AnaemiaHomePage()),
-                );
-              },
-            ),
-
-            // ListTile(
-            //   leading: const Icon(Icons.monitor_heart, color: Colors.blue),
-            //   title: const Text('Live Preeclampsia Predictions'),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (context) => const PreeclampsiaHomePage(),
-            //       ),
-            //     );
-            //   },
-            // ),
+              // ListTile(
+              //   leading: const Icon(Icons.monitor_heart, color: Colors.blue),
+              //   title: const Text('Preeclampsia Symptoms'),
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => const PreeclampsiaHomePage(),
+              //       ),
+              //     );
+              //   },
+              // ),
 
               ListTile(
-              leading: Icon(Icons.bloodtype, color: Colors.blue),
-              title: Text('Charts Data'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ChartsDataPage()),
-                );
-              },
-            ),
+                leading: const Icon(Icons.calendar_today, color: Colors.blue),
+                title: const Text('Appointments'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AppointmentHomePage()),
+                  );
+                },
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.monitor_heart, color: Colors.blue),
+                title: const Text('Anaemia Prediction'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AnaemiaHomePage()),
+                  );
+                },
+              ),
+
+              // ListTile(
+              //   leading: const Icon(Icons.monitor_heart, color: Colors.blue),
+              //   title: const Text('Live Preeclampsia Predictions'),
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => const PreeclampsiaHomePage(),
+              //       ),
+              //     );
+              //   },
+              // ),
+
+                ListTile(
+                leading: Icon(Icons.bloodtype, color: Colors.blue),
+                title: Text('Charts Data'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChartsDataPage()),
+                  );
+                },
+              ),
 
 
-            ListTile(
-              leading: const Icon(Icons.bloodtype, color: Colors.blue),
-              title: const Text('Glucose Monitoring'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const GlucoseMonitoringPage(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit, color: Colors.blue),
-              title: const Text('Manual Vitals'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => VitalsHealthDataListPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.history, color: Colors.blue),
-              title: const Text('View Vitals History'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => VitalsHistoryPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.monitor_heart, color: Colors.blue),
-              title: const Text('Live Vitals'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LiveVitalsHardwareDataPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.health_and_safety, color: Colors.blue),
-              title: const Text('Preeclampsia Prediction'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PreeclampsiaDashboard()),
-                );
-              },
-            ),
-          ],
+              ListTile(
+                leading: const Icon(Icons.bloodtype, color: Colors.blue),
+                title: const Text('Glucose Monitoring'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GlucoseMonitoringPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit, color: Colors.blue),
+                title: const Text('Manual Vitals'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => VitalsHealthDataListPage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.history, color: Colors.blue),
+                title: const Text('View Vitals History'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => VitalsHistoryPage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.monitor_heart, color: Colors.blue),
+                title: const Text('Live Vitals'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LiveVitalsHardwareDataPage()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.health_and_safety, color: Colors.blue),
+                title: const Text('Preeclampsia Prediction'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PreeclampsiaDashboard()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(

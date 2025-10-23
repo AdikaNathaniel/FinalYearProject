@@ -78,6 +78,9 @@ class _HealthDashboardState extends State<HealthDashboard> {
   bool _isOnDashboardPage = false;
   bool _wearableDialogShown = false;
 
+  // Glucose unit state
+  GlucoseUnit _glucoseUnit = GlucoseUnit.mgDL;
+
   // Color detection variables
   final List<Color> _proteinColors = [
     Color(0xFF00C2C7), 
@@ -112,6 +115,38 @@ class _HealthDashboardState extends State<HealthDashboard> {
     _isOnDashboardPage = false;
     _alertTimer?.cancel();
     super.dispose();
+  }
+
+  // Glucose conversion functions
+  double _convertGlucoseToMgDl(double? mmolL) {
+    if (mmolL == null) return 0.0;
+    return mmolL * 18.0;
+  }
+
+  double _convertGlucoseToMmolL(double? mgDl) {
+    if (mgDl == null) return 0.0;
+    return mgDl / 18.0;
+  }
+
+  String _getGlucoseDisplayValue() {
+    final rawGlucose = vitalData?['glucose']?.toDouble();
+    if (rawGlucose == null) return 'N/A';
+    
+    switch (_glucoseUnit) {
+      case GlucoseUnit.mgDL:
+        return '${rawGlucose.toStringAsFixed(1)} mg/dL';
+      case GlucoseUnit.mmolL:
+        final mmolL = _convertGlucoseToMmolL(rawGlucose);
+        return '${mmolL.toStringAsFixed(1)} mmol/L';
+    }
+  }
+
+  void _toggleGlucoseUnit() {
+    setState(() {
+      _glucoseUnit = _glucoseUnit == GlucoseUnit.mgDL 
+          ? GlucoseUnit.mmolL 
+          : GlucoseUnit.mgDL;
+    });
   }
 
   Future<void> _fetchVitalData() async {
@@ -808,12 +843,18 @@ class _HealthDashboardState extends State<HealthDashboard> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        MetricCard(
-                          title: 'Blood Glucose',
-                          value: '${vitalData?['glucose']?.toStringAsFixed(1) ?? 'N/A'} mg/dL',
-                          icon: Icons.water_drop,
-                          color: Colors.purple,
-                          lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                        // Glucose Card with Unit Toggle
+                        GestureDetector(
+                          onTap: _toggleGlucoseUnit,
+                          child: MetricCard(
+                            title: 'Blood Glucose',
+                            value: _getGlucoseDisplayValue(),
+                            icon: Icons.water_drop,
+                            color: Colors.purple,
+                            lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
+                            showUnitToggle: true,
+                            currentUnit: _glucoseUnit,
+                          ),
                         ),
                         
                         MetricCard(
@@ -1185,6 +1226,154 @@ class _HealthDashboardState extends State<HealthDashboard> {
   }
 }
 
+// Glucose Unit Enum
+enum GlucoseUnit {
+  mgDL,
+  mmolL
+}
+
+// Updated MetricCard with Unit Toggle Support
+class MetricCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final String lastUpdated;
+  final bool showUnitToggle;
+  final GlucoseUnit? currentUnit;
+
+  const MetricCard({
+    Key? key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.lastUpdated,
+    this.showUnitToggle = false,
+    this.currentUnit,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Header with unit toggle indicator
+            if (showUnitToggle && currentUnit != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color.withOpacity(0.2),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 22,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      currentUnit == GlucoseUnit.mgDL ? 'mg/dL' : 'mmol/L',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color.withOpacity(0.2),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 28,
+                ),
+              ),
+            
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              lastUpdated,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            // Unit toggle hint
+            if (showUnitToggle)
+              const SizedBox(height: 4),
+            if (showUnitToggle)
+              Text(
+                'Tap to switch units',
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey[500],
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // Camera Color Scanner Screen
 class CameraColorScanner extends StatefulWidget {
   final List<Color> proteinColors;
@@ -1526,92 +1715,6 @@ class _CameraColorScannerState extends State<CameraColorScanner> {
                     ),
                   ],
                 ),
-    );
-  }
-}
-
-class MetricCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final String lastUpdated;
-
-  const MetricCard({
-    Key? key,
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.lastUpdated,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.2),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              lastUpdated,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

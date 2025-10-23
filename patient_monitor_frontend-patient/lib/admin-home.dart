@@ -269,58 +269,60 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ],
             ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Center(
-                child: Text(
-                  'ADMIN',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Center(
+                  child: Text(
+                    'ADMIN',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.supervised_user_circle, color: Colors.blue),
-              title: const Text('All Users'),
-              selected: _selectedPage == 'Users',
-              onTap: () {
-                setState(() {
-                  _selectedPage = 'Users';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications, color: Colors.blue),
-              title: const Text('Notifications'),
-              selected: _selectedPage == 'Notifications',
-              onTap: () {
-                setState(() {
-                  _selectedPage = 'Notifications';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.support_agent, color: Colors.blue),
-              title: const Text('Support'),
-              selected: _selectedPage == 'Support',
-              onTap: () {
-                setState(() {
-                  _selectedPage = 'Support';
-                });
-                Navigator.pop(context);
-              },
-            ),
-          ],
+              ListTile(
+                leading: const Icon(Icons.supervised_user_circle, color: Colors.blue),
+                title: const Text('All Users'),
+                selected: _selectedPage == 'Users',
+                onTap: () {
+                  setState(() {
+                    _selectedPage = 'Users';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.notifications, color: Colors.blue),
+                title: const Text('Notifications'),
+                selected: _selectedPage == 'Notifications',
+                onTap: () {
+                  setState(() {
+                    _selectedPage = 'Notifications';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.support_agent, color: Colors.blue),
+                title: const Text('Support'),
+                selected: _selectedPage == 'Support',
+                onTap: () {
+                  setState(() {
+                    _selectedPage = 'Support';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: _buildContent(_selectedPage),
