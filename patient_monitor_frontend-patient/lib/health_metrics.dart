@@ -635,7 +635,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Health Metrics ',
+          'Health Metrics',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -837,7 +837,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
                   children: [
                     GridView.count(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.95,
+                      childAspectRatio: 1.0, // Increased from 0.95 to 1.0 for more space
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       shrinkWrap: true,
@@ -853,7 +853,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                             color: Colors.purple,
                             lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                             showUnitToggle: true,
-                            currentUnit: _glucoseUnit,
                           ),
                         ),
                         
@@ -889,80 +888,19 @@ class _HealthDashboardState extends State<HealthDashboard> {
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
                         
+                        // Protein Card - Now using the same MetricCard layout
                         GestureDetector(
                           onTap: () => _showUrineStripDialog(context),
-                          child: Card(
-                            elevation: 0,
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.indigo.withOpacity(0.2),
-                                    ),
-                                    child: Icon(
-                                      Icons.science,
-                                      color: selectedProteinLevel != null 
-                                          ? selectedProteinColor ?? Colors.indigo
-                                          : Colors.indigo,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Protein in Urine',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: Colors.grey[700],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      selectedProteinLevel != null 
-                                          ? 'Level: $selectedProteinLevel'
-                                          : 'Tap to Scan',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: selectedProteinLevel != null 
-                                            ? Colors.black87 
-                                            : Colors.blue,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    selectedProteinLevel != null 
-                                        ? 'Last updated: Just now'
-                                        : 'Click to scan urine strip',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey[600],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
+                          child: MetricCard(
+                            title: 'Protein in Urine',
+                            value: selectedProteinLevel != null 
+                                ? 'Level: $selectedProteinLevel'
+                                : 'Tap to Scan',
+                            icon: Icons.science,
+                            color: Colors.indigo,
+                            lastUpdated: selectedProteinLevel != null 
+                                ? 'Just now'
+                                : 'Click to scan',
                           ),
                         ),
                       ],
@@ -1232,7 +1170,7 @@ enum GlucoseUnit {
   mmolL
 }
 
-// Updated MetricCard with Unit Toggle Support
+// UPDATED MetricCard - Optimized text layout to prevent overflow
 class MetricCard extends StatelessWidget {
   final String title;
   final String value;
@@ -1240,7 +1178,6 @@ class MetricCard extends StatelessWidget {
   final Color color;
   final String lastUpdated;
   final bool showUnitToggle;
-  final GlucoseUnit? currentUnit;
 
   const MetricCard({
     Key? key,
@@ -1250,7 +1187,6 @@ class MetricCard extends StatelessWidget {
     required this.color,
     required this.lastUpdated,
     this.showUnitToggle = false,
-    this.currentUnit,
   }) : super(key: key);
 
   @override
@@ -1262,111 +1198,77 @@ class MetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10), // Reduced padding from 12 to 10
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Header with unit toggle indicator
-            if (showUnitToggle && currentUnit != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color.withOpacity(0.2),
-                    ),
-                    child: Icon(
-                      icon,
-                      color: color,
-                      size: 22,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                    ),
-                    child: Text(
-                      currentUnit == GlucoseUnit.mgDL ? 'mg/dL' : 'mmol/L',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            else
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color.withOpacity(0.2),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 28,
-                ),
+            // Centered icon
+            Container(
+              width: 42, // Reduced from 50 to 42
+              height: 42, // Reduced from 50 to 42
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.2),
               ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 22, // Reduced from 28 to 22
+              ),
+            ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: 6), // Reduced from 8 to 6
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontSize: 11, // Reduced from 13 to 11
                 color: Colors.grey[700],
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3), // Reduced from 4 to 3
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14, // Reduced from 16 to 14
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3), // Reduced from 4 to 3
             Text(
               lastUpdated,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9, // Reduced from 10 to 9
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            // Unit toggle hint
-            if (showUnitToggle)
-              const SizedBox(height: 4),
-            if (showUnitToggle)
+            // Unit toggle hint - only for glucose card
+            if (showUnitToggle) ...[
+              const SizedBox(height: 2), // Reduced from 4 to 2
               Text(
                 'Tap to switch units',
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: 8, // Reduced from 9 to 8
                   color: Colors.grey[500],
                   fontStyle: FontStyle.italic,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
               ),
+            ],
           ],
         ),
       ),
