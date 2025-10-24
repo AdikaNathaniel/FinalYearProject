@@ -28,6 +28,7 @@ import 'appointment-schedule-by-medic.dart';
 import 'bluetooth-wearable.dart';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as img;
+import 'video_call_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -700,6 +701,56 @@ class _HealthDashboardState extends State<HealthDashboard> {
               },
             ),
 
+//             ListTile(
+//   leading: const Icon(Icons.video_call, color: Colors.green),
+//   title: const Text('Video Call'),
+//   subtitle: const Text('Start a video consultation'),
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => VideoCallPage(
+//           channelName: 'consultation_${DateTime.now().millisecondsSinceEpoch}', // Unique channel name
+//           appId: '1e83d054ca2a43dda969689a961ed0a8', 
+//           token: '007eJxTYHAwl1STLt3Pz2xqfJPV/aCJss/BC5fWslj27zlZouiy95MCg2GqhXGKgalJcqJRoolxSkqipZmlmYUlkDJMTTFItPi/9ndGQyAjQ9vUFcyMDBAI4rMxlBRlJuYUMzAAALKUHws=',
+//         ),
+//       ),
+//     );
+//   },
+// ),
+
+
+// ListTile(
+//   leading: const Icon(Icons.video_call, color: Colors.green),
+//   title: const Text('Video Call'),
+//   subtitle: const Text('Start a video consultation'),
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => WebRTCVideoCallPage(
+//           roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
+//         ),
+//       ),
+//     );
+//   },
+// ),
+
+ListTile(
+  leading: const Icon(Icons.video_call, color: Colors.blue),
+  title: const Text('Video Call'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebRTCVideoCallPage(
+          roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
+        ),
+      ),
+    );
+  },
+),
+
             ListTile(
               leading: const Icon(Icons.health_and_safety, color: Colors.blue),
               title: const Text('Pregnancy Tips'),
@@ -802,12 +853,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
             ListTile(
               leading: const Icon(Icons.search, color: Colors.blue),
               title: const Text(
-                'Find Your Favorite Medic',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
-              ),
+                'Find Your Favorite Medic'),
               onTap: () {
                 Navigator.push(
                   context,

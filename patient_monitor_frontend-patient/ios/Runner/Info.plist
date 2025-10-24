@@ -46,7 +46,12 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
-<key>NSFaceIDUsageDescription</key>
-<string>This app uses FACE ID for secure authentication</string>
+	<!-- Camera and Microphone Permissions for Agora Video Calls -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access for video calls</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for audio calls</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This app uses FACE ID for secure authentication</string>
 </dict>
 </plist>
