@@ -27,7 +27,7 @@ interface ChatRoom {
 }
 
 @Injectable()
-@WebSocketGateway(3009, { 
+@WebSocketGateway(8080, { 
   cors: { 
     origin: '*', // Allow all origins for mobile testing
     credentials: false // Set to false when using '*'

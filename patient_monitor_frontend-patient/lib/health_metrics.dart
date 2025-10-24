@@ -29,7 +29,7 @@ import 'bluetooth-wearable.dart';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as img;
 import 'video_call_page.dart';
-
+import 'pregnant-chat.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -751,6 +751,23 @@ ListTile(
   },
 ),
 
+
+
+ListTile(
+  leading: Icon(Icons.chat, color: Colors.blue),
+  title: Text('Chat with Doctors'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PregnantChatPage(
+          userId: 'pregnant_user_123', // Replace with actual user ID
+          userName: 'Sarah Johnson',   // Replace with actual user name
+        ),
+      ),
+    );
+  },
+),
             ListTile(
               leading: const Icon(Icons.health_and_safety, color: Colors.blue),
               title: const Text('Pregnancy Tips'),

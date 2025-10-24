@@ -14,7 +14,7 @@ import 'dart:io';
 import 'view-appointment.dart';
 import 'create_cancel-appointment.dart';
 import 'login_page.dart';
-import 'doctor-chat.dart';
+// import 'doctor-chat.dart';
 import 'set_profile.dart';
 import 'support-create.dart';
 import 'doctor-profile.dart';
@@ -37,6 +37,7 @@ import 'vitals-health-data-list.dart';
 import 'vitals-health-data-get-specific-user.dart';
 import 'csv.dart';
 import 'chart-data.dart';
+import 'medic-chat.dart';
 
 class AWOPASummarisedPage extends StatefulWidget {
   final String userEmail;
@@ -1322,16 +1323,17 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.medication, color: Colors.blue),
-                title: const Text('Doctor Chat'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => DoctorChatPage()),
-                  );
-                },
-              ),
+              
+              // ListTile(
+              //   leading: const Icon(Icons.medication, color: Colors.blue),
+              //   title: const Text('Doctor Chat'),
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(builder: (context) => DoctorChatPage()),
+              //     );
+              //   },
+              // ),
               ListTile(
                 leading: const Icon(Icons.help_outline, color: Colors.blue),
                 title: const Text('Support Desk'),
@@ -1457,6 +1459,23 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                   );
                 },
               ),
+
+
+              ListTile(
+  leading: Icon(Icons.medical_services, color: Colors.blue),
+  title: Text('Patient Consultations'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DoctorChatPage(
+          doctorId: 'doctor_456',     // Replace with actual doctor ID
+          doctorName: 'Dr. Smith',    // Replace with actual doctor name
+        ),
+      ),
+    );
+  },
+),
               ListTile(
                 leading: const Icon(Icons.health_and_safety, color: Colors.blue),
                 title: const Text('Preeclampsia Prediction'),

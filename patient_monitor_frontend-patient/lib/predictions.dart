@@ -6,7 +6,7 @@ import 'create_cancel-appointment.dart';
 import 'login_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'doctor-chat.dart';
+// import 'doctor-chat.dart';
 import 'set_profile.dart';
 import 'support-create.dart';
 import 'doctor-profile.dart';
@@ -30,6 +30,7 @@ import 'vitals-health-data-get-specific-user.dart';
 import 'csv.dart';
 import 'chart-data.dart';
 import 'notification-list.dart';
+import 'medic-chat.dart';
 
 
 class PregnancyComplicationsPage extends StatefulWidget {
@@ -160,16 +161,18 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
             ),
          
 
-            ListTile(
-              leading: Icon(Icons.medication),
-              title: Text('Doctor Chat'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DoctorChatPage()),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.medication),
+            //   title: Text('Doctor Chat'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => DoctorChatPage()),
+            //     );
+            //   },
+            // ),
+
+            
             ListTile(
               leading: Icon(Icons.help_outline),
               title: Text('Support Desk'),
@@ -273,6 +276,22 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
                 );
               },
             ),
+
+ListTile(
+  leading: Icon(Icons.medical_services, color: Colors.blue),
+  title: Text('Patient Consultations'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DoctorChatPage(
+          doctorId: 'doctor_456',     // Replace with actual doctor ID
+          doctorName: 'Dr. Smith',    // Replace with actual doctor name
+        ),
+      ),
+    );
+  },
+),
 
             ListTile(
               leading: Icon(Icons.health_and_safety),
