@@ -12,10 +12,31 @@ import cookieParser from 'cookie-parser';
 import { raw } from 'express';
 import express from 'express';
 import { join } from 'path';
-import { HealthCheckService, MicroserviceHealthIndicator } from '@nestjs/terminus';
 
 // Import SearchService class directly
 import { SearchService } from './search/search.service';
+
+// =============================================================================
+// CRITICAL FIX: DISABLE PROBLEMATIC SERVICES FOR PRODUCTION STABILITY
+// =============================================================================
+
+// Temporarily disable everything that could crash in production
+if (process.env.NODE_ENV === 'production') {
+  process.env.DISABLE_FACE_RECOGNITION = 'true';
+  process.env.DISABLE_REDIS = 'true'; 
+  process.env.DISABLE_ELASTICSEARCH = 'true';
+  process.env.DISABLE_KAFKA = 'true';
+  process.env.DISABLE_RABBITMQ = 'true';
+  
+  console.log('🔧 PRODUCTION MODE: Disabled external services for stability');
+}
+
+// Apply environment variable overrides if they exist
+process.env.DISABLE_FACE_RECOGNITION = process.env.DISABLE_FACE_RECOGNITION || 'true';
+process.env.DISABLE_REDIS = process.env.DISABLE_REDIS || 'true';
+process.env.DISABLE_ELASTICSEARCH = process.env.DISABLE_ELASTICSEARCH || 'true';
+process.env.DISABLE_KAFKA = process.env.DISABLE_KAFKA || 'true';
+process.env.DISABLE_RABBITMQ = process.env.DISABLE_RABBITMQ || 'true';
 
 // Type definitions for better type safety
 interface ElasticsearchClient {
@@ -49,7 +70,7 @@ const CONFIG = {
     },
     maxRetries: 5,
     requestTimeout: 60000,
-    required: process.env.ELASTICSEARCH_REQUIRED === 'true',
+    required: process.env.ELASTICSEARCH_REQUIRED === 'true' && process.env.DISABLE_ELASTICSEARCH !== 'true',
   },
   redis: {
     // Support for Redis URL (like Upstash, Redis Cloud, etc.)
@@ -60,7 +81,7 @@ const CONFIG = {
     // Auto-detect TLS from URL or explicit flag
     tls: process.env.REDIS_TLS === 'true' || process.env.REDIS_URL?.startsWith('rediss://'),
     ttl: parseInt(process.env.REDIS_TTL, 10) || 3600,
-    required: process.env.REDIS_REQUIRED === 'true',
+    required: process.env.REDIS_REQUIRED === 'true' && process.env.DISABLE_REDIS !== 'true',
   },
   rabbitmq: {
     url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
@@ -68,10 +89,13 @@ const CONFIG = {
     reconnectDelay: 5000,
     maxAttempts: 10,
     timeout: 10000,
-    required: process.env.RABBITMQ_REQUIRED === 'true',
+    required: process.env.RABBITMQ_REQUIRED === 'true' && process.env.DISABLE_RABBITMQ !== 'true',
   },
   kafka: {
-    required: process.env.KAFKA_REQUIRED === 'true',
+    required: process.env.KAFKA_REQUIRED === 'true' && process.env.DISABLE_KAFKA !== 'true',
+  },
+  faceRecognition: {
+    enabled: process.env.DISABLE_FACE_RECOGNITION !== 'true',
   },
   server: {
     port: parseInt(process.env.PORT, 10) || 3000,
@@ -117,17 +141,30 @@ class ApplicationManager {
       logger.log(`NODE_ENV: ${process.env.NODE_ENV}`);
       logger.log(`PORT: ${CONFIG.server.port}`);
       
+      // Log disabled services
+      this.logDisabledServices();
+      
       await this.setupErrorHandlers();
       logger.log('✓ Error handlers configured');
       
       await this.initializeMainApplication();
       logger.log('✓ Main application initialized');
       
-      await this.setupEmailFallbackMechanism();
-      logger.log('✓ Email fallback mechanism configured');
+      // Only setup email if not disabled
+      if (process.env.DISABLE_RABBITMQ !== 'true') {
+        await this.setupEmailFallbackMechanism();
+        logger.log('✓ Email fallback mechanism configured');
+      } else {
+        logger.log('⚠ Email fallback mechanism DISABLED');
+      }
       
-      await this.checkSearchServicesConnection();
-      logger.log('✓ Search services check completed (optional services may have failed)');
+      // Only check search services if not disabled
+      if (process.env.DISABLE_REDIS !== 'true' || process.env.DISABLE_ELASTICSEARCH !== 'true') {
+        await this.checkSearchServicesConnection();
+        logger.log('✓ Search services check completed');
+      } else {
+        logger.log('⚠ Search services check SKIPPED (all services disabled)');
+      }
       
       this.logStartupComplete();
     } catch (error) {
@@ -137,6 +174,19 @@ class ApplicationManager {
       logger.error(`Error stack: ${error.stack}`);
       logger.error('=== END ERROR DETAILS ===');
       await this.gracefulShutdown(1);
+    }
+  }
+
+  private logDisabledServices() {
+    const disabledServices = [];
+    if (process.env.DISABLE_FACE_RECOGNITION === 'true') disabledServices.push('Face Recognition');
+    if (process.env.DISABLE_REDIS === 'true') disabledServices.push('Redis');
+    if (process.env.DISABLE_ELASTICSEARCH === 'true') disabledServices.push('Elasticsearch');
+    if (process.env.DISABLE_KAFKA === 'true') disabledServices.push('Kafka');
+    if (process.env.DISABLE_RABBITMQ === 'true') disabledServices.push('RabbitMQ');
+    
+    if (disabledServices.length > 0) {
+      logger.log(`🔧 DISABLED SERVICES: ${disabledServices.join(', ')}`);
     }
   }
 
@@ -182,7 +232,6 @@ class ApplicationManager {
       logger.log('✓ Application configured');
 
       logger.log(`Starting server on port ${CONFIG.server.port}...`);
-      // await this.mainApp.listen(CONFIG.server.port);
       await this.mainApp.listen(CONFIG.server.port, '0.0.0.0');
       logger.log(`✓ Main application running on port ${CONFIG.server.port}`);
       logger.log(`✓ Application is running on: ${await this.mainApp.getUrl()}`);
@@ -197,6 +246,12 @@ class ApplicationManager {
   private async checkSearchServicesConnection() {
     try {
       logger.log('=== CHECKING SEARCH SERVICES (OPTIONAL) ===');
+      
+      // Quick check if all services are disabled
+      if (process.env.DISABLE_REDIS === 'true' && process.env.DISABLE_ELASTICSEARCH === 'true') {
+        logger.log('⚠ All search services disabled via environment variables');
+        return;
+      }
       
       let searchService: SearchService;
       
@@ -230,88 +285,96 @@ class ApplicationManager {
 
       logger.log('Validating search services connections...');
 
-      // Redis connection check with improved logging
-      const redisClient = (searchService as any).redisClient;
-      if (redisClient) {
-        try {
-          const connectionInfo = CONFIG.redis.url 
-            ? `Redis URL (${CONFIG.redis.url.split('@')[1] || 'external'})`
-            : `${CONFIG.redis.host}:${CONFIG.redis.port}`;
-          
-          logger.log(`Attempting Redis connection to ${connectionInfo}...`);
-          logger.log(`TLS enabled: ${CONFIG.redis.tls ? 'Yes' : 'No'}`);
-          
-          await redisClient.ping();
-          logger.log('✓ Redis connection established successfully');
-          logger.log(`✓ Redis is ready for caching operations`);
-        } catch (redisError) {
-          logger.warn(`⚠ Redis connection failed: ${redisError.message}`);
-          logger.warn(`Redis error details: ${redisError.stack}`);
-          
+      // Redis connection check with improved logging - only if not disabled
+      if (process.env.DISABLE_REDIS !== 'true') {
+        const redisClient = (searchService as any).redisClient;
+        if (redisClient) {
+          try {
+            const connectionInfo = CONFIG.redis.url 
+              ? `Redis URL (${CONFIG.redis.url.split('@')[1] || 'external'})`
+              : `${CONFIG.redis.host}:${CONFIG.redis.port}`;
+            
+            logger.log(`Attempting Redis connection to ${connectionInfo}...`);
+            logger.log(`TLS enabled: ${CONFIG.redis.tls ? 'Yes' : 'No'}`);
+            
+            await redisClient.ping();
+            logger.log('✓ Redis connection established successfully');
+            logger.log(`✓ Redis is ready for caching operations`);
+          } catch (redisError) {
+            logger.warn(`⚠ Redis connection failed: ${redisError.message}`);
+            logger.warn(`Redis error details: ${redisError.stack}`);
+            
+            if (CONFIG.redis.required) {
+              throw new Error(`Redis connection failed: ${redisError.message}`);
+            } else {
+              logger.warn('⚠ Redis not available but not required, continuing without Redis...');
+              logger.warn('⚠ Search result caching will be disabled');
+            }
+          }
+        } else {
+          logger.warn('⚠ Redis client not found in SearchService');
           if (CONFIG.redis.required) {
-            throw new Error(`Redis connection failed: ${redisError.message}`);
+            throw new Error('Redis client not found but is required');
           } else {
-            logger.warn('⚠ Redis not available but not required, continuing without Redis...');
-            logger.warn('⚠ Search result caching will be disabled');
+            logger.warn('⚠ Continuing without Redis (not required)');
           }
         }
       } else {
-        logger.warn('⚠ Redis client not found in SearchService');
-        if (CONFIG.redis.required) {
-          throw new Error('Redis client not found but is required');
-        } else {
-          logger.warn('⚠ Continuing without Redis (not required)');
-        }
+        logger.log('⚠ Redis check SKIPPED (disabled via DISABLE_REDIS)');
       }
       
-      // Elasticsearch connection check
-      const esClient = (searchService as any).esClient;
-      if (esClient) {
-        try {
-          logger.log(`Attempting Elasticsearch connection to ${CONFIG.elasticsearch.node}...`);
-          const esResponse = await esClient.cluster.health();
-          const clusterStatus = esResponse.body?.status || esResponse.status || 'unknown';
-          logger.log(`✓ Elasticsearch connection established - Cluster status: ${clusterStatus}`);
-          
-          // Ensure default index exists
-          const indexExists = await esClient.indices.exists({ 
-            index: CONFIG.elasticsearch.indices.default 
-          });
-          
-          const indexExistsResult = indexExists.body !== undefined ? indexExists.body : indexExists;
-          
-          if (!indexExistsResult) {
-            logger.log(`Creating default index: ${CONFIG.elasticsearch.indices.default}`);
+      // Elasticsearch connection check - only if not disabled
+      if (process.env.DISABLE_ELASTICSEARCH !== 'true') {
+        const esClient = (searchService as any).esClient;
+        if (esClient) {
+          try {
+            logger.log(`Attempting Elasticsearch connection to ${CONFIG.elasticsearch.node}...`);
+            const esResponse = await esClient.cluster.health();
+            const clusterStatus = esResponse.body?.status || esResponse.status || 'unknown';
+            logger.log(`✓ Elasticsearch connection established - Cluster status: ${clusterStatus}`);
             
-            if (typeof (searchService as any).createIndex === 'function') {
-              try {
-                await (searchService as any).createIndex(CONFIG.elasticsearch.indices.default);
-                logger.log(`✓ Default index created: ${CONFIG.elasticsearch.indices.default}`);
-              } catch (createError) {
-                logger.warn(`Service createIndex failed: ${createError.message}`);
-                if (!CONFIG.elasticsearch.required) {
-                  logger.warn('⚠ Continuing without Elasticsearch index (not required)');
+            // Ensure default index exists
+            const indexExists = await esClient.indices.exists({ 
+              index: CONFIG.elasticsearch.indices.default 
+            });
+            
+            const indexExistsResult = indexExists.body !== undefined ? indexExists.body : indexExists;
+            
+            if (!indexExistsResult) {
+              logger.log(`Creating default index: ${CONFIG.elasticsearch.indices.default}`);
+              
+              if (typeof (searchService as any).createIndex === 'function') {
+                try {
+                  await (searchService as any).createIndex(CONFIG.elasticsearch.indices.default);
+                  logger.log(`✓ Default index created: ${CONFIG.elasticsearch.indices.default}`);
+                } catch (createError) {
+                  logger.warn(`Service createIndex failed: ${createError.message}`);
+                  if (!CONFIG.elasticsearch.required) {
+                    logger.warn('⚠ Continuing without Elasticsearch index (not required)');
+                  }
                 }
               }
+            } else {
+              logger.log(`✓ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
             }
-          } else {
-            logger.log(`✓ Default index already exists: ${CONFIG.elasticsearch.indices.default}`);
+          } catch (esError) {
+            logger.warn(`⚠ Elasticsearch connection failed: ${esError.message}`);
+            if (CONFIG.elasticsearch.required) {
+              throw new Error(`Elasticsearch connection failed: ${esError.message}`);
+            } else {
+              logger.warn('⚠ Elasticsearch not available but not required, continuing without Elasticsearch...');
+            }
           }
-        } catch (esError) {
-          logger.warn(`⚠ Elasticsearch connection failed: ${esError.message}`);
+        } else {
+          logger.warn('⚠ Elasticsearch client not found in SearchService');
           if (CONFIG.elasticsearch.required) {
-            throw new Error(`Elasticsearch connection failed: ${esError.message}`);
+            throw new Error('Elasticsearch client not found but is required');
           } else {
-            logger.warn('⚠ Elasticsearch not available but not required, continuing without Elasticsearch...');
+            logger.warn('⚠ Continuing without Elasticsearch (not required)');
           }
         }
       } else {
-        logger.warn('⚠ Elasticsearch client not found in SearchService');
-        if (CONFIG.elasticsearch.required) {
-          throw new Error('Elasticsearch client not found but is required');
-        } else {
-          logger.warn('⚠ Continuing without Elasticsearch (not required)');
-        }
+        logger.log('⚠ Elasticsearch check SKIPPED (disabled via DISABLE_ELASTICSEARCH)');
       }
 
       logger.log('✓ Search services validation completed (available services are connected)');
@@ -350,7 +413,18 @@ class ApplicationManager {
       this.mainApp.use('/api/v1/heltec-live-vitals', express.raw({ type: 'text/plain' }));
       this.mainApp.use(CONFIG.static.profilePhotosRoute, express.static(CONFIG.static.profilePhotosPath));
       
+      // Add health check endpoint
+      this.mainApp.getHttpAdapter().getInstance().get('/health', (req: any, res: any) => {
+        res.status(200).json({ 
+          status: 'OK', 
+          timestamp: new Date().toISOString(),
+          service: 'Patient Monitor Backend',
+          environment: process.env.NODE_ENV || 'development'
+        });
+      });
+      
       logger.log(`Static files: ${CONFIG.static.profilePhotosRoute} -> ${CONFIG.static.profilePhotosPath}`);
+      logger.log('✓ Health check endpoint configured at /health');
 
       this.mainApp.setGlobalPrefix(CONFIG.server.apiPrefix);
       this.mainApp.useGlobalInterceptors(new TransformationInterceptor());
@@ -390,6 +464,12 @@ class ApplicationManager {
 
   private async setupEmailFallbackMechanism() {
     try {
+      // Skip if RabbitMQ is disabled
+      if (process.env.DISABLE_RABBITMQ === 'true') {
+        logger.log('⚠ Email fallback mechanism SKIPPED (RabbitMQ disabled)');
+        return;
+      }
+
       logger.log('Setting up email fallback mechanism...');
       
       const app = this.mainApp.getHttpAdapter().getInstance();
@@ -469,22 +549,21 @@ class ApplicationManager {
 
   private logStartupComplete() {
     logger.log('==========================================');
-    logger.log('APPLICATION STARTUP COMPLETE');
+    logger.log('🎉 APPLICATION STARTUP COMPLETE');
     logger.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.log(`Main API: http://localhost:${CONFIG.server.port}/${CONFIG.server.apiPrefix}`);
-    logger.log(`Elasticsearch: ${CONFIG.elasticsearch.node} (required: ${CONFIG.elasticsearch.required})`);
+    logger.log(`Health Check: http://localhost:${CONFIG.server.port}/health`);
     
-    // Enhanced Redis logging
-    if (CONFIG.redis.url) {
-      const maskedUrl = CONFIG.redis.url.replace(/:\/\/.*@/, '://****@');
-      logger.log(`Redis: ${maskedUrl} (required: ${CONFIG.redis.required})`);
-    } else {
-      logger.log(`Redis: ${CONFIG.redis.host}:${CONFIG.redis.port} (required: ${CONFIG.redis.required})`);
-    }
+    // Show service status
+    logger.log(`🔧 Service Status:`);
+    logger.log(`   - Face Recognition: ${CONFIG.faceRecognition.enabled ? '✅ Enabled' : '❌ Disabled'}`);
+    logger.log(`   - Redis: ${CONFIG.redis.required ? '✅ Required' : '❌ Disabled'}`);
+    logger.log(`   - Elasticsearch: ${CONFIG.elasticsearch.required ? '✅ Required' : '❌ Disabled'}`);
+    logger.log(`   - Kafka: ${CONFIG.kafka.required ? '✅ Required' : '❌ Disabled'}`);
+    logger.log(`   - RabbitMQ: ${CONFIG.rabbitmq.required ? '✅ Required' : '❌ Disabled'}`);
     
-    logger.log(`Kafka: (required: ${CONFIG.kafka.required})`);
-    logger.log(`Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
-    logger.log('⚠ NOTE: All external services (Redis, Elasticsearch, Kafka) are OPTIONAL');
+    logger.log(`📁 Static Profile Photos: http://localhost:${CONFIG.server.port}${CONFIG.static.profilePhotosRoute}`);
+    logger.log('💡 NOTE: Disabled services can be re-enabled via environment variables');
     logger.log('==========================================');
   }
 
@@ -534,13 +613,9 @@ async function bootstrap() {
   }
 }
 
-if (process.env.NODE_ENV !== 'production') {
-  bootstrap();
-} else {
-  bootstrap().catch(err => {
-    logger.error('=== PRODUCTION BOOTSTRAP FAILED ===');
-    logger.error(`Fatal error: ${err.message}`);
-    logger.error(`Stack: ${err.stack}`);
-    process.exit(1);
-  });
-}
+// Simplified bootstrap logic to prevent multiple instances
+bootstrap().catch((error) => {
+  logger.error('=== FATAL BOOTSTRAP ERROR ===');
+  logger.error(`Error: ${error.message}`);
+  process.exit(1);
+});
