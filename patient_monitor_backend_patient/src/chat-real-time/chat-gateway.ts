@@ -27,10 +27,10 @@ interface ChatRoom {
 }
 
 @Injectable()
-@WebSocketGateway(8080, { 
+@WebSocketGateway({ 
   cors: { 
-    origin: '*', // Allow all origins for mobile testing
-    credentials: false // Set to false when using '*'
+    origin: '*',
+    credentials: false
   } 
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
