@@ -30,11 +30,11 @@ app = "patient-monitor-backend-patient"
   processes = ["app"]
 
   [[services.ports]]
-    handlers = ["http"]
+    handlers = ["http",, "ws"]
     port = 80
 
   [[services.ports]]
-    handlers = ["tls", "http"]
+    handlers = ["tls", "http","ws"]
     port = 443
 
   [[services.tcp_checks]]
