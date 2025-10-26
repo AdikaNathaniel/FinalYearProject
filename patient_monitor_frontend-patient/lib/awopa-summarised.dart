@@ -1323,7 +1323,7 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                   );
                 },
               ),
-              
+
               // ListTile(
               //   leading: const Icon(Icons.medication, color: Colors.blue),
               //   title: const Text('Doctor Chat'),
@@ -1461,21 +1461,21 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
               ),
 
 
-              ListTile(
-  leading: Icon(Icons.medical_services, color: Colors.blue),
-  title: Text('Patient Consultations'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DoctorChatPage(
-          doctorId: 'doctor_456',     // Replace with actual doctor ID
-          doctorName: 'Dr. Smith',    // Replace with actual doctor name
-        ),
-      ),
-    );
-  },
-),
+//               ListTile(
+//   leading: Icon(Icons.medical_services, color: Colors.blue),
+//   title: Text('Patient Consultations'),
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => DoctorChatPage(
+//           doctorId: 'doctor_456',     // Replace with actual doctor ID
+//           doctorName: 'Dr. Smith',    // Replace with actual doctor name
+//         ),
+//       ),
+//     );
+//   },
+// ),
               ListTile(
                 leading: const Icon(Icons.health_and_safety, color: Colors.blue),
                 title: const Text('Preeclampsia Prediction'),

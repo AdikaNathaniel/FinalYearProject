@@ -404,19 +404,19 @@ class _MapPageState extends State<MapPage> {
           //   onPressed: _showSearchOptions,
           //   tooltip: 'Search Healthcare Facilities',
           // ),
-          IconButton(
-            icon: const Icon(Icons.my_location),
-            onPressed: () {
-              if (_mapController != null && _isLocationLoaded) {
-                _mapController!.animateCamera(
-                  CameraUpdate.newLatLngZoom(_currentPosition, 15),
-                );
-              } else {
-                _determinePosition();
-              }
-            },
-            tooltip: 'Go to My Location',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.my_location),
+          //   onPressed: () {
+          //     if (_mapController != null && _isLocationLoaded) {
+          //       _mapController!.animateCamera(
+          //         CameraUpdate.newLatLngZoom(_currentPosition, 15),
+          //       );
+          //     } else {
+          //       _determinePosition();
+          //     }
+          //   },
+          //   tooltip: 'Go to My Location',
+          // ),
         ],
       ),
       body: Stack(

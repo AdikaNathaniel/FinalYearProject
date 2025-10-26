@@ -1,4 +1,3 @@
-// doctor_chat_page.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -6,11 +5,13 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class DoctorChatPage extends StatefulWidget {
   final String doctorId;
   final String doctorName;
+  final List<Map<String, dynamic>> availablePatients;
 
   const DoctorChatPage({
     Key? key,
     required this.doctorId,
     required this.doctorName,
+    required this.availablePatients,
   }) : super(key: key);
 
   @override
@@ -49,164 +50,134 @@ class Message {
   }
 }
 
-class ChatService {
-  IO.Socket? _socket;
-  bool _isConnected = false;
-
-  Function(String, dynamic)? onNewMessage;
-  Function(List<dynamic>)? onMessageHistory;
-  Function(String)? onConversationStarted;
-  Function(String, bool)? onUserTyping;
-  Function(String)? onError;
-
-  void connect(String userId, String role) {
-    _socket = IO.io(
-      'https://patient-monitor-backend-patient.fly.dev',
-      IO.OptionBuilder()
-        .setTransports(['websocket'])
-        .enableAutoConnect()
-        .build(),
-    );
-
-    _socket!.onConnect((_) {
-      print('Connected to chat server');
-      _isConnected = true;
-      
-      _socket!.emit('register', {
-        'userId': userId,
-        'role': role,
-      });
-    });
-
-    _socket!.onDisconnect((_) {
-      print('Disconnected from chat server');
-      _isConnected = false;
-    });
-
-    _socket!.onError((error) {
-      print('Socket error: $error');
-      onError?.call(error.toString());
-    });
-
-    _socket!.on('newMessage', (data) {
-      onNewMessage?.call(data['roomId'], data);
-    });
-
-    _socket!.on('messageHistory', (data) {
-      onMessageHistory?.call(data['messages']);
-    });
-
-    _socket!.on('conversationStarted', (data) {
-      onConversationStarted?.call(data['roomId']);
-    });
-
-    _socket!.on('userTyping', (data) {
-      onUserTyping?.call(data['userId'], data['isTyping']);
-    });
-
-    _socket!.on('error', (data) {
-      onError?.call(data['message']);
-    });
-  }
-
-  void startConversation(String targetUserId) {
-    _socket!.emit('startConversation', {
-      'targetUserId': targetUserId,
-    });
-  }
-
-  void sendMessage(String roomId, String content, String receiverId) {
-    _socket!.emit('sendMessage', {
-      'roomId': roomId,
-      'content': content,
-      'receiverId': receiverId,
-    });
-  }
-
-  void markAsRead(String roomId, List<String> messageIds) {
-    _socket!.emit('markAsRead', {
-      'roomId': roomId,
-      'messageIds': messageIds,
-    });
-  }
-
-  void typing(String roomId, bool isTyping) {
-    _socket!.emit('typing', {
-      'roomId': roomId,
-      'isTyping': isTyping,
-    });
-  }
-
-  void disconnect() {
-    _socket?.disconnect();
-    _isConnected = false;
-  }
-
-  bool get isConnected => _isConnected;
-}
-
 class _DoctorChatPageState extends State<DoctorChatPage> {
-  final ChatService _chatService = ChatService();
+  late IO.Socket _socket;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
   List<Message> _messages = [];
   String _currentRoomId = '';
   String _currentPatientId = '';
+  String _currentPatientName = '';
   bool _isTyping = false;
   String _typingUserId = '';
-  final List<String> _patients = ['patient1', 'patient2', 'patient3'];
+  bool _isConnecting = true;
+  bool _isConnected = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeChat();
+    _initializeSocket();
   }
 
-  void _initializeChat() {
-    _chatService.connect(widget.doctorId, 'doctor');
-    
-    _chatService.onNewMessage = (roomId, messageData) {
-      if (mounted) {
-        setState(() {
-          _messages.add(Message.fromJson(messageData));
-          _scrollToBottom();
-        });
-      }
-    };
-
-    _chatService.onMessageHistory = (messages) {
-      if (mounted) {
-        setState(() {
-          _messages = messages.map<Message>((msg) => Message.fromJson(msg)).toList();
-          _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-          _scrollToBottom();
-        });
-      }
-    };
-
-    _chatService.onConversationStarted = (roomId) {
-      if (mounted) {
-        setState(() {
-          _currentRoomId = roomId;
-        });
-      }
-    };
-
-    _chatService.onUserTyping = (userId, isTyping) {
-      if (mounted) {
-        setState(() {
-          _isTyping = isTyping;
-          _typingUserId = userId;
-        });
-      }
-    };
-
-    _chatService.onError = (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $error')),
+  void _initializeSocket() {
+    try {
+      _socket = IO.io(
+        'https://patient-monitor-backend-patient.fly.dev',
+        IO.OptionBuilder()
+          .setTransports(['websocket', 'polling'])
+          .setTimeout(30000)
+          .enableAutoConnect()
+          .build(),
       );
-    };
+
+      _socket.onConnect((_) {
+        print('✅ Connected to chat server');
+        if (mounted) {
+          setState(() {
+            _isConnecting = false;
+            _isConnected = true;
+          });
+        }
+        
+        _socket.emit('register', {
+          'userId': widget.doctorId,
+          'role': 'doctor',
+        });
+      });
+
+      _socket.onDisconnect((_) {
+        print('❌ Disconnected from chat server');
+        if (mounted) {
+          setState(() {
+            _isConnecting = false;
+            _isConnected = false;
+          });
+        }
+        _showSnackBar('Disconnected from server');
+      });
+
+      _socket.onError((error) {
+        print('💥 Socket error: $error');
+        if (mounted) {
+          setState(() {
+            _isConnecting = false;
+          });
+        }
+        _showSnackBar('Connection error: $error');
+      });
+
+      _socket.on('newMessage', (data) {
+        print('📨 New message received: $data');
+        if (mounted && data['roomId'] == _currentRoomId) {
+          setState(() {
+            _messages.add(Message.fromJson(data));
+            _scrollToBottom();
+          });
+        }
+      });
+
+      _socket.on('messageHistory', (data) {
+        print('📚 Message history received: ${data['messages']?.length} messages');
+        if (mounted) {
+          setState(() {
+            _messages = (data['messages'] as List).map<Message>((msg) => Message.fromJson(msg)).toList();
+            _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            _scrollToBottom();
+          });
+        }
+      });
+
+      _socket.on('conversationStarted', (data) {
+        print('💬 Conversation started: ${data['roomId']}');
+        if (mounted) {
+          setState(() {
+            _currentRoomId = data['roomId'];
+          });
+        }
+      });
+
+      _socket.on('userTyping', (data) {
+        if (mounted) {
+          setState(() {
+            _isTyping = data['isTyping'];
+            _typingUserId = data['userId'];
+          });
+        }
+      });
+
+      _socket.on('error', (data) {
+        print('❌ Server error: $data');
+        _showSnackBar(data['message'] ?? 'Unknown error');
+      });
+
+    } catch (e) {
+      print('💥 Failed to connect: $e');
+      if (mounted) {
+        setState(() {
+          _isConnecting = false;
+        });
+      }
+      _showSnackBar('Failed to connect: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   void _scrollToBottom() {
@@ -221,17 +192,36 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
     });
   }
 
-  void _startChatWithPatient(String patientId) {
-    _chatService.startConversation(patientId);
-    _currentPatientId = patientId;
-    _messages.clear();
+  void _startChatWithPatient(String patientId, String patientName) {
+    if (!_isConnected) {
+      _showSnackBar('Not connected to server');
+      return;
+    }
+
+    setState(() {
+      _currentPatientId = patientId;
+      _currentPatientName = patientName;
+      _messages.clear();
+    });
+    
+    _socket.emit('startConversation', {
+      'targetUserId': patientId,
+    });
   }
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty || _currentRoomId.isEmpty) return;
+    if (!_isConnected) {
+      _showSnackBar('Not connected to server');
+      return;
+    }
 
     final message = _messageController.text.trim();
-    _chatService.sendMessage(_currentRoomId, message, _currentPatientId);
+    _socket.emit('sendMessage', {
+      'roomId': _currentRoomId,
+      'content': message,
+      'receiverId': _currentPatientId,
+    });
     
     setState(() {
       _messages.add(Message(
@@ -245,6 +235,14 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
       ));
       _messageController.clear();
       _scrollToBottom();
+    });
+  }
+
+  void _typing(bool isTyping) {
+    if (!_isConnected || _currentRoomId.isEmpty) return;
+    _socket.emit('typing', {
+      'roomId': _currentRoomId,
+      'isTyping': isTyping,
     });
   }
 
@@ -306,31 +304,56 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
   }
 
   Widget _buildPatientList() {
+    if (widget.availablePatients.isEmpty) {
+      return Container(
+        padding: EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            'No patients available at the moment',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
     return Container(
-      height: 80,
+      height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _patients.length,
+        itemCount: widget.availablePatients.length,
         itemBuilder: (context, index) {
+          final patient = widget.availablePatients[index];
           return GestureDetector(
-            onTap: () => _startChatWithPatient(_patients[index]),
+            onTap: () => _startChatWithPatient(
+              patient['id'] ?? patient['_id'] ?? 'unknown',
+              patient['name'] ?? 'Patient',
+            ),
             child: Container(
               margin: EdgeInsets.all(8),
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.green[50],
+                color: _currentPatientId == patient['id'] ? Colors.green[100] : Colors.green[50],
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green),
+                border: Border.all(
+                  color: _currentPatientId == patient['id'] ? Colors.green : Colors.green[200]!,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.green,
-                    child: Text('P', style: TextStyle(color: Colors.white)),
+                    child: Text(
+                      patient['name']?.substring(0, 1) ?? 'P',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                   SizedBox(height: 4),
-                  Text('Patient ${index + 1}'),
+                  Text(patient['name'] ?? 'Patient', style: TextStyle(fontSize: 12)),
+                  Text(
+                    'Patient',
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -340,12 +363,99 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
     );
   }
 
+  Widget _buildConnectionStatus() {
+    Color statusColor;
+    String statusText;
+    
+    if (_isConnecting) {
+      statusColor = Colors.orange;
+      statusText = 'Connecting...';
+    } else if (_isConnected) {
+      statusColor = Colors.green;
+      statusText = 'Connected';
+    } else {
+      statusColor = Colors.red;
+      statusText = 'Disconnected';
+    }
+
+    return Container(
+      padding: EdgeInsets.all(8),
+      color: statusColor.withOpacity(0.1),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.circle,
+            color: statusColor,
+            size: 12,
+          ),
+          SizedBox(width: 8),
+          Text(
+            statusText,
+            style: TextStyle(color: statusColor),
+          ),
+          if (_isConnecting) ...[
+            SizedBox(width: 8),
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator() {
+    return Container(
+      margin: EdgeInsets.all(8),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.green,
+            child: Text('P', style: TextStyle(color: Colors.white)),
+            radius: 16,
+          ),
+          SizedBox(width: 8),
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('$_currentPatientName is typing'),
+                SizedBox(width: 8),
+                Row(
+                  children: [
+                    _buildTypingDot(0),
+                    SizedBox(width: 2),
+                    _buildTypingDot(1),
+                    SizedBox(width: 2),
+                    _buildTypingDot(2),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTypingDot(int index) {
     return Container(
-      width: 4,
-      height: 4,
+      width: 6,
+      height: 6,
+      margin: EdgeInsets.symmetric(horizontal: 1),
       decoration: BoxDecoration(
-        color: Colors.grey[600],
+        color: Colors.grey[600]!,
         shape: BoxShape.circle,
       ),
     );
@@ -355,35 +465,16 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Patient Consultations'),
+        title: _currentPatientId.isEmpty
+            ? Text('Patient Consultations')
+            : Text('Chat with $_currentPatientName'),
         backgroundColor: Colors.blue[100],
         elevation: 0,
       ),
       body: Column(
         children: [
           _buildPatientList(),
-          
-          Container(
-            padding: EdgeInsets.all(8),
-            color: _chatService.isConnected ? Colors.green[50] : Colors.red[50],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  _chatService.isConnected ? Icons.circle : Icons.circle_outlined,
-                  color: _chatService.isConnected ? Colors.green : Colors.red,
-                  size: 12,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  _chatService.isConnected ? 'Connected' : 'Disconnected',
-                  style: TextStyle(
-                    color: _chatService.isConnected ? Colors.green : Colors.red,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildConnectionStatus(),
           
           Expanded(
             child: _currentRoomId.isEmpty
@@ -408,45 +499,7 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
                           itemCount: _messages.length + (_isTyping ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (_isTyping && index == _messages.length) {
-                              return Container(
-                                margin: EdgeInsets.all(8),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: Colors.green,
-                                      child: Text('P', style: TextStyle(color: Colors.white)),
-                                      radius: 16,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Container(
-                                      padding: EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text('Typing'),
-                                          SizedBox(width: 8),
-                                          SizedBox(
-                                            width: 20,
-                                            height: 10,
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                _buildTypingDot(0),
-                                                _buildTypingDot(1),
-                                                _buildTypingDot(2),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                              return _buildTypingIndicator();
                             }
                             return _buildMessageBubble(_messages[index]);
                           },
@@ -475,10 +528,10 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(24),
                                   ),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 onChanged: (text) {
-                                  _chatService.typing(_currentRoomId, text.isNotEmpty);
+                                  _typing(text.isNotEmpty);
                                 },
                                 onSubmitted: (_) => _sendMessage(),
                               ),
@@ -504,7 +557,7 @@ class _DoctorChatPageState extends State<DoctorChatPage> {
 
   @override
   void dispose() {
-    _chatService.disconnect();
+    _socket.disconnect();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();

@@ -172,7 +172,7 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
             //   },
             // ),
 
-            
+
             ListTile(
               leading: Icon(Icons.help_outline),
               title: Text('Support Desk'),
@@ -277,21 +277,21 @@ class _PregnancyComplicationsPageState extends State<PregnancyComplicationsPage>
               },
             ),
 
-ListTile(
-  leading: Icon(Icons.medical_services, color: Colors.blue),
-  title: Text('Patient Consultations'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DoctorChatPage(
-          doctorId: 'doctor_456',     // Replace with actual doctor ID
-          doctorName: 'Dr. Smith',    // Replace with actual doctor name
-        ),
-      ),
-    );
-  },
-),
+// ListTile(
+//   leading: Icon(Icons.medical_services, color: Colors.blue),
+//   title: Text('Patient Consultations'),
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => DoctorChatPage(
+//           doctorId: 'doctor_456',     // Replace with actual doctor ID
+//           doctorName: 'Dr. Smith',    // Replace with actual doctor name
+//         ),
+//       ),
+//     );
+//   },
+// ),
 
             ListTile(
               leading: Icon(Icons.health_and_safety),

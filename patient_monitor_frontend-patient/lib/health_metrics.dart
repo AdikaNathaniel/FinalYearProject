@@ -30,6 +30,7 @@ import 'package:camera/camera.dart';
 import 'package:image/image.dart' as img;
 import 'video_call_page.dart';
 import 'pregnant-chat.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -687,7 +688,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 ),
               ),
             ),
-
             ListTile(
               leading: const Icon(Icons.calendar_today, color: Colors.blue),
               title: const Text('Schedule Appointment'),
@@ -700,74 +700,69 @@ class _HealthDashboardState extends State<HealthDashboard> {
                 );
               },
             ),
-
-//             ListTile(
-//   leading: const Icon(Icons.video_call, color: Colors.green),
-//   title: const Text('Video Call'),
-//   subtitle: const Text('Start a video consultation'),
-//   onTap: () {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => VideoCallPage(
-//           channelName: 'consultation_${DateTime.now().millisecondsSinceEpoch}', // Unique channel name
-//           appId: '1e83d054ca2a43dda969689a961ed0a8', 
-//           token: '007eJxTYHAwl1STLt3Pz2xqfJPV/aCJss/BC5fWslj27zlZouiy95MCg2GqhXGKgalJcqJRoolxSkqipZmlmYUlkDJMTTFItPi/9ndGQyAjQ9vUFcyMDBAI4rMxlBRlJuYUMzAAALKUHws=',
-//         ),
-//       ),
-//     );
-//   },
-// ),
-
-
-// ListTile(
-//   leading: const Icon(Icons.video_call, color: Colors.green),
-//   title: const Text('Video Call'),
-//   subtitle: const Text('Start a video consultation'),
-//   onTap: () {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => WebRTCVideoCallPage(
-//           roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
-//         ),
-//       ),
-//     );
-//   },
-// ),
-
-ListTile(
-  leading: const Icon(Icons.video_call, color: Colors.blue),
-  title: const Text('Video Call'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WebRTCVideoCallPage(
-          roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
-        ),
-      ),
-    );
-  },
-),
-
-
-
-ListTile(
-  leading: Icon(Icons.chat, color: Colors.blue),
-  title: Text('Chat with Doctors'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PregnantChatPage(
-          userId: 'pregnant_user_123', // Replace with actual user ID
-          userName: 'Sarah Johnson',   // Replace with actual user name
-        ),
-      ),
-    );
-  },
-),
+            // ListTile(
+            //   leading: const Icon(Icons.video_call, color: Colors.green),
+            //   title: const Text('Video Call'),
+            //   subtitle: const Text('Start a video consultation'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => VideoCallPage(
+            //           channelName: 'consultation_${DateTime.now().millisecondsSinceEpoch}', // Unique channel name
+            //           appId: '1e83d054ca2a43dda969689a961ed0a8', 
+            //           token: '007eJxTYHAwl1STLt3Pz2xqfJPV/aCJss/BC5fWslj27zlZouiy95MCg2GqhXGKgalJcqJRoolxSkqipZmlmYUlkDJMTTFItPi/9ndGQyAjQ9vUFcyMDBAI4rMxlBRlJuYUMzAAALKUHws=',
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // ),
+            // ListTile(
+            //   leading: const Icon(Icons.video_call, color: Colors.green),
+            //   title: const Text('Video Call'),
+            //   subtitle: const Text('Start a video consultation'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => WebRTCVideoCallPage(
+            //           roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // ),
+            ListTile(
+              leading: const Icon(Icons.video_call, color: Colors.blue),
+              title: const Text('Video Call'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WebRTCVideoCallPage(
+                      roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
+                    ),
+                  ),
+                );
+              },
+            ),
+            // To be worked on
+            // ListTile(
+            //   leading: Icon(Icons.chat, color: Colors.blue),
+            //   title: Text('Chat with Doctors'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => PregnantChatPage(
+            //           userId: 'pregnant_user_123', // Replace with actual user ID
+            //           userName: 'Sarah Johnson',   // Replace with actual user name
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // ),
+            // ListTile(
             ListTile(
               leading: const Icon(Icons.health_and_safety, color: Colors.blue),
               title: const Text('Pregnancy Tips'),
@@ -780,7 +775,6 @@ ListTile(
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.pregnant_woman, color: Colors.blue),
               title: const Text('Pregnancy Chatbot'),
@@ -805,7 +799,6 @@ ListTile(
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.attach_money, color: Colors.blue),
               title: const Text('Make Payment'), 
@@ -818,7 +811,6 @@ ListTile(
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.medical_services, color: Colors.blue),
               title: const Text('View All Medics Profile'), 
@@ -855,7 +847,6 @@ ListTile(
                 );
               },
             ),
-
             ListTile(
               leading: Icon(Icons.bloodtype, color: Colors.blue),
               title: Text('Charts Data'),
@@ -866,11 +857,9 @@ ListTile(
                 );
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.search, color: Colors.blue),
-              title: const Text(
-                'Find Your Favorite Medic'),
+              title: const Text('Find Your Favorite Medic'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -900,7 +889,7 @@ ListTile(
                   children: [
                     GridView.count(
                       crossAxisCount: 2,
-                      childAspectRatio: 1.0, // Increased from 0.95 to 1.0 for more space
+                      childAspectRatio: 1.0,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       shrinkWrap: true,
@@ -918,7 +907,6 @@ ListTile(
                             showUnitToggle: true,
                           ),
                         ),
-                        
                         MetricCard(
                           title: 'Blood Pressure',
                           value: '${vitalData?['systolicBP']?.toStringAsFixed(0) ?? 'N/A'}/${vitalData?['diastolicBP']?.toStringAsFixed(0) ?? 'N/A'} mmHg',
@@ -926,7 +914,6 @@ ListTile(
                           color: Colors.pink,
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
-                        
                         MetricCard(
                           title: 'Heart Rate',
                           value: '${vitalData?['heartRate']?.toStringAsFixed(0) ?? 'N/A'} BPM',
@@ -934,7 +921,6 @@ ListTile(
                           color: Colors.red,
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
-                        
                         MetricCard(
                           title: 'Oxygen Saturation',
                           value: '${vitalData?['spo2']?.toStringAsFixed(0) ?? 'N/A'}%',
@@ -942,7 +928,6 @@ ListTile(
                           color: Colors.blue,
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
-                        
                         MetricCard(
                           title: 'Body Temperature',
                           value: '${vitalData?['bodyTemp']?.toStringAsFixed(1) ?? 'N/A'}°C',
@@ -950,7 +935,6 @@ ListTile(
                           color: Colors.orange,
                           lastUpdated: _getTimeAgo(vitalData?['updatedAt'] ?? ''),
                         ),
-                        
                         // Protein Card - Now using the same MetricCard layout
                         GestureDetector(
                           onTap: () => _showUrineStripDialog(context),
@@ -1003,13 +987,11 @@ ListTile(
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
                   _buildProfileItem(
                     icon: Icons.email_outlined,
                     text: widget.userEmail,
                     onTap: null,
                   ),
-                  
                   _buildProfileItem(
                     icon: Icons.emergency,
                     text: 'Send An Emergency Alert',
@@ -1018,7 +1000,6 @@ ListTile(
                       _showEmergencyAlertDialog(context);
                     },
                   ),
-                  
                   _buildProfileItem(
                     icon: Icons.settings_outlined,
                     text: 'Settings',
@@ -1032,7 +1013,6 @@ ListTile(
                       );
                     },
                   ),
-
                   _buildProfileItem(
                     icon: Icons.bluetooth,
                     text: 'Pair With Bluetooth Device',
@@ -1046,7 +1026,6 @@ ListTile(
                       );
                     },
                   ),
-
                   _buildProfileItem(
                     icon: Icons.notifications_active_outlined,
                     text: 'Notifications',
@@ -1060,7 +1039,6 @@ ListTile(
                       );
                     },
                   ),
-                  
                   _buildProfileItem(
                     icon: Icons.help_outline,
                     text: 'Need Help?',
@@ -1074,7 +1052,6 @@ ListTile(
                       );
                     },
                   ),
-                  
                   _buildProfileItem(
                     icon: Icons.location_on,
                     text: 'View Location Of PregMama',
@@ -1089,7 +1066,6 @@ ListTile(
                     },
                   ),
                   const SizedBox(height: 20),
-                  
                   TextButton(
                     onPressed: () async {
                       final response = await http.put(
@@ -1130,7 +1106,6 @@ ListTile(
                     ),
                   ),
                   const SizedBox(height: 4),
-                  
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: const Text('Close'),
@@ -1261,15 +1236,15 @@ class MetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(10), // Reduced padding from 12 to 10
+        padding: const EdgeInsets.all(10),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Centered icon
             Container(
-              width: 42, // Reduced from 50 to 42
-              height: 42, // Reduced from 50 to 42
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: color.withOpacity(0.2),
@@ -1277,29 +1252,28 @@ class MetricCard extends StatelessWidget {
               child: Icon(
                 icon,
                 color: color,
-                size: 22, // Reduced from 28 to 22
+                size: 22,
               ),
             ),
-            
-            const SizedBox(height: 6), // Reduced from 8 to 6
+            const SizedBox(height: 6),
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 11, // Reduced from 13 to 11
+                fontSize: 11,
                 color: Colors.grey[700],
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 3), // Reduced from 4 to 3
+            const SizedBox(height: 3),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 14, // Reduced from 16 to 14
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -1307,11 +1281,11 @@ class MetricCard extends StatelessWidget {
                 maxLines: 1,
               ),
             ),
-            const SizedBox(height: 3), // Reduced from 4 to 3
+            const SizedBox(height: 3),
             Text(
               lastUpdated,
               style: TextStyle(
-                fontSize: 9, // Reduced from 10 to 9
+                fontSize: 9,
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
@@ -1320,11 +1294,11 @@ class MetricCard extends StatelessWidget {
             ),
             // Unit toggle hint - only for glucose card
             if (showUnitToggle) ...[
-              const SizedBox(height: 2), // Reduced from 4 to 2
+              const SizedBox(height: 2),
               Text(
                 'Tap to switch units',
                 style: TextStyle(
-                  fontSize: 8, // Reduced from 9 to 8
+                  fontSize: 8,
                   color: Colors.grey[500],
                   fontStyle: FontStyle.italic,
                 ),
