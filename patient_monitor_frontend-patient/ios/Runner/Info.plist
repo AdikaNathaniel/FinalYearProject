@@ -46,12 +46,51 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
-	<!-- Camera and Microphone Permissions for Agora Video Calls -->
+	<!-- Camera and Microphone Permissions for Video Calls -->
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access for video calls</string>
+	<string>This app needs camera access for video consultations and health monitoring</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app needs microphone access for audio calls</string>
+	<string>This app needs microphone access for audio calls and voice features</string>
+	
+	<!-- Bluetooth Permissions -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app needs Bluetooth access to connect with wearable health monitoring devices</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This app needs Bluetooth access to connect with medical devices and wearables</string>
+	
+	<!-- Location Permissions (required for Bluetooth on iOS 13+) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access for Bluetooth device discovery and connection</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access for continuous health monitoring via Bluetooth devices</string>
+	
+	<!-- HealthKit Permissions (if you plan to integrate with Health app) -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>This app needs HealthKit access to read and write health data for pregnancy monitoring</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>This app needs HealthKit access to update health records and vital signs</string>
+	
+	<!-- Face ID / Biometric Authentication -->
 	<key>NSFaceIDUsageDescription</key>
-	<string>This app uses FACE ID for secure authentication</string>
+	<string>This app uses Face ID for secure authentication and data protection</string>
+	
+	<!-- Photo Library Access (if needed for image uploads) -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to upload medical documents and images</string>
+	
+	<!-- Local Network (for device discovery) -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app needs local network access to discover nearby medical devices</string>
+	
+	<!-- Background Modes -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
+		<string>audio</string>
+		<string>external-accessory</string>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 </dict>
 </plist>

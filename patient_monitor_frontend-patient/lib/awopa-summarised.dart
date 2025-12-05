@@ -38,6 +38,8 @@ import 'vitals-health-data-get-specific-user.dart';
 import 'csv.dart';
 import 'chart-data.dart';
 import 'medic-chat.dart';
+import 'video_call_page.dart';
+
 
 class AWOPASummarisedPage extends StatefulWidget {
   final String userEmail;
@@ -1313,6 +1315,24 @@ class _AWOPASummarisedPageState extends State<AWOPASummarisedPage> {
                   );
                 },
               ),
+
+
+                ListTile(
+              leading: const Icon(Icons.video_call, color: Colors.blue),
+              title: const Text('Video Call'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WebRTCVideoCallPage(
+                      roomId: 'consultation_${DateTime.now().millisecondsSinceEpoch}',
+                    ),
+                  ),
+                );
+              },
+            ),
+
+
               ListTile(
                 leading: const Icon(Icons.show_chart, color: Colors.blue),
                 title: const Text('Retrieve Readings'),
