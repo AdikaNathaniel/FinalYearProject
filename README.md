@@ -1,4 +1,4 @@
-# 🌼 Pregnancy Monitoring App
+# 🌼 Pregnancy Monitoring App, Awoapa
 
 > **A Digital Lifeline for Expecting Mothers. Powered by Technology, Guided by Compassion.**
 
@@ -6,119 +6,160 @@
 
 ## 👋 Overview
 
-Pregnancy is a journey, and every journey deserves the right support. In many developing regions, including Ghana, maternal health risks remain alarmingly high due to **delayed antenatal care**, **lack of early detection**, and **inadequate monitoring**.
+Pregnancy is a journey, and every journey deserves the right support. In developing regions like Ghana, maternal health risks remain alarmingly high due to **delayed antenatal care**, **lack of early detection**, and **inadequate monitoring**.
+
+According to the World Health Organization (WHO), **over 40% of pregnancies in developing countries face significant health risks**, making pregnancy complications a major public health concern. Research in Ghana reveals that **12% of female deaths (ages 15–49)** stem from pregnancy complications, with **62% due to late or poor medical intervention**. Barriers like distance, transportation costs, and time constraints prevent regular antenatal care, increasing maternal risks.
+
+A study at Mamprobi Hospital showed:
+- 📈 **51.8% of women experienced complications**
+- 🕑 **Most began antenatal care late**
+- 🧠 **Many lacked essential pregnancy knowledge**
+- ⚠️ **Common complications included:**
+  - Anemia (40.6%)
+  - Preeclampsia (15.8%)
+  - Hypertensive Disorders (13.5%)
+  - Gestational Diabetes (6.0%)
+  - Frequent Vaginal Bleeding (4.5%)
+
+*Source: Wiafe, Y.K., Asamoah, A., Akweongo, P., & Kumah, A. (2024). Factors Affecting Pregnancy Complications in Ghana. Research Article.*
+
+**This project is a direct response** to these alarming statistics, focusing specifically on early detection and monitoring of high-risk conditions like **preeclampsia** and **anemia**.
 
 The **Pregnancy Monitoring App** is a **cross-platform, role-based digital health solution** designed to **monitor**, **educate**, and **connect** pregnant women, doctors, relatives, and administrators — ensuring a safer pregnancy experience for every mother.
 
-Built with **Flutter**, **NestJS**, and **MongoDB**, our solution bridges the gap between healthcare providers and pregnant women through real-time vitals tracking, live chat, AI assistance, and data-driven risk assessment.
+Built with **Flutter**, **NestJS**, and **MongoDB**, our solution bridges the gap between healthcare providers and pregnant women through real-time vitals tracking, live chat, AI-powered risk prediction, and data-driven health assessment.
+
+---
+
+## 🧠 AI-Powered Health Prediction
+
+At the heart of our application is a **dedicated machine learning model** integrated into the backend to provide **early warning and predictive insights** for two of the most prevalent and dangerous pregnancy complications identified in Ghanaian research:
+
+### 🔬 Preeclampsia Risk Prediction
+Our model analyzes key maternal vitals and health data points to assess the risk of developing preeclampsia, a leading cause of maternal and fetal morbidity.
+
+### 🔬 Anemia Status Prediction
+Leveraging health metrics and symptoms, the AI predicts potential anemia status, enabling timely dietary or medical intervention.
+
+These predictive features transform the app from a simple tracker to a **proactive health companion**, giving both patients and doctors a critical advantage in managing pregnancy health.
 
 ---
 
 ## 📌 Why It Matters
 
-> "12% of maternal deaths in Ghana are pregnancy-related."
+> **“Early detection is the key to prevention. Our app puts predictive power in the palm of your hand.”**
 
-A study at Mamprobi Hospital revealed:
-- 📈 51.8% of women had complications
-- 🕑 Most began antenatal care late
-- 🧠 Many lacked key pregnancy knowledge
+- 📊 **72.8%** of pregnant women experienced at least one danger sign
+- 🚨 **Hypertensive disorders** and **anemia** account for over **55%** of complications
+- 💡 **Timely intervention** can significantly reduce maternal and fetal risk
 
-Our app is **research-informed**, addressing these challenges with:
-- 📅 Early engagement & appointment scheduling
-- 📈 Smart vitals tracking & predictions
-- 🧠 Pregnancy tips & AI-based Q&A
+### 🎯 Core Interventions
+- 📅 Early antenatal engagement
+- 🤖 AI-powered screening
+- 📈 Smart vitals tracking
+- 🧠 Personalized education
 
 ---
 
 ## 🧑‍⚕️ Key User Roles & Features
 
 ### 👩 Pregnant Woman
-- 📝 OTP-based registration and secure login
-- 📅 Schedule, reschedule or cancel appointments
-- 🧮 Calculate pregnancy weeks (LMP-based)
-- 💾 Record vitals (weight, blood pressure, protein in urine, etc.)
-- 📈 View historical health data and trends
-- 💬 Real-time chat with doctor via WebSockets
-- 🧠 Get weekly pregnancy tips and guidance
-- 🤖 Ask an AI chatbot for health-related queries
-- 👨‍👩‍👧 Add a relative for shared support & monitoring
-
----
+- 🔐 OTP-based secure registration
+- 📅 Appointment scheduling & management
+- 🧮 Pregnancy week calculator (LMP-based)
+- 💾 Vitals recording & health journaling
+- 📊 Health dashboard with AI-predicted risk
+- 🤖 AI health assistant
+- 💬 Real-time doctor chat
+- 📚 Weekly pregnancy tips
+- 👨‍👩‍👧 Relative access & alerts
 
 ### 👨‍⚕️ Doctor
-- 🧑‍⚕️ Manage and view patient profiles
-- 💊 Create & view prescriptions
-- 🗓 Manage appointments
-- 📈 Access vitals and health trends of patients
-- 🛑 View complication risk levels (Low / Medium / High)
-- 💬 Chat live with patients
-
----
+- 👥 Patient management
+- 💊 Digital prescriptions
+- 🗓 Appointment calendar
+- 📈 Clinical dashboards
+- ⚠️ AI-powered risk monitoring
+- 💬 Live patient chat
 
 ### 👨‍👩 Relative
-- 🧭 Track the health status of a linked pregnant woman
-- ⚠️ Receive alerts on complications or emergencies
-
----
+- 👀 Health status tracking
+- ⚠️ Emergency alerts
+- 📋 Appointment reminders
 
 ### 🧑‍💼 Admin
-- 🧑‍💻 Manage platform users
-- 📊 Access overview of users and system health
+- 👥 User & role management
+- 📊 System analytics
+- ⚙️ Platform configuration
 
 ---
 
 ## 🔐 Authentication & Security
 
 - 🔒 Role-Based Access Control (RBAC)
-- 🔐 JWT for secure sessions
-- 📧 OTP verification on signup
-- 🧂 Hashed passwords & secure storage
-- 🔑 Forgot password with temporary email-based recovery
+- 🔐 JWT authentication
+- 📧 Email OTP verification
+- 🧂 Secure password hashing
+- 🔑 Account recovery system
 
 ---
 
 ## ⚙️ Tech Stack
 
-| Layer       | Technology        |
-|-------------|-------------------|
-| Frontend    | Flutter            |
-| Backend     | NestJS             |
-| Database    | MongoDB            |
-| Real-Time   | WebSockets         |
-| AI Assistant| NLP / GPT-based Chatbot |
-| Auth        | JWT + Email OTP    |
+| Layer | Technology |
+|------|------------|
+| Frontend | Flutter |
+| Backend | NestJS |
+| Database | MongoDB |
+| Real-Time | WebSockets |
+| AI/ML | Preeclampsia & Anemia Models + NLP Chatbot |
+| Auth | JWT + Email OTP |
+| API Docs | Swagger |
 
 ---
 
-## 🧠 AI Chatbot
+## 🧠 Dual AI System
 
-Need answers on-the-go? Our built-in AI chatbot answers questions related to pregnancy, complications, health tips, and lifestyle changes — helping users make informed decisions at any time.
+### 🤖 Predictive Models
+- Preeclampsia risk classification
+- Anemia status prediction
+- Outputs: Low / Medium / High risk
 
----
-
-## 📊 Risk Scoring Algorithm
-
-The backend uses a custom logic based on:
-- Weeks of pregnancy
-- Vitals data
-- Symptom entries
-
-To assign:
-- ✅ Low Risk
-- ⚠️ Medium Risk
-- 🚨 High Risk
-
-This risk visibility empowers **doctors** to act early and **women** to stay informed.
+### 💬 AI Chatbot
+- 24/7 pregnancy Q&A
+- Symptom guidance
+- Educational support
+- Multilingual-ready
 
 ---
 
-## 🛠 Planned Features
+## 📊 Risk Scoring System
 
-- 📲 Push notifications (reminders & alerts)
-- 🧠 Smarter AI model with multilingual support
-- 📉 Doctor dashboards with analytics
-- 📡 Integration with wearable sensors
-- 🏥 Hospital-side appointment calendar view
+### Tier 1: Rule-Based
+- Gestational age
+- Vitals trends
+- Symptoms
+
+### Tier 2: AI Prediction
+- Historical data
+- Pattern recognition
+- Clinical indicators
+
+### Risk Levels
+- ✅ Low
+- ⚠️ Medium
+- 🚨 High
+
+---
+
+## 🛠️ Implemented Features
+
+- 📲 Push notifications
+- 🌍 Multilingual UI (Twi, Ga)
+- 📊 Advanced analytics
+- 📱 Offline access
+- 📡 Wearable integration
+- 🏥 Hospital system APIs
 
 ---
 ## 🧪 API Documentation
